@@ -30,7 +30,17 @@ export async function maybeInstall(args) {
   if (answer !== "Yes") return false;
   const target = join(INSTALL_DIR, "AramCoach.exe");
   await mkdir(INSTALL_DIR, { recursive: true });
-  await copyFile(process.execPath, target);
+  // 이미 설치된 프로그램이 실행 중이면 먼저 종료 (실행 중인 exe는 덮어쓸 수 없음)
+  const port = Number(process.env.LOL_COORD_PORT || 47321);
+  const info = await fetch(`http://127.0.0.1:${port}/info`).then((r) => r.json()).catch(() => null);
+  if (info?.app) {
+    await fetch(`http://127.0.0.1:${port}/quit`, { method: "POST" }).catch(() => {});
+    await new Promise((r) => setTimeout(r, 2500));
+  }
+  for (let i = 0; ; i++) {
+    try { await copyFile(process.execPath, target); break; }
+    catch (e) { if (i >= 10) throw e; await new Promise((r) => setTimeout(r, 500)); }
+  }
   await mkdir(START_MENU, { recursive: true });
   await ps(`$s=(New-Object -ComObject WScript.Shell).CreateShortcut(${q(SHORTCUT)}); $s.TargetPath=${q(target)}; $s.WorkingDirectory=${q(INSTALL_DIR)}; $s.Description='아수라장 증강·아이템 도우미'; $s.Save()`);
   spawn(target, [], { detached: true, stdio: "ignore" }).unref();

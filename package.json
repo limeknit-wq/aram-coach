@@ -1,6 +1,6 @@
 {
   "name": "lol-aram-mcp",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "증강 칼바람(ARAM: Mayhem) 증강·아이템 선택 도우미 MCP 서버. 각자 쓰는 Claude/ChatGPT가 판단하고, 이 서버는 게임 데이터와 실시간 게임 상황만 제공합니다.",
   "type": "module",
   "bin": {

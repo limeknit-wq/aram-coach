@@ -124,6 +124,24 @@ public static class Ui
     }
 
     public static string IconPath = "";
+    /// <summary>화면 배율 (200% 모니터면 2). 설정창·트레이 메뉴 크기에 곱합니다.</summary>
+    public static float K = 1f;
+    public static void InitDpi()
+    {
+        try { using (Graphics g = Graphics.FromHwnd(IntPtr.Zero)) K = Math.Max(1f, g.DpiX / 96f); } catch { K = 1f; }
+    }
+    /// <summary>96DPI 기준으로 만든 컨트롤들을 배율만큼 키웁니다 (위치·크기·여백·직접 지정한 글꼴).</summary>
+    public static void ScaleTree(Control c, float k)
+    {
+        if (k == 1f) return;
+        c.Left = (int)(c.Left * k); c.Top = (int)(c.Top * k);
+        FlowLayoutPanel fl = c as FlowLayoutPanel;
+        if (fl == null || !fl.AutoSize) { c.Width = (int)(c.Width * k); c.Height = (int)(c.Height * k); }
+        c.Margin = new Padding((int)(c.Margin.Left * k), (int)(c.Margin.Top * k), (int)(c.Margin.Right * k), (int)(c.Margin.Bottom * k));
+        bool inherited = c.Parent != null && ReferenceEquals(c.Font, c.Parent.Font);
+        if (!inherited && c.Font != null && c.Font.Unit == GraphicsUnit.Pixel) c.Font = new Font(c.Font.FontFamily, c.Font.Size * k, c.Font.Style, GraphicsUnit.Pixel);
+        foreach (Control ch in c.Controls) ScaleTree(ch, k);
+    }
     /// <summary>앱 아이콘: assets/icon.ico (없으면 직접 그림)</summary>
     public static Icon MakeIcon() { return MakeIcon(32); }
     public static Icon MakeIcon(int size)
@@ -446,15 +464,18 @@ public class SettingsForm : Form
         Icon = Ui.MakeIcon();
         BackColor = Ui.Bg; ForeColor = Ui.Text;
         FormBorderStyle = FormBorderStyle.FixedSingle; MaximizeBox = false;
-        ClientSize = new Size(440, 700);
+        float K = Ui.K;
+        int wantH = (int)(700 * K), maxH = (int)(Screen.PrimaryScreen.WorkingArea.Height * 0.92);
+        ClientSize = new Size((int)(440 * K), Math.Min(wantH, maxH));
         StartPosition = FormStartPosition.CenterScreen;
-        Font = Ui.F("Medium", 14);
+        Font = Ui.F("Medium", 14 * K);
 
-        Panel head = new Panel { Dock = DockStyle.Top, Height = 116, BackColor = Ui.Bg };
+        Panel head = new Panel { Dock = DockStyle.Top, Height = (int)(116 * K), BackColor = Ui.Bg };
         head.Paint += delegate (object o, PaintEventArgs e)
         {
             Graphics g = e.Graphics; g.SmoothingMode = SmoothingMode.AntiAlias; g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-            using (Icon ic = Ui.MakeIcon(48)) g.DrawIcon(ic, new Rectangle(20, 16, 44, 44));
+            g.ScaleTransform(Ui.K, Ui.K);
+            using (Icon ic = Ui.MakeIcon(Ui.K >= 1.5f ? 128 : 48)) using (Bitmap ib = ic.ToBitmap()) { g.InterpolationMode = InterpolationMode.HighQualityBicubic; g.DrawImage(ib, new Rectangle(20, 16, 44, 44)); }
             using (Font f = Ui.F("ExtraBold", 22)) using (SolidBrush b = new SolidBrush(Ui.GoldLight)) g.DrawString("아수라장 코치", f, b, 70, 16);
             using (Font f = Ui.F("Medium", 12)) using (SolidBrush b = new SolidBrush(Ui.Sub)) g.DrawString("증강·아이템 AI 도우미  v" + version, f, b, 72, 44);
         };
@@ -464,7 +485,7 @@ public class SettingsForm : Form
             Button b = new Button { Text = t[i, 1], Tag = t[i, 0], Left = 20 + i * 136, Top = 70, Width = 128, Height = 36, FlatStyle = FlatStyle.Flat, Font = Ui.F("SemiBold", 14), Cursor = Cursors.Hand };
             b.FlatAppearance.BorderSize = 0;
             b.Click += delegate (object o, EventArgs e) { tab = (string)((Button)o).Tag; Rebuild(); };
-            tabs.Add(b); head.Controls.Add(b);
+            tabs.Add(b); head.Controls.Add(b); Ui.ScaleTree(b, K);
         }
         body.Dock = DockStyle.Fill; body.AutoScroll = true; body.Padding = new Padding(0); body.HorizontalScroll.Enabled = false; body.HorizontalScroll.Visible = false; body.BackColor = Ui.Bg;
         Controls.Add(body); Controls.Add(head);
@@ -480,7 +501,8 @@ public class SettingsForm : Form
         p.Paint += delegate (object o, PaintEventArgs e)
         {
             Graphics g = e.Graphics; g.SmoothingMode = SmoothingMode.AntiAlias; g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-            RectangleF r = new RectangleF(0.5f, 0.5f, p.Width - 1, p.Height - 1);
+            g.ScaleTransform(Ui.K, Ui.K);
+            RectangleF r = new RectangleF(0.5f, 0.5f, p.Width / Ui.K - 1, p.Height / Ui.K - 1);
             Ui.Fill(g, r, 14, Color.FromArgb(20, 30, 40), Color.FromArgb(14, 21, 28));
             Ui.Stroke(g, r, 14, Ui.PanelLine, 1f);
             using (Font f = Ui.F("Bold", 15)) using (SolidBrush b = new SolidBrush(Ui.Gold)) g.DrawString(title, f, b, 16, 12);
@@ -520,6 +542,7 @@ public class SettingsForm : Form
         else if (tab == "game") BuildGame(flow);
         else if (tab == "settings") BuildSettings(flow);
         else BuildConnect(flow);
+        Ui.ScaleTree(flow, Ui.K);
         body.Controls.Add(flow);
         body.ResumeLayout();
         building = false;
@@ -666,7 +689,7 @@ public class TrayApp : ApplicationContext
         icon.Icon = Ui.MakeIcon();
         icon.Text = "아수라장 코치";
         ContextMenuStrip m = new ContextMenuStrip();
-        m.Font = Ui.F("Medium", 13);
+        m.Font = Ui.F("Medium", 13 * Ui.K);
         m.Items.Add(statusItem);
         m.Items.Add(new ToolStripSeparator());
         m.Items.Add("설정 열기", null, delegate { ShowSettings(); });

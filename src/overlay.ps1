@@ -17,6 +17,7 @@ Add-Type -AssemblyName System.Windows.Forms, System.Drawing, System.Web.Extensio
 Add-Type -TypeDefinition ([IO.File]::ReadAllText((Join-Path $PSScriptRoot "overlay.cs"), [Text.Encoding]::UTF8)) `
   -ReferencedAssemblies System.Windows.Forms, System.Drawing, System.Web.Extensions
 [void][AramOverlay]::SetProcessDPIAware()
+[Ui]::InitDpi()  # 화면 배율(예: 200%)에 맞춰 설정창·메뉴 크기 조정
 [System.Windows.Forms.Application]::EnableVisualStyles()
 [System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($true)  # 내장 글꼴(Pretendard)을 컨트롤에도 쓰기 위해
 [Ui]::BaseUrl = "http://127.0.0.1:$Port"

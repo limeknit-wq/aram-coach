@@ -239,9 +239,11 @@ export async function startCoordinator({ app = false } = {}) {
   if (await becomeLeader()) return {};
   if (app) {
     const info = await fetch(`http://127.0.0.1:${PORT}/info`).then((r) => r.json()).catch(() => null);
-    if (info?.app) return { alreadyRunning: true };
-    await fetch(`http://127.0.0.1:${PORT}/handoff`, { method: "POST" }).catch(() => {});
-    for (let i = 0; i < 20; i++) {
+    if (info?.app && info.version === APP_VERSION) return { alreadyRunning: true };
+    // 다른 버전의 프로그램이 켜져 있으면 종료시키고, MCP 서버가 리더면 넘겨받습니다
+    if (info?.app) await fetch(`http://127.0.0.1:${PORT}/quit`, { method: "POST" }).catch(() => {});
+    else await fetch(`http://127.0.0.1:${PORT}/handoff`, { method: "POST" }).catch(() => {});
+    for (let i = 0; i < 40; i++) {
       await new Promise((r) => setTimeout(r, 250));
       if (await becomeLeader()) return {};
     }
