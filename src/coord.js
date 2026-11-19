@@ -40,7 +40,7 @@ async function statusState() {
   const picks = await loadPicks(coord.gameKey);
   const top = plan ? Object.values(plan.scores).sort((a, b) => b.score - a.score).slice(0, 5).map((x) => `${x.name} (${x.score})`) : [];
   return {
-    version: APP_VERSION, role: coord.role, inGame: coord.inGame, champion: coord.champion,
+    version: APP_VERSION, role: coord.role, inGame: coord.inGame, champion: coord.champion, gameKey: coord.gameKey,
     watch: watch.status, event: watch.event?.name || null,
     setup: { ...setup },
     plan: plan && (!coord.gameKey || plan.gameKey === coord.gameKey)

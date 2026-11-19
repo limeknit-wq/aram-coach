@@ -126,6 +126,25 @@ public static class Ui
     }
 
     public static string IconPath = "";
+    /// <summary>설정창에서 보조 창을 열 때 쓰는 연결 (트레이가 지정)</summary>
+    public static Action OpenCompanion;
+    static readonly Dictionary<string, Image> iconCache = new Dictionary<string, Image>();
+    /// <summary>아이템 아이콘 (한 번 받으면 기억)</summary>
+    public static Image IconFor(string url)
+    {
+        if (string.IsNullOrEmpty(url)) return null;
+        Image im;
+        if (iconCache.TryGetValue(url, out im)) return im;
+        try { using (WebClient wc = new WebClient()) using (MemoryStream ms = new MemoryStream(wc.DownloadData(url))) im = new Bitmap(Image.FromStream(ms)); }
+        catch { im = null; }
+        iconCache[url] = im; return im;
+    }
+    /// <summary>/overlay 데이터의 아이템 아이콘을 미리 받아 둡니다</summary>
+    public static void Prefetch(Dictionary<string, object> ov)
+    {
+        ArrayList next = A(D(ov, "items"), "next");
+        if (next != null) foreach (object o in next) IconFor(S(o as Dictionary<string, object>, "icon"));
+    }
     /// <summary>화면 배율 (200% 모니터면 2). 설정창·트레이 메뉴 크기에 곱합니다.</summary>
     public static float K = 1f;
     public static void InitDpi()
@@ -726,6 +745,15 @@ public class SettingsForm : Form
         c2.Controls.Add(oy);
         flow.Controls.Add(c2);
 
+        Panel cc = Card("실시간 보조 창 (두 번째 모니터)", 196);
+        Lbl(cc, "전체 화면으로 게임할 때 옆 모니터에서 증강 점수와 다음 아이템을 크게 보여줘요.", 16, 40, 370, 40, "Regular", 12, Ui.Sub);
+        CheckBox ca = Check(cc, "게임이 시작되면 자동으로 열기", 16, 84, Ui.B(s, "companionAuto"));
+        ca.CheckedChanged += delegate { Save("companionAuto", ca.Checked); };
+        CheckBox ct = Check(cc, "항상 위에 표시", 16, 114, Ui.B(s, "companionTopmost"));
+        ct.CheckedChanged += delegate { Save("companionTopmost", ct.Checked); };
+        Btn(cc, "지금 열기", 16, 148, 360, true, delegate { if (Ui.OpenCompanion != null) Ui.OpenCompanion(); });
+        flow.Controls.Add(cc);
+
         Panel c3 = Card("시작", 84);
         CheckBox au = Check(c3, "윈도우 시작 시 자동 실행", 16, 42, Ui.B(s, "autostart"));
         au.CheckedChanged += delegate { Save("autostart", au.Checked); };
@@ -784,12 +812,284 @@ public class SettingsForm : Form
     }
 }
 
+// ---------- 실시간 보조 창 (두 번째 모니터용) ----------
+// 전체 화면으로 게임할 때 옆 모니터에서 보는 창. 오버레이와 같은 내용(증강 점수, 다음 아이템)을 증강 이름과 함께 크게 보여줍니다.
+public class CompanionCanvas : Panel
+{
+    public CompanionCanvas()
+    {
+        SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+        DoubleBuffered = true;
+    }
+}
+
+public class CompanionForm : Form
+{
+    [DllImport("dwmapi.dll")] static extern int DwmSetWindowAttribute(IntPtr h, int attr, ref int v, int size);
+    readonly Timer timer = new Timer();
+    readonly Timer saveTimer = new Timer();
+    readonly CompanionCanvas canvas = new CompanionCanvas();
+    Dictionary<string, object> ov, st;
+    string ovRaw, stRaw;
+    int ticks;
+    bool loading = true;
+
+    public CompanionForm()
+    {
+        Text = "아수라장 코치 · 실시간";
+        Icon = Ui.MakeIcon();
+        BackColor = Ui.Bg;
+        FormBorderStyle = FormBorderStyle.Sizable;
+        MinimumSize = new Size((int)(320 * Ui.K), (int)(400 * Ui.K));
+        StartPosition = FormStartPosition.Manual;
+        canvas.Dock = DockStyle.Fill; canvas.BackColor = Ui.Bg; canvas.AutoScroll = true;
+        canvas.Paint += delegate (object o, PaintEventArgs e) { PaintAll(e.Graphics); };
+        Controls.Add(canvas);
+        PlaceInitially();
+        timer.Interval = 300; timer.Tick += delegate { Poll(); }; timer.Start();
+        // 위치·크기는 바꾼 뒤 1초 지나면 저장
+        saveTimer.Interval = 1000; saveTimer.Tick += delegate { saveTimer.Stop(); SaveBounds(); };
+        Move += delegate { if (!loading) { saveTimer.Stop(); saveTimer.Start(); } };
+        Resize += delegate { if (!loading) { saveTimer.Stop(); saveTimer.Start(); } canvas.Invalidate(); };
+        Load += delegate { try { int on = 1; DwmSetWindowAttribute(Handle, 20, ref on, 4); } catch { } loading = false; };
+        FormClosing += delegate (object o, FormClosingEventArgs e) { if (e.CloseReason == CloseReason.UserClosing) { e.Cancel = true; Hide(); } };
+    }
+
+    /// <summary>저장된 위치가 있으면 그대로, 없으면 보조 모니터(없으면 주 모니터 오른쪽)에 띄웁니다.</summary>
+    void PlaceInitially()
+    {
+        Dictionary<string, object> s = Ui.Get("/settings");
+        string b = Ui.S(s, "companionBounds");
+        if (!string.IsNullOrEmpty(b))
+        {
+            string[] p = b.Split(',');
+            int x0, y0, w0, h0;
+            if (p.Length == 4 && int.TryParse(p[0], out x0) && int.TryParse(p[1], out y0) && int.TryParse(p[2], out w0) && int.TryParse(p[3], out h0))
+            {
+                Rectangle r = new Rectangle(x0, y0, w0, h0);
+                foreach (Screen sc in Screen.AllScreens) if (sc.WorkingArea.IntersectsWith(r)) { Bounds = r; return; }
+            }
+        }
+        Screen target = Screen.PrimaryScreen;
+        foreach (Screen sc in Screen.AllScreens) if (!sc.Primary) { target = sc; break; }
+        Rectangle wa = target.WorkingArea;
+        int w = Math.Min((int)(460 * Ui.K), wa.Width - 40), h = Math.Min((int)(1000 * Ui.K), wa.Height - 40);
+        Bounds = new Rectangle(target.Primary ? wa.Right - w - 20 : wa.Left + (wa.Width - w) / 2, wa.Top + 20, w, h);
+    }
+
+    void SaveBounds()
+    {
+        if (WindowState != FormWindowState.Normal) return;
+        Dictionary<string, object> p = new Dictionary<string, object>();
+        p["companionBounds"] = Left + "," + Top + "," + Width + "," + Height;
+        Ui.Post("/settings", p);
+    }
+
+    public void ApplyTopmost(bool on) { if (TopMost != on) TopMost = on; }
+
+    /// <summary>테스트/미리보기용</summary>
+    bool frozen;
+    public void SetData(Dictionary<string, object> overlay, Dictionary<string, object> status) { ov = overlay; st = status; frozen = true; canvas.Invalidate(); }
+
+    void Poll()
+    {
+        if (!Visible || frozen) return;
+        bool changed = false;
+        string r1 = Ui.GetRaw("/overlay");
+        if (r1 != ovRaw) { ovRaw = r1; ov = Ui.Parse(r1); changed = true; Ui.Prefetch(ov); }
+        if (ticks++ % 6 == 0)
+        {
+            string r2 = Ui.GetRaw("/status");
+            if (r2 != stRaw) { stRaw = r2; st = Ui.Parse(r2); changed = true; ApplyTopmost(Ui.B(Ui.D(st, "settings"), "companionTopmost")); }
+        }
+        if (changed) canvas.Invalidate();
+    }
+
+    // ----- 그리기 -----
+    void Text1(Graphics g, string t, string weight, float px, Color c, float x, float y, float w)
+    {
+        using (Font f = Ui.F(weight, px)) using (SolidBrush b = new SolidBrush(c))
+        using (StringFormat sf = new StringFormat { Trimming = StringTrimming.EllipsisCharacter, FormatFlags = StringFormatFlags.NoWrap })
+            g.DrawString(t ?? "", f, b, new RectangleF(x, y, w, px * 1.45f), sf);
+    }
+    float Wrap(Graphics g, string t, string weight, float px, Color c, float x, float y, float w, int maxLines)
+    {
+        if (string.IsNullOrEmpty(t)) return y;
+        using (Font f = Ui.F(weight, px)) using (SolidBrush b = new SolidBrush(c))
+        using (StringFormat sf = new StringFormat { Trimming = StringTrimming.EllipsisWord })
+        {
+            SizeF sz = g.MeasureString(t, f, (int)w, sf);
+            float h = Math.Min(sz.Height, px * 1.45f * maxLines);
+            g.DrawString(t, f, b, new RectangleF(x, y, w, h), sf);
+            return y + h;
+        }
+    }
+    float Section(Graphics g, string title, float x, float y, float w, float s)
+    {
+        Text1(g, title, "Bold", 15 * s, Ui.Gold, x, y, w);
+        using (Pen p = new Pen(Color.FromArgb(60, Ui.Gold), 1f * s)) g.DrawLine(p, x, y + 24 * s, x + w, y + 24 * s);
+        return y + 32 * s;
+    }
+    float Box(Graphics g, string t, float x, float y, float w, float s, Color c)
+    {
+        RectangleF r = new RectangleF(x, y, w, 24 * s);
+        Ui.Fill(g, r, 7 * s, Color.FromArgb(40, c), Color.FromArgb(26, c));
+        Ui.Stroke(g, r, 7 * s, Color.FromArgb(150, c), 1f * s);
+        Text1(g, t, "SemiBold", 12.5f * s, c, x + 8 * s, y + 4 * s, w - 14 * s);
+        return y + 29 * s;
+    }
+
+    void PaintAll(Graphics g)
+    {
+        g.SmoothingMode = SmoothingMode.AntiAlias; g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+        g.TranslateTransform(canvas.AutoScrollPosition.X, canvas.AutoScrollPosition.Y);
+        float W = canvas.ClientSize.Width;
+        float s = W / 440f;
+        float pad = 18 * s, x = pad, w = W - pad * 2, y = pad;
+
+        // 맨 위: 아이콘 + 제목 + 세팅 상태
+        using (Icon ic = Ui.MakeIcon(s * 40 > 40 ? 128 : 48)) using (Bitmap ib = ic.ToBitmap()) { g.InterpolationMode = InterpolationMode.HighQualityBicubic; g.DrawImage(ib, new RectangleF(x, y, 40 * s, 40 * s)); }
+        Text1(g, "아수라장 코치", "ExtraBold", 20 * s, Ui.GoldLight, x + 50 * s, y - 2 * s, w - 50 * s);
+        Dictionary<string, object> setup = Ui.D(st, "setup");
+        string sState = Ui.S(setup, "state") ?? (st == null ? "연결 안 됨" : "대기");
+        string step = Ui.S(setup, "step");
+        Color sc = sState == "완료" ? Ui.Green : sState == "실패" || st == null ? Ui.Amber : Ui.Sub;
+        Text1(g, "실시간 · AI 세팅 " + sState + (string.IsNullOrEmpty(step) ? "" : " · " + step), "Medium", 12 * s, sc, x + 50 * s, y + 24 * s, w - 50 * s);
+        y += 54 * s;
+
+        // 이번 판
+        Dictionary<string, object> plan = Ui.D(st, "plan");
+        bool inGame = Ui.B(st, "inGame");
+        y = Section(g, "이번 판", x, y, w, s);
+        string champ = Ui.S(st, "champion") ?? Ui.S(plan, "champion");
+        string ev = Ui.S(st, "event");
+        Text1(g, inGame ? (champ ?? "게임 중") + (ev != null ? "  ·  이벤트: " + ev : "") : "대기 중 · 게임이 시작되면 자동으로 분석해요", "SemiBold", 15 * s, inGame ? Ui.Text : Ui.Sub, x, y, w);
+        y += 24 * s;
+        if (plan != null) y = Wrap(g, Ui.S(plan, "strategy"), "Regular", 12.5f * s, Color.FromArgb(190, 198, 208), x, y, w, 4) + 8 * s;
+        y += 10 * s;
+
+        // 증강 선택
+        y = Section(g, "증강 선택", x, y, w, s);
+        ArrayList cards = Ui.B(ov, "show") ? Ui.A(ov, "cards") : null;
+        if (cards != null && cards.Count > 0)
+        {
+            bool hasPlan = Ui.B(ov, "hasPlan");
+            if (!hasPlan) { y = Box(g, Ui.S(ov, "setupState") == "진행 중" ? "AI가 분석 중이에요 · 잠시 후 점수가 떠요" : "점수표가 없어요 · 트레이 > 다시 세팅", x, y, w, s, Ui.Amber); }
+            foreach (object o in cards) y = DrawCardRow(g, o as Dictionary<string, object>, x, y, w, s, hasPlan) + 8 * s;
+        }
+        else
+        {
+            Text1(g, "선택지가 뜨면 여기에 바로 표시돼요", "Medium", 13 * s, Ui.Sub, x, y, w);
+            y += 22 * s;
+            ArrayList picks = Ui.A(st, "picks");
+            if (picks != null && picks.Count > 0) y = Wrap(g, "고른 증강: " + string.Join(", ", picks.ToArray()), "Medium", 12.5f * s, Ui.Text, x, y, w, 3);
+            y += 6 * s;
+        }
+        y += 10 * s;
+
+        // 다음 아이템
+        y = Section(g, "다음 아이템", x, y, w, s);
+        Dictionary<string, object> it = Ui.D(ov, "items");
+        ArrayList next = Ui.A(it, "next");
+        if (next == null || next.Count == 0) { Text1(g, inGame ? "AI 세팅이 끝나면 추천이 떠요" : "게임 중에 표시돼요", "Medium", 13 * s, Ui.Sub, x, y, w); y += 24 * s; }
+        else
+        {
+            double gold = Ui.N(it, "gold", 0);
+            if (Ui.B(it, "dead"))
+            {
+                double rs = Ui.N(it, "respawnIn", 0);
+                y = Box(g, "지금 상점에서 사세요" + (rs > 0 ? " · 부활 " + ((int)rs) + "초" : ""), x, y, w, s, Ui.Amber);
+            }
+            Text1(g, "보유 " + ((int)gold).ToString("N0") + " G  ·  " + (Ui.B(it, "busy") ? "AI 다시 고르는 중…" : Ui.S(it, "source") ?? ""), "Medium", 12 * s, Ui.Sub, x, y, w);
+            y += 22 * s;
+            for (int i = 0; i < next.Count; i++)
+            {
+                Dictionary<string, object> o = next[i] as Dictionary<string, object>;
+                RectangleF ic = new RectangleF(x, y, 46 * s, 46 * s);
+                Image im = Ui.IconFor(Ui.S(o, "icon"));
+                if (im != null) { g.InterpolationMode = InterpolationMode.HighQualityBicubic; g.DrawImage(im, ic); }
+                else Ui.Fill(g, ic, 6 * s, Color.FromArgb(40, 52, 64), Color.FromArgb(30, 40, 50));
+                Ui.Stroke(g, ic, 6 * s, i == 0 ? Ui.Gold : Color.FromArgb(70, 84, 98), (i == 0 ? 2f : 1f) * s);
+                float tx = ic.Right + 12 * s;
+                Text1(g, (i + 1) + ". " + Ui.S(o, "name"), i == 0 ? "Bold" : "SemiBold", (i == 0 ? 16 : 15) * s, i == 0 ? Ui.Text : Color.FromArgb(205, 210, 218), tx, y + 2 * s, x + w - tx);
+                double price = Ui.N(o, "gold", -1);
+                if (price > 0)
+                {
+                    bool ok = gold >= price;
+                    Text1(g, ((int)price).ToString("N0") + " G" + (ok ? " · 살 수 있어요" : " · " + ((int)(price - gold)).ToString("N0") + " 부족"), "Medium", 12.5f * s, ok ? Ui.Green : Ui.Sub, tx, y + 26 * s, x + w - tx);
+                }
+                y += 56 * s;
+            }
+            string now = Ui.S(it, "now"), why = Ui.S(it, "why");
+            if (!string.IsNullOrEmpty(now)) y = Box(g, "지금: " + now, x, y, w, s, Ui.Green);
+            if (!string.IsNullOrEmpty(why)) y = Wrap(g, why, "Regular", 12.5f * s, Ui.Sub, x, y + 2 * s, w, 2);
+        }
+        y += pad;
+        int total = (int)(y - canvas.AutoScrollPosition.Y);
+        if (Math.Abs(canvas.AutoScrollMinSize.Height - total) > 4) canvas.AutoScrollMinSize = new Size(0, total);
+    }
+
+    float DrawCardRow(Graphics g, Dictionary<string, object> c, float x, float y, float w, float s, bool hasPlan)
+    {
+        string grade = hasPlan ? (Ui.S(c, "grade") ?? "?") : "?";
+        bool pick = Ui.B(c, "isPick");
+        double score = Ui.N(c, "score", -1);
+        string reason = Ui.S(c, "reason"), style = Ui.S(c, "style"), sticker = Ui.S(c, "sticker"), reroll = Ui.S(c, "rerollHint");
+        ArrayList notes = Ui.A(c, "notes");
+        float pad = 12 * s;
+        int extra = (notes != null ? notes.Count : 0) + (sticker != null ? 1 : 0) + (reroll != null ? 1 : 0);
+        float h = pad + 46 * s + 8 * s + 6 * s + 8 * s + (string.IsNullOrEmpty(reason) ? 0 : 22 * s) + extra * 29 * s + pad - 8 * s;
+        RectangleF r = new RectangleF(x, y, w, h);
+        Color[] gc = Ui.GradeColors(grade);
+        Ui.Fill(g, r, 12 * s, Color.FromArgb(22, 32, 42), Color.FromArgb(12, 18, 24));
+        Ui.Stroke(g, r, 12 * s, pick ? Ui.Gold : Color.FromArgb(48, 60, 72), pick ? 2.2f * s : 1.2f * s);
+        RectangleF badge = new RectangleF(r.X + pad, r.Y + pad, 46 * s, 46 * s);
+        Ui.Fill(g, badge, 10 * s, gc[0], gc[1]);
+        using (Font bf = Ui.F("ExtraBold", (grade.Length > 1 ? 21 : 25) * s)) using (SolidBrush wb = new SolidBrush(Color.White))
+        using (StringFormat sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
+            g.DrawString(grade, bf, wb, new RectangleF(badge.X, badge.Y + 1 * s, badge.Width, badge.Height), sf);
+        float tx = badge.Right + 12 * s, tw = r.Right - pad - tx;
+        string slot = Ui.S(c, "slot");
+        float nameX = tx;
+        if (pick)
+        {
+            using (Font rf = Ui.F("ExtraBold", 11.5f * s))
+            {
+                SizeF sz = g.MeasureString("1순위", rf);
+                RectangleF rb = new RectangleF(tx, r.Y + pad + 1 * s, sz.Width + 12 * s, sz.Height + 4 * s);
+                Ui.Fill(g, rb, rb.Height, Ui.GoldLight, Ui.Gold);
+                using (SolidBrush tb = new SolidBrush(Color.FromArgb(30, 26, 18))) g.DrawString("1순위", rf, tb, rb.X + 6 * s, rb.Y + 2 * s);
+                nameX = rb.Right + 8 * s;
+            }
+        }
+        Text1(g, Ui.S(c, "name"), "Bold", 17 * s, Ui.Text, nameX, r.Y + pad - 2 * s, r.Right - pad - nameX);
+        string meta = (score >= 0 && hasPlan ? ((int)score) + "/100 · " + Ui.GradeWord(grade) : "점수 없음") + (slot != null ? "  ·  " + slot : "") + (!string.IsNullOrEmpty(style) ? "  ·  → " + style : "");
+        Text1(g, meta, "Medium", 12.5f * s, hasPlan ? gc[0] : Ui.Sub, tx, r.Y + pad + 26 * s, tw);
+        float by = r.Y + pad + 46 * s + 8 * s;
+        RectangleF bar = new RectangleF(r.X + pad, by, r.Width - pad * 2, 6 * s);
+        Ui.Fill(g, bar, bar.Height, Color.FromArgb(34, 44, 54), Color.FromArgb(28, 36, 44));
+        if (score > 0 && hasPlan)
+        {
+            RectangleF fill = new RectangleF(bar.X, bar.Y, Math.Max(bar.Height, bar.Width * (float)(score / 100.0)), bar.Height);
+            using (GraphicsPath fp = Ui.Round(fill, bar.Height)) using (LinearGradientBrush lb = new LinearGradientBrush(fill, gc[1], gc[0], 0f)) g.FillPath(lb, fp);
+        }
+        float yy = bar.Bottom + 8 * s;
+        if (!string.IsNullOrEmpty(reason)) { Text1(g, reason, "Medium", 13.5f * s, Color.FromArgb(214, 218, 224), r.X + pad, yy, r.Width - pad * 2); yy += 22 * s; }
+        if (notes != null) foreach (object n in notes) yy = Box(g, n.ToString(), r.X + pad, yy, r.Width - pad * 2, s, Ui.Green);
+        if (sticker != null) yy = Box(g, "HEARTSTEEL · " + sticker, r.X + pad, yy, r.Width - pad * 2, s, Ui.Pink);
+        if (reroll != null) yy = Box(g, reroll, r.X + pad, yy, r.Width - pad * 2, s, Ui.Amber);
+        return r.Bottom;
+    }
+}
+
 // ---------- 트레이 (프로그램 모드) ----------
 public class TrayApp : ApplicationContext
 {
     readonly NotifyIcon icon = new NotifyIcon();
     readonly AramOverlay overlay;
     readonly SettingsForm settings;
+    CompanionForm companion;
+    string companionOpenedFor = "";
     readonly Timer status = new Timer();
     readonly ToolStripMenuItem statusItem = new ToolStripMenuItem("상태 확인 중…") { Enabled = false };
     readonly ToolStripMenuItem overlayItem = new ToolStripMenuItem("오버레이 표시") { Checked = true };
@@ -799,12 +1099,14 @@ public class TrayApp : ApplicationContext
     {
         overlay = ov;
         settings = new SettingsForm(exePath, version);
+        Ui.OpenCompanion = delegate { ShowCompanion(); };
         icon.Icon = Ui.MakeIcon();
         icon.Text = "아수라장 코치";
         ContextMenuStrip m = new ContextMenuStrip();
         m.Font = Ui.F("Medium", 13 * Ui.K);
         m.Items.Add(statusItem);
         m.Items.Add(new ToolStripSeparator());
+        m.Items.Add("실시간 보조 창 열기 (두 번째 모니터)", null, delegate { ShowCompanion(); });
         m.Items.Add("설정 열기", null, delegate { ShowSettings(); });
         overlayItem.Click += delegate { overlayItem.Checked = !overlayItem.Checked; overlay.UserHidden = !overlayItem.Checked; };
         m.Items.Add(overlayItem);
@@ -819,12 +1121,21 @@ public class TrayApp : ApplicationContext
         status.Interval = 3000; status.Tick += delegate { UpdateStatus(); }; status.Start();
     }
 
+    public void ShowCompanion()
+    {
+        if (companion == null) companion = new CompanionForm();
+        companion.Show(); if (companion.WindowState == FormWindowState.Minimized) companion.WindowState = FormWindowState.Normal;
+    }
+
     void ShowSettings() { settings.Show(); settings.WindowState = FormWindowState.Normal; settings.Activate(); }
 
     void UpdateStatus()
     {
         Dictionary<string, object> st = Ui.Get("/status");
         if (st == null) { statusItem.Text = "프로그램 서버 연결 안 됨"; return; }
+        // 게임이 시작되면 보조 창 자동으로 열기 (설정에서 켠 경우, 판마다 한 번)
+        string gk = Ui.S(st, "gameKey") ?? "";
+        if (Ui.B(st, "inGame") && Ui.B(Ui.D(st, "settings"), "companionAuto") && gk != companionOpenedFor) { companionOpenedFor = gk; ShowCompanion(); }
         Dictionary<string, object> setup = Ui.D(st, "setup");
         string s = (Ui.B(st, "inGame") ? "게임 중" : "대기 중") + " · AI 세팅: " + (Ui.S(setup, "state") ?? "대기");
         statusItem.Text = s;

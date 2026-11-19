@@ -12,6 +12,9 @@ export const DEFAULTS = {
   overlayScale: 1.0,     // 오버레이 크기 배율 (0.7 ~ 1.5)
   overlayOffsetY: 0,     // 세로 위치 보정 (화면 높이 % 단위, -5 ~ +5)
   autostart: false,      // 윈도우 시작 시 실행
+  companionAuto: false,  // 게임 시작 시 실시간 보조 창 자동으로 열기 (두 번째 모니터용)
+  companionTopmost: false, // 보조 창 항상 위
+  companionBounds: "",   // 보조 창 위치·크기 "x,y,w,h" (옮기면 자동 저장)
 };
 
 let cache = null;
