@@ -6,7 +6,7 @@ import { execFile, spawn } from "node:child_process";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { promisify } from "node:util";
-import { augments, championDetail, damageProfile, findChampion } from "./data.js";
+import { augments, championDetail, damageProfile, findChampion, searchItems } from "./data.js";
 import { APP_DIR } from "./paths.js";
 import { savePlan } from "./plan.js";
 import { getSettings } from "./settings.js";
@@ -233,6 +233,38 @@ export async function onGameStart(gameKey, live, { force = false } = {}) {
   running.set(key, p);
   p.finally(() => running.delete(key));
   return p;
+}
+
+// ---------- 템 추천 (게임 중, 죽을 때마다 다시) ----------
+export const items = { next: [], now: "", why: "", at: 0, engine: null, state: "대기", busy: false };
+
+/** 지금 상황(내 아이템·골드, 적 아이템·KDA, 고른 증강, 이번 판 빌드)으로 다음 아이템을 AI에게 물어봅니다. */
+export async function adviseItems(live, { plan, picks = [] } = {}) {
+  if (items.busy || !live?.inGame) return items;
+  const engine = await pickEngine();
+  if (!engine) return items;
+  items.busy = true; items.state = "진행 중";
+  try {
+    const me = live.me;
+    const enemyText = live.enemies.map((e) => `${e.champion}(${e.kda}, 템:${e.items.map((i) => i.name).filter((n) => n !== "포로 간식").join("/") || "없음"})`).join(", ");
+    const prompt = `리그 오브 레전드 '무작위 총력전: 아수라장' 아이템 코치야. 도구 쓰지 말고 JSON만 출력해.
+내 챔피언: ${me.champion} 레벨 ${me.level}, KDA ${me.kda}, 보유 골드 ${me.currentGold}
+내 아이템: ${me.items.map((i) => i.name).filter((n) => n !== "포로 간식").join(", ") || "없음"}
+고른 증강: ${picks.join(", ") || "없음"}
+이번 판 계획 빌드: ${plan?.build ? [...(plan.build.core || []), ...(plan.build.situational || []).map((s) => `${s.when}→${s.item}`)].join(", ") : "없음"}
+아군: ${live.allies.map((a) => `${a.champion}(${a.kda})`).join(", ")}
+적: ${enemyText}
+적 피해 성향: ${live.enemyAnalysis?.leaningDamage}, 성장한 적: ${(live.enemyAnalysis?.fed || []).join(", ") || "없음"}
+지금 상황에 맞는 다음 완성 아이템 3개(순서대로, 칼바람 상점에 있는 정확한 한글 이름)와 지금 골드로 바로 살 것(부품 포함)을 알려줘.
+{"next":["아이템1","아이템2","아이템3"],"now":"지금 살 것","why":"30자 이내 이유"}`;
+    const shop = (await searchItems({ completedOnly: true, limit: 300 })).map((i) => i.name).join(", ");
+    const r = await askAI(engine, prompt + `
+아이템 이름은 반드시 이 목록에서 정확히 골라: ${shop}`);
+    Object.assign(items, { next: (r.next || []).slice(0, 3), now: r.now || "", why: r.why || "", at: Date.now(), engine: engine.name, state: "완료" });
+  } catch (e) {
+    items.state = "실패";
+  } finally { items.busy = false; }
+  return items;
 }
 
 export function cancelAutoSetup() {

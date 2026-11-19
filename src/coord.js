@@ -5,11 +5,12 @@ import http from "node:http";
 import { spawn } from "node:child_process";
 import { addPick, loadPicks, loadPlan, resetPicks, scoreOffer } from "./plan.js";
 import { currentGameKey, liveGame } from "./live.js";
-import { champSelect, loadingGame } from "./lcu.js";
+import { champSelect, gameWindowMode, loadingGame } from "./lcu.js";
 import { startWatcher, stopWatcher, state as watch } from "./watcher.js";
 import { APP_VERSION, IS_EXE, ensureResources, resPath } from "./paths.js";
 import { getSettings, updateSettings } from "./settings.js";
-import { cancelAutoSetup, detectEngines, onGameStart, prepareChampion, setup } from "./autosetup.js";
+import { adviseItems, cancelAutoSetup, detectEngines, items as itemAdvice, onGameStart, prepareChampion, setup } from "./autosetup.js";
+import { findItem, version } from "./data.js";
 import { uninstall } from "./install.js";
 import { update } from "./update.js";
 
@@ -26,7 +27,8 @@ async function overlayState() {
   const o = watch.offer;
   const onScreen = o && Date.now() - o.lastSeenAt < 3500;
   const lastPick = coord.lastPick && Date.now() - coord.lastPick.at < 6000 ? coord.lastPick : null;
-  const common = { enabled: s.overlay, scale: s.overlayScale, offsetY: s.overlayOffsetY, lastPick, setupState: setup.state, setupEngine: setup.engine };
+  const common = { enabled: s.overlay, scale: s.overlayScale, offsetY: s.overlayOffsetY, lastPick, setupState: setup.state, setupEngine: setup.engine,
+    fullscreen: coord.windowMode === 0, items: coord.itemsView && coord.inGame ? { ...coord.itemsView, show: coord.itemsView.dead || Date.now() < coord.affordUntil } : null };
   if (!onScreen) return { show: false, ...common };
   const scored = await scoreOffer(o, { event: watch.event, gameKey: coord.gameKey });
   return { show: true, ...scored, event: watch.event?.name || null, ...common };
@@ -45,6 +47,7 @@ async function statusState() {
       ? { source: plan.source, champion: plan.champion, strategy: plan.strategy, build: plan.build, top }
       : null,
     picks: picks.map((p) => p.name),
+    items: coord.inGame ? coord.itemsView || null : null,
     offer: watch.offer && Date.now() - watch.offer.lastSeenAt < 3500 ? (await scoreOffer(watch.offer, { event: watch.event, gameKey: coord.gameKey }))?.cards.map((c) => `${c.name} ${c.grade}${c.score ?? ""}${c.isPick ? " ★" : ""}`) : [],
     engines: await detectEnginesCached(),
     settings: await getSettings(),
@@ -123,7 +126,8 @@ async function settlePick() {
 /** 새 게임 시작: (프로그램 모드면) AI 자동 세팅. 점수는 AI만 정합니다 (AI 세팅 전엔 오버레이에 "AI 분석 중") */
 async function onNewGame(key) {
   watch.event = null; watch.offer = null; watch.history = [];
-  coord.lastPick = null;
+  coord.lastPick = null; coord.itemsView = null; coord.affordUntil = 0;
+  Object.assign(itemAdvice, { next: [], now: "", why: "", at: 0, state: "대기" });
   await resetPicks(key);
   const live = await liveGame(EMPTY_MEMORY).catch(() => null);
   coord.champion = live?.me?.champion || null;
@@ -157,6 +161,46 @@ async function pollGameOnce() {
   if (!key && coord.inGame) { coord.inGame = false; cancelAutoSetup(); }
 }
 
+// ---------- 템 추천: 3초마다 내 상태 확인 → 죽으면 AI에게 다시 묻고, 다음 템 골드가 모이면 잠깐 알림 ----------
+coord.affordUntil = 0;
+let wasDead = false, lastAdviceAt = 0, lastAffordName = null, itemTicking = false;
+async function itemTick() {
+  if (itemTicking || !coord.inGame) return;
+  itemTicking = true;
+  try {
+    coord.windowMode = await gameWindowMode();
+    const live = await liveGame(EMPTY_MEMORY).catch(() => null);
+    if (!live?.inGame) return;
+    const plan = await loadPlan();
+    const picks = (await loadPicks(coord.gameKey)).map((p) => p.name);
+    const dead = Boolean(live.me.dead);
+    const needAdvice = coord.isApp && Date.now() - lastAdviceAt > 45000 &&
+      ((dead && !wasDead) || (!itemAdvice.at && setup.state === "완료"));
+    wasDead = dead;
+    if (needAdvice) { lastAdviceAt = Date.now(); adviseItems(live, { plan: plan && plan.gameKey === coord.gameKey ? plan : null, picks }); }
+    // 보여줄 목록: AI 추천(최근 것) → 없으면 이번 판 계획 빌드
+    const owned = new Set(live.me.items.map((i) => String(i.id)));
+    const useAI = itemAdvice.at && Date.now() - itemAdvice.at < 10 * 60000;
+    const names = useAI ? itemAdvice.next : (plan?.gameKey === coord.gameKey ? plan.build?.core || [] : []);
+    const v = await version();
+    const next = [];
+    for (const n of names) {
+      const it = await findItem(n);
+      if (it && owned.has(String(it.id))) continue;
+      next.push({ name: it?.name || n, id: it?.id || null, gold: it?.gold?.total ?? null, icon: it ? `https://ddragon.leagueoflegends.com/cdn/${v}/img/item/${it.id}.png` : null });
+      if (next.length >= 3) break;
+    }
+    const gold = live.me.currentGold;
+    const first = next[0];
+    if (first && first.gold && gold >= first.gold && lastAffordName !== first.name) { lastAffordName = first.name; coord.affordUntil = Date.now() + 8000; }
+    coord.itemsView = {
+      next, gold, dead, respawnIn: live.me.respawnIn || null,
+      now: useAI ? itemAdvice.now : "", why: useAI ? itemAdvice.why : (plan?.strategy ? "이번 판 계획 빌드" : ""),
+      source: useAI ? `AI · ${Math.round((Date.now() - itemAdvice.at) / 1000)}초 전` : "이번 판 계획", busy: itemAdvice.busy,
+    };
+  } finally { itemTicking = false; }
+}
+
 function startOverlay() {
   if (process.env.LOL_OVERLAY === "0") return;
   leader.overlayStopped = false;
@@ -184,7 +228,7 @@ function becomeLeader() {
       await ensureResources();
       startWatcher();
       startOverlay();
-      leader.timers = [setInterval(settlePick, 300), setInterval(pollGame, 1500)];
+      leader.timers = [setInterval(settlePick, 300), setInterval(pollGame, 1500), setInterval(itemTick, 3000)];
       leader.timers.forEach((t) => t.unref());
       pollGame();
       resolve(true);

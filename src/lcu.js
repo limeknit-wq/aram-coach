@@ -38,6 +38,24 @@ async function lcuGet(path) {
   });
 }
 
+/** 롤 화면 모드 (game.cfg WindowMode: 0=전체 화면, 1=창, 2=테두리 없음). 모르면 null. 30초 캐시. */
+let winMode = { at: 0, v: null };
+export async function gameWindowMode() {
+  if (Date.now() - winMode.at < 30000) return winMode.v;
+  winMode.at = Date.now();
+  try {
+    const { stdout } = await run("powershell.exe", ["-NoProfile", "-Command",
+      "(Get-CimInstance Win32_Process -Filter \"Name='LeagueClient.exe'\" | Select-Object -First 1).ExecutablePath"], { windowsHide: true, timeout: 8000 });
+    const exe = stdout.trim();
+    if (!exe) return winMode.v;
+    const { readFile } = await import("node:fs/promises");
+    const cfg = await readFile(exe.replace(/[^\\/]+$/, "Config\\game.cfg"), "utf8");
+    const m = cfg.match(/^WindowMode=(\d)/m);
+    winMode.v = m ? Number(m[1]) : null;
+  } catch {}
+  return winMode.v;
+}
+
 /** 게임 구별 키: 10명 챔피언 id(영문) 조합. 로딩 화면(LCU)과 게임 중(Live API) 모두 같은 값이 나옵니다. */
 export function keyFromChampionIds(ids) {
   let h = 0;

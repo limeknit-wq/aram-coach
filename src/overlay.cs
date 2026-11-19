@@ -58,14 +58,16 @@ public static class Ui
         return new Font("Malgun Gothic", px, weight == "Regular" || weight == "Medium" ? FontStyle.Regular : FontStyle.Bold, GraphicsUnit.Pixel);
     }
 
-    public static Dictionary<string, object> Get(string path)
+    public static string GetRaw(string path)
     {
-        try
-        {
-            using (WebClient wc = new WebClient()) { wc.Encoding = Encoding.UTF8; return json.Deserialize<Dictionary<string, object>>(wc.DownloadString(BaseUrl + path)); }
-        }
+        try { using (WebClient wc = new WebClient()) { wc.Encoding = Encoding.UTF8; return wc.DownloadString(BaseUrl + path); } }
         catch { return null; }
     }
+    public static Dictionary<string, object> Parse(string raw)
+    {
+        try { return raw == null ? null : json.Deserialize<Dictionary<string, object>>(raw); } catch { return null; }
+    }
+    public static Dictionary<string, object> Get(string path) { return Parse(GetRaw(path)); }
     public static Dictionary<string, object> Post(string path, object body)
     {
         try
@@ -177,7 +179,9 @@ public class AramOverlay : Form
     readonly Timer poll = new Timer(), mouse = new Timer();
     Dictionary<string, object> data;
     Rectangle game = Rectangle.Empty;
-    bool wasDown;
+    bool wasDown, tabDown;
+    string lastRaw;
+    bool dirty;
     public bool UserHidden;
     static readonly Color Key = Color.FromArgb(1, 2, 3);
 
@@ -218,25 +222,54 @@ public class AramOverlay : Form
         return game.Width > 200 && game.Height > 200;
     }
 
+    /// <summary>아이템 패널을 지금 보여줄지: 죽어 있을 때 / 다음 템 살 골드가 모였을 때(서버 판단) / Tab 누르고 있을 때</summary>
+    readonly Dictionary<string, Image> icons = new Dictionary<string, Image>();
+    void PrefetchIcons()
+    {
+        Dictionary<string, object> it = Ui.D(data, "items");
+        ArrayList next = Ui.A(it, "next");
+        if (next == null) return;
+        foreach (object o in next)
+        {
+            string url = Ui.S(o as Dictionary<string, object>, "icon");
+            if (url == null || icons.ContainsKey(url)) continue;
+            try { using (WebClient wc = new WebClient()) using (MemoryStream ms = new MemoryStream(wc.DownloadData(url))) icons[url] = new Bitmap(Image.FromStream(ms)); dirty = true; }
+            catch { icons[url] = null; }
+        }
+    }
+
+    bool ItemsVisible()
+    {
+        Dictionary<string, object> it = Ui.D(data, "items");
+        if (it == null || Ui.A(it, "next") == null || Ui.A(it, "next").Count == 0) return false;
+        return Ui.B(it, "show") || tabDown;
+    }
+
     void Tick()
     {
         bool front = FindGame();
-        data = Ui.Get("/overlay");
+        string raw = Ui.GetRaw("/overlay");
+        if (raw != lastRaw) { lastRaw = raw; data = Ui.Parse(raw); dirty = true; PrefetchIcons(); }
         bool enabled = data != null && (!data.ContainsKey("enabled") || Ui.B(data, "enabled"));
-        bool show = !UserHidden && enabled && front && data != null && (Ui.B(data, "show") || Ui.D(data, "lastPick") != null);
+        // 전체 화면(독점) 모드에서는 창을 띄우면 게임이 깜빡이고 어차피 가려지므로 띄우지 않습니다
+        bool fullscreen = data != null && Ui.B(data, "fullscreen");
+        bool show = !UserHidden && enabled && !fullscreen && front && data != null && (Ui.B(data, "show") || Ui.D(data, "lastPick") != null || ItemsVisible());
         if (show)
         {
-            if (Bounds != game) Bounds = game;
-            if (!Visible) Show();
-            Invalidate();
+            if (Bounds != game) { Bounds = game; dirty = true; }
+            if (!Visible) { Show(); dirty = true; }
+            if (dirty) { Invalidate(); dirty = false; }
         }
         else if (Visible) Hide();
     }
 
     void CheckClick()
     {
+        bool tab = (GetAsyncKeyState(0x09) & 0x8000) != 0;
+        if (tab != tabDown) { tabDown = tab; dirty = true; }
         bool down = (GetAsyncKeyState(0x01) & 0x8000) != 0;
-        if (down && !wasDown && Visible && data != null && Ui.B(data, "show"))
+        // 클릭 기록은 창이 안 보여도(전체 화면) 게임이 앞에 있고 선택지가 떠 있으면 동작
+        if (down && !wasDown && data != null && Ui.B(data, "show") && FindGame())
         {
             POINT p; GetCursorPos(out p);
             if (game.Contains(p.X, p.Y))
@@ -291,6 +324,8 @@ public class AramOverlay : Form
 
         Dictionary<string, object> lastPick = Ui.D(data, "lastPick");
         if (lastPick != null) Pill(g, "고른 증강 기록됨 · " + Ui.S(lastPick, "name"), W / 2, H * 0.045f + offY, s, Ui.Green, Color.FromArgb(160, Ui.Green));
+        // 증강 선택 중에는 카드가 우선 (아이템 패널은 Tab 누를 때만)
+        if (ItemsVisible() && (!Ui.B(data, "show") || tabDown)) DrawItems(g, W, H, s);
         if (!Ui.B(data, "show")) return;
         ArrayList cards = Ui.A(data, "cards");
         if (cards == null || cards.Count == 0) return;
@@ -331,6 +366,66 @@ public class AramOverlay : Form
             if (!hasPlan) { DrawWaiting(g, xs[i] * W - pw / 2, bottomY, pw, s, setupState == "진행 중"); continue; }
             DrawCard(g, c, xs[i] * W - pw / 2, bottomY, pw, s);
         }
+    }
+
+    /// <summary>오른쪽 "다음 아이템" 패널 (죽었을 때 / 골드 모였을 때 / Tab)</summary>
+    void DrawItems(Graphics g, float W, float H, float s)
+    {
+        Dictionary<string, object> it = Ui.D(data, "items");
+        ArrayList next = Ui.A(it, "next");
+        double gold = Ui.N(it, "gold", 0);
+        bool dead = Ui.B(it, "dead");
+        string now = Ui.S(it, "now"), why = Ui.S(it, "why"), src = Ui.S(it, "source");
+        float pad = 14 * s, rowH = 52 * s;
+        float w = Math.Min(W * 0.2f, 380 * s);
+        float h = pad + 26 * s + (dead ? 24 * s : 0) + next.Count * rowH + (string.IsNullOrEmpty(now) ? 0 : 30 * s) + (string.IsNullOrEmpty(why) ? 0 : 24 * s) + pad;
+        RectangleF r = new RectangleF(W - w - W * 0.012f, H * 0.2f, w, h);
+        Ui.Fill(g, r, 14 * s, Color.FromArgb(240, 22, 32, 42), Color.FromArgb(240, 11, 17, 23));
+        Ui.Stroke(g, r, 14 * s, Ui.Gold, 1.6f * s);
+        float y = r.Y + pad;
+        using (Font hf = Ui.F("Bold", 16 * s)) using (SolidBrush hb = new SolidBrush(Ui.GoldLight)) g.DrawString("다음 아이템", hf, hb, r.X + pad, y - 2 * s);
+        if (src != null) using (Font sf = Ui.F("Medium", 11.5f * s)) using (SolidBrush sb = new SolidBrush(Ui.Sub))
+        {
+            string t = Ui.B(it, "busy") ? "AI 다시 고르는 중…" : src;
+            SizeF sz = g.MeasureString(t, sf);
+            g.DrawString(t, sf, sb, r.Right - pad - sz.Width, y + 2 * s);
+        }
+        y += 26 * s;
+        if (dead)
+        {
+            double rs = Ui.N(it, "respawnIn", 0);
+            using (Font df = Ui.F("SemiBold", 13 * s)) using (SolidBrush db = new SolidBrush(Ui.Amber))
+                g.DrawString("지금 상점에서 사세요" + (rs > 0 ? " · 부활 " + ((int)rs) + "초" : ""), df, db, r.X + pad, y);
+            y += 24 * s;
+        }
+        for (int i = 0; i < next.Count; i++)
+        {
+            Dictionary<string, object> o = next[i] as Dictionary<string, object>;
+            string url = Ui.S(o, "icon");
+            RectangleF ic = new RectangleF(r.X + pad, y + 4 * s, 42 * s, 42 * s);
+            Image im; if (url != null && icons.TryGetValue(url, out im) && im != null) { g.InterpolationMode = InterpolationMode.HighQualityBicubic; g.DrawImage(im, ic); }
+            else Ui.Fill(g, ic, 6 * s, Color.FromArgb(40, 52, 64), Color.FromArgb(30, 40, 50));
+            Ui.Stroke(g, ic, 6 * s, i == 0 ? Ui.Gold : Color.FromArgb(70, 84, 98), (i == 0 ? 2f : 1f) * s);
+            float tx = ic.Right + 10 * s;
+            using (Font nf = Ui.F(i == 0 ? "Bold" : "SemiBold", (i == 0 ? 15 : 14) * s)) using (SolidBrush nb = new SolidBrush(i == 0 ? Ui.Text : Color.FromArgb(200, 206, 214)))
+            using (StringFormat sfm = new StringFormat { Trimming = StringTrimming.EllipsisCharacter, FormatFlags = StringFormatFlags.NoWrap })
+                g.DrawString((i + 1) + ". " + Ui.S(o, "name"), nf, nb, new RectangleF(tx, y + 4 * s, r.Right - pad - tx, 22 * s), sfm);
+            double price = Ui.N(o, "gold", -1);
+            if (price > 0)
+                using (Font pf = Ui.F("Medium", 12 * s))
+                {
+                    bool ok = gold >= price;
+                    string t = ((int)price).ToString("N0") + " G" + (ok ? " · 살 수 있어요" : " · " + ((int)(price - gold)).ToString("N0") + " 부족");
+                    using (SolidBrush pb = new SolidBrush(ok ? Ui.Green : Ui.Sub)) g.DrawString(t, pf, pb, tx, y + 27 * s);
+                }
+            y += rowH;
+        }
+        RectangleF inner = new RectangleF(r.X + pad, y, r.Width - pad * 2, 22 * s);
+        if (!string.IsNullOrEmpty(now)) { y = Callout(g, "지금: " + now, inner, y, s, Ui.Green); }
+        if (!string.IsNullOrEmpty(why))
+            using (Font wf = Ui.F("Medium", 12 * s)) using (SolidBrush wb = new SolidBrush(Ui.Sub))
+            using (StringFormat sfm = new StringFormat { Trimming = StringTrimming.EllipsisCharacter, FormatFlags = StringFormatFlags.NoWrap })
+                g.DrawString(why, wf, wb, new RectangleF(r.X + pad, y + 2 * s, r.Width - pad * 2, 20 * s), sfm);
     }
 
     void DrawWaiting(Graphics g, float x, float bottom, float w, float s, bool running)
@@ -489,7 +584,7 @@ public class SettingsForm : Form
         }
         body.Dock = DockStyle.Fill; body.AutoScroll = true; body.Padding = new Padding(0); body.HorizontalScroll.Enabled = false; body.HorizontalScroll.Visible = false; body.BackColor = Ui.Bg;
         Controls.Add(body); Controls.Add(head);
-        refresh.Interval = 1500; refresh.Tick += delegate { if (tab == "game") Rebuild(); }; refresh.Start();
+        refresh.Interval = 1500; refresh.Tick += delegate { if (tab == "game" && Visible) { string raw = Ui.GetRaw("/status"); if (raw != lastStatus) Rebuild(); } }; refresh.Start();
         Load += delegate { try { int on = 1; DwmSetWindowAttribute(Handle, 20, ref on, 4); } catch { } Rebuild(); };
         FormClosing += delegate (object o, FormClosingEventArgs e) { if (e.CloseReason == CloseReason.UserClosing) { e.Cancel = true; Hide(); } };
     }
@@ -524,11 +619,16 @@ public class SettingsForm : Form
         parent.Controls.Add(b); return b;
     }
 
+    [DllImport("user32.dll")] static extern IntPtr SendMessage(IntPtr h, int msg, IntPtr w, IntPtr l);
+    string lastStatus;
+
     void Rebuild()
     {
         if (building) return;
         building = true;
-        st = Ui.Get("/status");
+        lastStatus = Ui.GetRaw("/status");
+        st = Ui.Parse(lastStatus);
+        if (body.IsHandleCreated) SendMessage(body.Handle, 0x000B, IntPtr.Zero, IntPtr.Zero); // WM_SETREDRAW 끔 → 깜빡임 방지
         foreach (Button b in tabs)
         {
             bool on = (string)b.Tag == tab;
@@ -545,6 +645,7 @@ public class SettingsForm : Form
         Ui.ScaleTree(flow, Ui.K);
         body.Controls.Add(flow);
         body.ResumeLayout();
+        if (body.IsHandleCreated) { SendMessage(body.Handle, 0x000B, (IntPtr)1, IntPtr.Zero); body.Invalidate(true); }
         building = false;
     }
 
@@ -569,6 +670,18 @@ public class SettingsForm : Form
             ArrayList top = Ui.A(plan, "top");
             if (top != null) Lbl(c2, "상위: " + string.Join(", ", top.ToArray()), 16, 142, 370, 50, "Regular", 12, Ui.Sub);
             flow.Controls.Add(c2);
+        }
+        Dictionary<string, object> iv = Ui.D(st, "items");
+        ArrayList nx = Ui.A(iv, "next");
+        if (nx != null && nx.Count > 0)
+        {
+            List<string> names = new List<string>();
+            foreach (object o in nx) { Dictionary<string, object> d = o as Dictionary<string, object>; double p = Ui.N(d, "gold", -1); names.Add(Ui.S(d, "name") + (p > 0 ? " (" + ((int)p).ToString("N0") + "G)" : "")); }
+            Panel ci = Card("다음 아이템 · " + (Ui.S(iv, "source") ?? ""), 126);
+            Lbl(ci, string.Join("  →  ", names.ToArray()), 16, 42, 370, 40, "SemiBold", 13, Ui.Text);
+            string nowT = Ui.S(iv, "now"), whyT = Ui.S(iv, "why");
+            Lbl(ci, (string.IsNullOrEmpty(nowT) ? "" : "지금: " + nowT + "   ") + (whyT ?? ""), 16, 84, 370, 36, "Regular", 12, Ui.Sub);
+            flow.Controls.Add(ci);
         }
         ArrayList picks = Ui.A(st, "picks");
         ArrayList offer = Ui.A(st, "offer");
