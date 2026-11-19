@@ -17,6 +17,9 @@ Add-Type -AssemblyName System.Windows.Forms, System.Drawing, System.Web.Extensio
 Add-Type -TypeDefinition ([IO.File]::ReadAllText((Join-Path $PSScriptRoot "overlay.cs"), [Text.Encoding]::UTF8)) `
   -ReferencedAssemblies System.Windows.Forms, System.Drawing, System.Web.Extensions
 [void][AramOverlay]::SetProcessDPIAware()
+# 화면 오류는 창을 띄우지 않고 overlay.log 에 기록 (게임 중 오류 대화상자 방지)
+[System.Windows.Forms.Application]::SetUnhandledExceptionMode([System.Windows.Forms.UnhandledExceptionMode]::CatchException)
+[System.Windows.Forms.Application]::add_ThreadException({ param($s, $e) [Ui]::Log("오류: " + $e.Exception.ToString()) })
 [Ui]::InitDpi()  # 화면 배율(예: 200%)에 맞춰 설정창·메뉴 크기 조정
 [System.Windows.Forms.Application]::EnableVisualStyles()
 [System.Windows.Forms.Application]::SetCompatibleTextRenderingDefault($true)  # 내장 글꼴(Pretendard)을 컨트롤에도 쓰기 위해

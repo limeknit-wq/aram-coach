@@ -13,6 +13,7 @@ import { getSettings } from "./settings.js";
 
 const run = promisify(execFile);
 const PLANS_DIR = join(APP_DIR, "plans");
+const PROMPT_V = 2; // 프롬프트를 바꾸면 올려서 예전 기본 점수표를 다시 만들게 함
 const TIMEOUT_MS = 3 * 60 * 1000;
 
 export const setup = { state: "대기", step: "", engine: null, startedAt: null, finishedAt: null, message: "", gameKey: null, timings: {} };
@@ -38,7 +39,7 @@ async function pickEngine() {
   const s = await getSettings();
   if (s.aiEngine === "off") return null;
   const f = await detectEngines();
-  if ((s.aiEngine === "auto" || s.aiEngine === "claude") && f.claude) return { name: "Claude Code", kind: "claude", path: f.claude, model: s.aiModel || "sonnet" };
+  if ((s.aiEngine === "auto" || s.aiEngine === "claude") && f.claude) return { name: "Claude Code", kind: "claude", path: f.claude, model: s.aiModel || "" };
   if ((s.aiEngine === "auto" || s.aiEngine === "codex") && f.codex) return { name: "Codex", kind: "codex", path: f.codex, model: s.aiModel || "" };
   return null;
 }
@@ -49,7 +50,7 @@ async function askAI(engine, prompt) {
   let args, outFile = null;
   if (engine.kind === "claude") {
     // --strict-mcp-config: 사용자의 다른 MCP 서버를 불러오지 않아 시작이 빠릅니다
-    args = ["-p", "--output-format", "json", "--strict-mcp-config", "--model", engine.model,
+    args = ["-p", "--output-format", "json", "--strict-mcp-config", ...(engine.model ? ["--model", engine.model] : []),
       "--disallowedTools", "Bash,Edit,Write,Read,Glob,Grep,WebFetch,WebSearch,Task,NotebookEdit,TodoWrite"];
   } else {
     outFile = join(APP_DIR, `codex-out-${Date.now()}.txt`);
@@ -103,6 +104,36 @@ async function myChampText(me) {
   return `${d.name} [${d.tags.join("/")}, ${d.damage.type}, 사거리 ${d.attackRange}] 패시브:${d.passive.name}-${d.passive.desc.slice(0, 50)} / ${sp}`;
 }
 
+// ---------- 칼바람 상점 (완성 아이템, 분류별) ----------
+let shopCache = null;
+export async function shop() {
+  if (shopCache) return shopCache;
+  // 완성 아이템 + 2단계 신발 (칼바람에는 3단계 신발이 없어 2단계가 최종)
+  const boots = (await searchItems({ completedOnly: false, tags: ["Boots"], limit: 50 })).filter((i) => i.gold >= 900);
+  const list = [...await searchItems({ completedOnly: true, limit: 400 }), ...boots];
+  const st = (i, k) => Number(i.stats?.[k] || 0) > 0;
+  const groups = { "신발": [], "AD·공속·치명타": [], "AP": [], "방어·탱커": [], "기타": [] };
+  for (const i of list) {
+    const ad = st(i, "FlatPhysicalDamageMod") || st(i, "PercentAttackSpeedMod") || st(i, "FlatCritChanceMod");
+    const ap = st(i, "FlatMagicDamageMod");
+    const def = st(i, "FlatHPPoolMod") || st(i, "FlatArmorMod") || st(i, "FlatSpellBlockMod");
+    if (i.tags?.includes("Boots")) groups["신발"].push(i.name);
+    else if (ad) groups["AD·공속·치명타"].push(i.name);
+    else if (ap) groups["AP"].push(i.name);
+    else if (def) groups["방어·탱커"].push(i.name);
+    else groups["기타"].push(i.name);
+  }
+  const norm = (x) => String(x || "").replace(/[\s·:'"]/g, "").toLowerCase();
+  const byNorm = new Map(list.map((i) => [norm(i.name), i.name]));
+  shopCache = {
+    text: Object.entries(groups).filter(([, v]) => v.length).map(([k, v]) => "[" + k + "] " + v.join(", ")).join("\n"),
+    /** 상점에 있는 정확한 이름으로 바꿈. 없는 아이템이면 null */
+    fix: (n) => byNorm.get(norm(n)) || null,
+  };
+  return shopCache;
+}
+const ITEM_RULE = "아이템 규칙: 아래 칼바람 상점 목록에 있는 이름만 정확히 써. 내 챔피언의 피해 유형(AD/AP)과 역할에 맞는 딜 아이템이 중심이고, 딜러에게 [방어·탱커] 아이템은 적 조합상 꼭 필요할 때 상황 아이템으로 1개까지만.";
+
 const FORMAT = `출력 형식 (JSON 하나만, 다른 글 금지):
 {"s":"전략 2~3문장","t":{"S+":[번호],"S":[번호],"A":[번호],"B":[번호],"C":[번호],"D":[번호]},"r":{"번호":"18자 이내 이유"},"y":[[이미고른번호,점수바뀌는번호,변화량]],"b":{"core":["아이템"],"sit":[["상황","아이템"]]},"d":기본점수}
 규칙: t에 이 챔피언에게 의미 있는 증강을 최대한 많이 (S+~A와 D는 빠짐없이). r은 S+~A와 판단이 갈리는 것만. y는 핵심 조합 10~25개. d는 목록에 없는 증강 점수(보통 40~50). 이유에 다른 증강 이름 금지.`;
@@ -116,6 +147,10 @@ async function basePrompt(me, allies, enemies) {
 적: ${enemyText}
 증강 목록 (번호|이름|등급|분류|효과):
 ${cat.text}
+
+${ITEM_RULE}
+칼바람 상점 (완성 아이템):
+${(await shop()).text}
 
 ${FORMAT}`;
 }
@@ -133,6 +168,10 @@ async function adjustPrompt(me, allies, enemies, base) {
 증강 목록 (번호|이름|등급|분류|효과):
 ${cat.text}
 
+${ITEM_RULE}
+칼바람 상점 (완성 아이템):
+${(await shop()).text}
+
 출력 형식 (JSON 하나만): {"s":"적 조합을 반영한 전략 2~3문장","u":{"번호":새점수0~100},"r":{"번호":"18자 이내 새 이유"},"b":{"core":["아이템"],"sit":[["상황","아이템"]]}}`;
 }
 
@@ -149,7 +188,12 @@ async function toPlanInput(me, compact, scoreById, reasons) {
   const name = (id) => cat.list[Number(id) - 1]?.name;
   const details = Object.entries(scoreById).filter(([id]) => name(id)).map(([id, score]) => ({ name: name(id), score, reason: reasons[id] || "" }));
   const synergies = (compact.y || []).filter((y) => name(y[0]) && name(y[1])).map(([a, b, n]) => ({ ifPicked: name(a), boost: name(b), bonus: Number(n) || 8 }));
-  const build = compact.b ? { core: compact.b.core || [], situational: (compact.b.sit || []).map(([when, item]) => ({ when, item })) } : undefined;
+  // 상점에 없는 아이템 이름은 버림 (AI가 지어낸 이름·다른 모드 아이템 방지)
+  const sh = await shop();
+  const build = compact.b ? {
+    core: (compact.b.core || []).map(sh.fix).filter(Boolean),
+    situational: (compact.b.sit || []).map(([when, item]) => ({ when, item: sh.fix(item) })).filter((x) => x.item),
+  } : undefined;
   return { champion: me?.champion || "?", strategy: compact.s || "", tiers: {}, details, synergies, build, defaultScore: compact.d ?? 45 };
 }
 
@@ -158,7 +202,8 @@ async function loadBase(championId) {
   try {
     const j = JSON.parse(await readFile(join(PLANS_DIR, `${championId}.json`), "utf8"));
     const cat = await catalog();
-    if (j.dataVersion !== cat.version || Date.now() - j.savedAt > 14 * 86400000) return null;
+    const engine = await pickEngine();
+    if (j.dataVersion !== cat.version || j.pv !== PROMPT_V || j.model !== (engine?.model || "기본") || Date.now() - j.savedAt > 14 * 86400000) return null;
     return j;
   } catch { return null; }
 }
@@ -177,7 +222,7 @@ export function prepareChampion(sel) {
     const t0 = Date.now();
     Object.assign(setup, { state: "진행 중", step: `기본 점수표 준비 중 (픽창 · ${sel.me.champion})`, engine: engine.name, startedAt: t0, message: "" });
     const compact = await askAI(engine, await basePrompt(sel.me, sel.allies, null));
-    const base = { championId: id, champion: sel.me.champion, dataVersion: (await catalog()).version, savedAt: Date.now(), engine: engine.name, compact, scoreById: toScores(compact), seconds: Math.round((Date.now() - t0) / 1000) };
+    const base = { championId: id, champion: sel.me.champion, dataVersion: (await catalog()).version, savedAt: Date.now(), engine: engine.name, model: engine.model || "기본", pv: PROMPT_V, compact, scoreById: toScores(compact), seconds: Math.round((Date.now() - t0) / 1000) };
     await mkdir(PLANS_DIR, { recursive: true });
     await writeFile(join(PLANS_DIR, `${id}.json`), JSON.stringify(base));
     setup.timings.base = base.seconds;
@@ -248,7 +293,7 @@ export async function adviseItems(live, { plan, picks = [] } = {}) {
     const me = live.me;
     const enemyText = live.enemies.map((e) => `${e.champion}(${e.kda}, 템:${e.items.map((i) => i.name).filter((n) => n !== "포로 간식").join("/") || "없음"})`).join(", ");
     const prompt = `리그 오브 레전드 '무작위 총력전: 아수라장' 아이템 코치야. 도구 쓰지 말고 JSON만 출력해.
-내 챔피언: ${me.champion} 레벨 ${me.level}, KDA ${me.kda}, 보유 골드 ${me.currentGold}
+내 챔피언: ${await myChampText(me)} | 레벨 ${me.level}, KDA ${me.kda}, 보유 골드 ${me.currentGold}
 내 아이템: ${me.items.map((i) => i.name).filter((n) => n !== "포로 간식").join(", ") || "없음"}
 고른 증강: ${picks.join(", ") || "없음"}
 이번 판 계획 빌드: ${plan?.build ? [...(plan.build.core || []), ...(plan.build.situational || []).map((s) => `${s.when}→${s.item}`)].join(", ") : "없음"}
@@ -257,10 +302,11 @@ export async function adviseItems(live, { plan, picks = [] } = {}) {
 적 피해 성향: ${live.enemyAnalysis?.leaningDamage}, 성장한 적: ${(live.enemyAnalysis?.fed || []).join(", ") || "없음"}
 지금 상황에 맞는 다음 완성 아이템 3개(순서대로, 칼바람 상점에 있는 정확한 한글 이름)와 지금 골드로 바로 살 것(부품 포함)을 알려줘.
 {"next":["아이템1","아이템2","아이템3"],"now":"지금 살 것","why":"30자 이내 이유"}`;
-    const shop = (await searchItems({ completedOnly: true, limit: 300 })).map((i) => i.name).join(", ");
-    const r = await askAI(engine, prompt + `
-아이템 이름은 반드시 이 목록에서 정확히 골라: ${shop}`);
-    Object.assign(items, { next: (r.next || []).slice(0, 3), now: r.now || "", why: r.why || "", at: Date.now(), engine: engine.name, state: "완료" });
+    const sh = await shop();
+    const r = await askAI(engine, prompt + "\n" + ITEM_RULE + " 이미 가진 아이템은 다시 추천하지 마.\n칼바람 상점 (완성 아이템):\n" + sh.text);
+    const owned = new Set(me.items.map((i) => i.name));
+    const next = [...new Set((r.next || []).map(sh.fix).filter((n) => n && !owned.has(n)))].slice(0, 3);
+    Object.assign(items, { next, now: r.now || "", why: r.why || "", at: Date.now(), engine: engine.name, state: "완료" });
   } catch (e) {
     items.state = "실패";
   } finally { items.busy = false; }

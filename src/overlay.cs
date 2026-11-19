@@ -126,6 +126,19 @@ public static class Ui
     }
 
     public static string IconPath = "";
+    /// <summary>오류 기록: %LOCALAPPDATA%\AramCoach\overlay.log (1MB 넘으면 새로 씀)</summary>
+    public static void Log(string msg)
+    {
+        try
+        {
+            string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AramCoach");
+            Directory.CreateDirectory(dir);
+            string f = Path.Combine(dir, "overlay.log");
+            if (File.Exists(f) && new FileInfo(f).Length > 1000000) File.Delete(f);
+            File.AppendAllText(f, DateTime.Now.ToString("MM-dd HH:mm:ss") + " " + msg + Environment.NewLine);
+        }
+        catch { }
+    }
     /// <summary>설정창에서 보조 창을 열 때 쓰는 연결 (트레이가 지정)</summary>
     public static Action OpenCompanion;
     static readonly Dictionary<string, Image> iconCache = new Dictionary<string, Image>();
@@ -852,8 +865,14 @@ public class CompanionForm : Form
         Move += delegate { if (!loading) { saveTimer.Stop(); saveTimer.Start(); } };
         Resize += delegate { if (!loading) { saveTimer.Stop(); saveTimer.Start(); } canvas.Invalidate(); };
         Load += delegate { try { int on = 1; DwmSetWindowAttribute(Handle, 20, ref on, 4); } catch { } loading = false; };
-        FormClosing += delegate (object o, FormClosingEventArgs e) { if (e.CloseReason == CloseReason.UserClosing) { e.Cancel = true; Hide(); } };
+        FormClosing += delegate (object o, FormClosingEventArgs e) { if (e.CloseReason == CloseReason.UserClosing) { e.Cancel = true; UserClosed = true; Hide(); } };
     }
+
+    /// <summary>사용자가 X로 닫았는지 (닫았으면 이번 판에는 다시 띄우지 않음)</summary>
+    public bool UserClosed;
+    /// <summary>자동으로 열 때는 게임에서 포커스를 빼앗지 않음 (전체 화면 게임이 내려가는 것 방지)</summary>
+    public bool NoActivate;
+    protected override bool ShowWithoutActivation { get { return NoActivate; } }
 
     /// <summary>저장된 위치가 있으면 그대로, 없으면 보조 모니터(없으면 주 모니터 오른쪽)에 띄웁니다.</summary>
     void PlaceInitially()
@@ -1121,10 +1140,20 @@ public class TrayApp : ApplicationContext
         status.Interval = 3000; status.Tick += delegate { UpdateStatus(); }; status.Start();
     }
 
-    public void ShowCompanion()
+    public void ShowCompanion() { ShowCompanion(false); }
+    /// <summary>보조 창 열기. auto=true 면 게임 포커스를 빼앗지 않고 띄웁니다.</summary>
+    public void ShowCompanion(bool auto)
     {
-        if (companion == null) companion = new CompanionForm();
-        companion.Show(); if (companion.WindowState == FormWindowState.Minimized) companion.WindowState = FormWindowState.Normal;
+        try
+        {
+            if (companion == null) companion = new CompanionForm();
+            companion.UserClosed = false;
+            companion.NoActivate = auto;
+            if (!companion.Visible) companion.Show();
+            if (companion.WindowState == FormWindowState.Minimized) companion.WindowState = FormWindowState.Normal;
+            if (!auto) companion.Activate();
+        }
+        catch (Exception e) { Ui.Log("보조 창 열기 실패: " + e); }
     }
 
     void ShowSettings() { settings.Show(); settings.WindowState = FormWindowState.Normal; settings.Activate(); }
@@ -1135,7 +1164,12 @@ public class TrayApp : ApplicationContext
         if (st == null) { statusItem.Text = "프로그램 서버 연결 안 됨"; return; }
         // 게임이 시작되면 보조 창 자동으로 열기 (설정에서 켠 경우, 판마다 한 번)
         string gk = Ui.S(st, "gameKey") ?? "";
-        if (Ui.B(st, "inGame") && Ui.B(Ui.D(st, "settings"), "companionAuto") && gk != companionOpenedFor) { companionOpenedFor = gk; ShowCompanion(); }
+        if (Ui.B(st, "inGame") && Ui.B(Ui.D(st, "settings"), "companionAuto"))
+        {
+            if (gk != companionOpenedFor) { companionOpenedFor = gk; ShowCompanion(true); }
+            // 게임 중인데 창이 사라졌으면(사용자가 닫은 게 아니면) 다시 띄움
+            else if (companion != null && !companion.Visible && !companion.UserClosed) { Ui.Log("보조 창이 숨겨져 있어 다시 띄움"); ShowCompanion(true); }
+        }
         Dictionary<string, object> setup = Ui.D(st, "setup");
         string s = (Ui.B(st, "inGame") ? "게임 중" : "대기 중") + " · AI 세팅: " + (Ui.S(setup, "state") ?? "대기");
         statusItem.Text = s;

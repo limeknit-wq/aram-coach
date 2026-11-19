@@ -261,9 +261,12 @@ async function syncFromLeader() {
 
 function followLoop() {
   coord.role = "팔로워 (다른 프로세스의 화면 감시 공유)";
+  let fails = 0;
   const tick = async () => {
     const canLead = !coord.yieldUntil || Date.now() > coord.yieldUntil;
-    if (!(await syncFromLeader()) && canLead && (await becomeLeader())) return; // 리더가 꺼졌으면 이어받음
+    fails = (await syncFromLeader()) ? 0 : fails + 1;
+    // 리더가 2초 넘게 응답이 없을 때만 이어받음 (리더를 넘기는 순간 프로그램보다 먼저 잡지 않도록)
+    if (fails >= 2 && canLead && (await becomeLeader())) return;
     setTimeout(tick, 1000).unref();
   };
   tick();
@@ -287,9 +290,15 @@ export async function startCoordinator({ app = false } = {}) {
     // 다른 버전의 프로그램이 켜져 있으면 종료시키고, MCP 서버가 리더면 넘겨받습니다
     if (info?.app) await fetch(`http://127.0.0.1:${PORT}/quit`, { method: "POST" }).catch(() => {});
     else await fetch(`http://127.0.0.1:${PORT}/handoff`, { method: "POST" }).catch(() => {});
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 60; i++) {
       await new Promise((r) => setTimeout(r, 250));
       if (await becomeLeader()) return {};
+      // 다른 MCP 서버가 리더를 이어받았으면 그쪽에도 다시 넘겨 달라고 요청
+      if (i % 4 === 3) {
+        const cur = await fetch(`http://127.0.0.1:${PORT}/info`).then((r) => r.json()).catch(() => null);
+        if (cur && !cur.app) await fetch(`http://127.0.0.1:${PORT}/handoff`, { method: "POST" }).catch(() => {});
+        else if (cur?.app && cur.version === APP_VERSION) return { alreadyRunning: true };
+      }
     }
     return { alreadyRunning: true };
   }

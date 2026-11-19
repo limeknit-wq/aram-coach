@@ -113,7 +113,8 @@ export const items = () =>
 
 export async function aramItems() {
   return (await items()).filter(
-    (it) => it.maps?.[HOWLING_ABYSS] && it.gold?.purchasable && it.inStore !== false && !it.requiredChampion && !it.hideFromAll
+    // id가 5자리 이상인 것은 다른 모드용 변형(아레나 22xxxx, 옛 모드 77xxxx, 증강 보상 12xxxx 등)이라 칼바람 상점에 없음
+    (it) => it.id.length <= 4 && it.maps?.[HOWLING_ABYSS] && it.gold?.purchasable && it.inStore !== false && !it.requiredChampion && !it.hideFromAll
   );
 }
 
