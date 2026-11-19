@@ -2,8 +2,15 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
+// 실제 게임 기록(고른 증강·점수표)을 건드리지 않도록 테스트 전용 임시 폴더와 포트를 씁니다
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { mkdirSync } from "node:fs";
+const SMOKE_TMP = join(tmpdir(), "aram-smoke-test");
+mkdirSync(SMOKE_TMP, { recursive: true });
+
 const client = new Client({ name: "smoke", version: "0" });
-await client.connect(new StdioClientTransport({ command: process.env.TEST_EXE || process.execPath, args: process.env.TEST_EXE ? ["--mcp"] : ["src/main.js", "--mcp"], env: { ...process.env, LOL_SCREEN_WATCH: "0" } }));
+await client.connect(new StdioClientTransport({ command: process.env.TEST_EXE || process.execPath, args: process.env.TEST_EXE ? ["--mcp"] : ["src/main.js", "--mcp"], env: { ...process.env, LOL_SCREEN_WATCH: "0", LOL_COORD_PORT: "47380", TEMP: SMOKE_TMP, TMP: SMOKE_TMP } }));
 
 const { tools } = await client.listTools();
 console.log("도구:", tools.map((t) => t.name).join(", "));
