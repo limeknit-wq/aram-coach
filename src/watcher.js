@@ -2,6 +2,7 @@
 import { spawn } from "node:child_process";
 import { createInterface } from "node:readline";
 import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
+import { appendFileSync, mkdirSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,6 +11,14 @@ import { ensureResources, resPath } from "./paths.js";
 
 const SCRIPT = () => resPath("src/watcher.ps1");
 const OUT = join(tmpdir(), "lol-aram-mcp");
+const SLOT_TOL = 0.08; // 같은 카드 칸으로 볼 가로 위치 차이 (화면 너비 비율)
+
+/** 선택지 변화 기록 (문제 확인용): tmp/lol-aram-mcp/offers.log, 200KB 넘으면 새로 씀 */
+export function logOffer(msg) {
+  const f = join(OUT, "offers.log");
+  try { if (statSync(f).size > 200000) rmSync(f); } catch {}
+  try { mkdirSync(OUT, { recursive: true }); appendFileSync(f, `${new Date().toTimeString().slice(0, 8)} ${msg}\n`); } catch {}
+}
 
 export const state = {
   enabled: false,
@@ -129,12 +138,44 @@ async function onLine(raw) {
   if (found.length < 2) return; // 증강 선택 화면이 아님
   // 선택지가 떠 있는 동안 화면 감시를 빠르게(0.2초 간격) 돌리라는 신호
   writeFile(join(OUT, "fast.flag"), String(msg.t)).catch(() => {});
-  const key = found.map((a) => a.apiName).join("|");
-  if (state.offer?.key === key) { state.offer.lastSeenAt = msg.t; return; }
-  const stickers = await officialStickers(matchStickers(msg.lines, found));
+  const stickersNow = await officialStickers(matchStickers(msg.lines, found));
+  // 같은 선택 화면이 이어지는 중이면 카드 칸(왼쪽·가운데·오른쪽)별로 합칩니다.
+  //  - 새로고침 중 뒤집히는 카드는 글자가 잠깐 안 읽혀도 이전 카드를 유지 (2장으로 줄지 않음)
+  //  - 한 칸만 다른 이름이 읽히면 그 칸만 새로고침된 것으로 바꿈
+  const cur = state.offer;
+  if (cur && msg.t - cur.lastSeenAt < 4000 && cur.xs?.every((v) => v != null) && found.every((f) => f.x != null)) {
+    const names = [...cur.names], xs = [...cur.xs], stickers = [...(cur.stickers || cur.names.map(() => null))];
+    let same = 0;
+    const changed = [], added = [];
+    found.forEach((f, fi) => {
+      const i = xs.reduce((b, v, j) => (Math.abs(v - f.x) < Math.abs(xs[b] - f.x) ? j : b), 0);
+      const sticker = stickersNow?.[fi] || null;
+      if (Math.abs(xs[i] - f.x) > SLOT_TOL) { added.push({ name: f.name, sticker, x: f.x }); return; } // 처음에 못 읽은 칸
+      if (names[i] === f.name) { same++; return; }
+      changed.push({ i, name: f.name, sticker, x: f.x });
+    });
+    if (same >= 1 || (changed.length === 1 && cur.names.length >= 3)) {
+      cur.lastSeenAt = msg.t;
+      const room = Math.max(0, 4 - names.length);
+      const add = added.filter((a) => !names.includes(a.name)).slice(0, room);
+      if (!changed.length && !add.length) return;
+      for (const c of changed) { names[c.i] = c.name; xs[c.i] = c.x; stickers[c.i] = c.sticker; }
+      // 늦게 읽힌 카드는 가로 위치 순서대로 끼워 넣음
+      const cards = names.map((n, i) => ({ n, x: xs[i], st: stickers[i] })).concat(add.map((a) => ({ n: a.name, x: a.x, st: a.sticker }))).sort((a, b) => a.x - b.x);
+      const slots = cards.map((_, i) => (cards.length === 3 ? ["왼쪽", "가운데", "오른쪽"][i] : `${i + 1}번째`));
+      Object.assign(cur, { names: cards.map((c) => c.n), xs: cards.map((c) => c.x), slots, stickers: cards.some((c) => c.st) ? cards.map((c) => c.st) : undefined, key: cards.map((c) => c.n).join("|") });
+      if (changed.length) cur.rerolledAt = msg.t;
+      logOffer(`${changed.length ? "새로고침" : "카드 추가"}: ${[...changed, ...add].map((c) => c.name).join(", ")} → ${cur.names.join(" / ")}`);
+      return;
+    }
+  }
+  const key = found.map((a) => a.name).join("|");
+  if (cur?.key === key) { cur.lastSeenAt = msg.t; return; }
+  const stickers = stickersNow;
   const image = join(OUT, `offer-${msg.t}.jpg`);
   if (msg.source !== "file") await copyFile(join(OUT, "latest.jpg"), image).catch(() => {});
   state.offer = { key, names: found.map((a) => a.name), slots: found.map((a) => a.slot || null), xs: found.map((a) => a.x ?? null), stickers, at: msg.t, lastSeenAt: msg.t, image: msg.source === "file" ? null : image };
+  logOffer(`새 선택지: ${state.offer.names.join(" / ")}`);
   state.history.unshift(state.offer);
   state.history = state.history.slice(0, 8);
 }
@@ -201,3 +242,4 @@ export async function offerImage(offer) {
 export async function latestFrame() {
   try { return (await readFile(join(OUT, "latest.jpg"))).toString("base64"); } catch { return null; }
 }
+export const feedLine = onLine; // 테스트용

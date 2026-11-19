@@ -6,7 +6,7 @@ import { spawn } from "node:child_process";
 import { addPick, loadPicks, loadPlan, resetPicks, scoreOffer } from "./plan.js";
 import { currentGameKey, liveGame } from "./live.js";
 import { champSelect, gameWindowMode, loadingGame } from "./lcu.js";
-import { startWatcher, stopWatcher, state as watch } from "./watcher.js";
+import { logOffer, startWatcher, stopWatcher, state as watch } from "./watcher.js";
 import { APP_VERSION, IS_EXE, ensureResources, resPath } from "./paths.js";
 import { getSettings, updateSettings } from "./settings.js";
 import { adviseItems, cancelAutoSetup, detectEngines, items as itemAdvice, onGameStart, prepareChampion, setup } from "./autosetup.js";
@@ -83,6 +83,7 @@ function handle(req, res) {
     if (o?.names?.length && o.xs?.every((v) => v != null) && Number.isFinite(x)) {
       const i = o.xs.reduce((b, v, j) => (Math.abs(v - x) < Math.abs(o.xs[b] - x) ? j : b), 0);
       coord.pendingPick = { name: o.names[i], at: Date.now(), offerKey: o.key };
+      logOffer(`카드 클릭: ${o.names[i]} (x=${x})`);
     }
     return sendJson(res, { ok: true, pending: coord.pendingPick?.name || null });
   }
@@ -114,10 +115,16 @@ async function settlePick() {
   if (!p) return;
   const o = watch.offer;
   const age = Date.now() - p.at;
-  if (!o || o.key !== p.offerKey || age > 12000) { coord.pendingPick = null; return; } // 새로고침 등으로 선택지가 바뀜 → 취소
-  const goneFor = (watch.lastLeagueFrameAt || 0) - o.lastSeenAt;
-  if (goneFor > 1800 && Date.now() - o.lastSeenAt > 1800) {
+  if (!o || o.key !== p.offerKey || age > 12000) { // 새로고침 등으로 선택지가 바뀜 → 취소
     coord.pendingPick = null;
+    logOffer(`클릭 취소 (${!o ? "선택지 없음" : o.key !== p.offerKey ? "선택지 바뀜(새로고침)" : "시간 초과"}): ${p.name}`);
+    return;
+  }
+  // 선택 화면이 2.5초 넘게 안 보이면(게임 화면은 계속 읽히는 중) 고른 것으로 확정
+  const goneFor = (watch.lastLeagueFrameAt || 0) - o.lastSeenAt;
+  if (goneFor > 2500 && Date.now() - o.lastSeenAt > 2500) {
+    coord.pendingPick = null;
+    logOffer(`선택 확정: ${p.name}`);
     await addPick(p.name, coord.gameKey, "오버레이 클릭 자동 기록");
     coord.lastPick = { name: p.name, at: Date.now() };
   }
@@ -163,7 +170,7 @@ async function pollGameOnce() {
 
 // ---------- 템 추천: 3초마다 내 상태 확인 → 죽으면 AI에게 다시 묻고, 다음 템 골드가 모이면 잠깐 알림 ----------
 coord.affordUntil = 0;
-let wasDead = false, lastAdviceAt = 0, lastAffordName = null, itemTicking = false;
+let wasDead = false, lastAdviceAt = 0, lastPickKey = "", lastAffordName = null, itemTicking = false;
 async function itemTick() {
   if (itemTicking || !coord.inGame) return;
   itemTicking = true;
@@ -174,8 +181,13 @@ async function itemTick() {
     const plan = await loadPlan();
     const picks = (await loadPicks(coord.gameKey)).map((p) => p.name);
     const dead = Boolean(live.me.dead);
-    const needAdvice = coord.isApp && Date.now() - lastAdviceAt > 45000 &&
-      ((dead && !wasDead) || (!itemAdvice.at && setup.state === "완료"));
+    // 다시 물어볼 때: 죽었을 때(45초 간격), 처음 세팅이 끝났을 때, 새 증강을 골랐을 때(15초 간격, 퀘스트 증강 대응)
+    const pickKey = `${coord.gameKey}:${picks.length}`;
+    const newPick = picks.length > 0 && pickKey !== lastPickKey;
+    const needAdvice = coord.isApp && (
+      (Date.now() - lastAdviceAt > 45000 && ((dead && !wasDead) || (!itemAdvice.at && setup.state === "완료"))) ||
+      (newPick && Date.now() - lastAdviceAt > 15000));
+    if (needAdvice) lastPickKey = pickKey;
     wasDead = dead;
     if (needAdvice) { lastAdviceAt = Date.now(); adviseItems(live, { plan: plan && plan.gameKey === coord.gameKey ? plan : null, picks }); }
     // 보여줄 목록: AI 추천(최근 것) → 없으면 이번 판 계획 빌드

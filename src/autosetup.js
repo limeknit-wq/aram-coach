@@ -284,6 +284,17 @@ export async function onGameStart(gameKey, live, { force = false } = {}) {
 export const items = { next: [], now: "", why: "", at: 0, engine: null, state: "대기", busy: false };
 
 /** 지금 상황(내 아이템·골드, 적 아이템·KDA, 고른 증강, 이번 판 빌드)으로 다음 아이템을 AI에게 물어봅니다. */
+/** 고른 증강 이름 → "이름(효과 요약)" : 퀘스트형 증강(예: 궁극의 히드라)의 조건 아이템을 AI가 알 수 있게 */
+async function pickText(picks) {
+  if (!picks?.length) return "없음";
+  const { augments: list } = await augments();
+  return picks.map((n) => {
+    const a = list.find((x) => x.name === n);
+    const d = (a?.desc || "").replace(/s+/g, " ").trim().slice(0, 140);
+    return d ? `${n}(${d})` : n;
+  }).join(" / ");
+}
+
 export async function adviseItems(live, { plan, picks = [] } = {}) {
   if (items.busy || !live?.inGame) return items;
   const engine = await pickEngine();
@@ -295,7 +306,7 @@ export async function adviseItems(live, { plan, picks = [] } = {}) {
     const prompt = `리그 오브 레전드 '무작위 총력전: 아수라장' 아이템 코치야. 도구 쓰지 말고 JSON만 출력해.
 내 챔피언: ${await myChampText(me)} | 레벨 ${me.level}, KDA ${me.kda}, 보유 골드 ${me.currentGold}
 내 아이템: ${me.items.map((i) => i.name).filter((n) => n !== "포로 간식").join(", ") || "없음"}
-고른 증강: ${picks.join(", ") || "없음"}
+고른 증강 (효과): ${await pickText(picks)}
 이번 판 계획 빌드: ${plan?.build ? [...(plan.build.core || []), ...(plan.build.situational || []).map((s) => `${s.when}→${s.item}`)].join(", ") : "없음"}
 아군: ${live.allies.map((a) => `${a.champion}(${a.kda})`).join(", ")}
 적: ${enemyText}
@@ -303,7 +314,7 @@ export async function adviseItems(live, { plan, picks = [] } = {}) {
 지금 상황에 맞는 다음 완성 아이템 3개(순서대로, 칼바람 상점에 있는 정확한 한글 이름)와 지금 골드로 바로 살 것(부품 포함)을 알려줘.
 {"next":["아이템1","아이템2","아이템3"],"now":"지금 살 것","why":"30자 이내 이유"}`;
     const sh = await shop();
-    const r = await askAI(engine, prompt + "\n" + ITEM_RULE + " 이미 가진 아이템은 다시 추천하지 마.\n칼바람 상점 (완성 아이템):\n" + sh.text);
+    const r = await askAI(engine, prompt + "\n" + ITEM_RULE + " 이미 가진 아이템은 다시 추천하지 마. 고른 증강에 퀘스트(조건: 특정 아이템 보유)가 있으면 그 조건 아이템을 최우선으로 추천하고, 증강 보상으로만 받는 아이템은 상점에 없으니 추천하지 마.\n칼바람 상점 (완성 아이템):\n" + sh.text);
     const owned = new Set(me.items.map((i) => i.name));
     const next = [...new Set((r.next || []).map(sh.fix).filter((n) => n && !owned.has(n)))].slice(0, 3);
     Object.assign(items, { next, now: r.now || "", why: r.why || "", at: Date.now(), engine: engine.name, state: "완료" });
