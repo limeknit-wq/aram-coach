@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>아수라장 코치</title>
+<style>
+  :root {
+    --bg: var(--color-background-primary, #ffffff);
+    --bg-2: var(--color-background-secondary, #f4f5f7);
+    --line: var(--color-border-primary, #e2e4e8);
+    --text: var(--color-text-primary, #16181d);
+    --muted: var(--color-text-secondary, #5d6470);
+    --accent: #b8862f;
+    --good: #2f8a57;
+    --warn: #c0492f;
+    --ap: #6b5bd6;
+    --ad: #d0702c;
+    --silver: #8e98a6;
+    --gold: #c9a043;
+    --prism-a: #8f6bff;
+    --prism-b: #ff6fb1;
+    --radius: 12px;
+    --font: var(--font-sans, -apple-system, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: var(--color-background-primary, #14171d);
+      --bg-2: var(--color-background-secondary, #1c2029);
+      --line: var(--color-border-primary, #2c313c);
+      --text: var(--color-text-primary, #eceef2);
+      --muted: var(--color-text-secondary, #9aa1ad);
+      --accent: #e0b25a;
+      --good: #57c287;
+      --warn: #ef7a5f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: var(--color-background-primary, #14171d);
+    --bg-2: var(--color-background-secondary, #1c2029);
+    --line: var(--color-border-primary, #2c313c);
+    --text: var(--color-text-primary, #eceef2);
+    --muted: var(--color-text-secondary, #9aa1ad);
+    --accent: #e0b25a;
+    --good: #57c287;
+    --warn: #ef7a5f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 var(--font); }
+  body { padding: 14px; }
+  .hidden { display: none !important; }
+  .row { display: flex; align-items: center; gap: 8px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); font-size: 12px; white-space: nowrap; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  .btn { border: 1px solid var(--line); background: var(--bg-2); border-radius: 8px; padding: 6px 12px; }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .btn:disabled { opacity: .55; cursor: default; }
+  img.ic { width: 28px; height: 28px; border-radius: 6px; object-fit: cover; background: var(--bg-2); flex: none; }
+
+  /* 헤더 */
+  .head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .head img { width: 40px; height: 40px; border-radius: 10px; }
+  .head h1 { font-size: 16px; margin: 0; }
+  .head .sub { font-size: 12px; color: var(--muted); }
+  .head .right { margin-left: auto; text-align: right; }
+  .gold-num { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* 증강 카드 (화면 왼쪽/가운데/오른쪽 순서 그대로) */
+  .summary { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 12px; }
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  @media (max-width: 560px) { .cards { grid-template-columns: 1fr; } }
+  .card { position: relative; border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; background: var(--bg); display: flex; flex-direction: column; gap: 8px; }
+  .card.r-실버 { border-top: 3px solid var(--silver); }
+  .card.r-골드 { border-top: 3px solid var(--gold); }
+  .card.r-프리즘 { border-top: 3px solid var(--prism-a); border-image: linear-gradient(90deg, var(--prism-a), var(--prism-b)) 1; border-image-slice: 1; }
+  .card.pick { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .card .badge { position: absolute; top: -10px; left: 12px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+  .card .slot { font-size: 11px; color: var(--muted); }
+  .card .top { display: flex; gap: 10px; align-items: center; }
+  .card .top img { width: 44px; height: 44px; border-radius: 10px; background: #111; }
+  .card h3 { margin: 0; font-size: 15px; }
+  .card .desc { font-size: 12px; color: var(--muted); white-space: pre-line; }
+  .grade { font-weight: 800; font-size: 20px; width: 40px; text-align: center; }
+  .g-S\+, .g-S { color: var(--accent); }
+  .g-A { color: var(--good); }
+  .g-B { color: var(--muted); }
+  .g-C, .g-D { color: var(--warn); }
+  .bar { height: 6px; border-radius: 999px; background: var(--bg-2); overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+  .reason { font-size: 13px; }
+  .sticker { font-size: 12px; font-weight: 600; color: var(--warn); background: var(--bg-2); border: 1px dashed var(--warn); border-radius: 8px; padding: 4px 8px; }
+  .chip.event { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .card .act { margin-top: auto; }
+  .picked { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+
+  /* 패널 탭 (구매 / 적응 / 증강 / 팀) */
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+  .tab { border: 0; background: none; padding: 8px 12px; border-bottom: 2px solid transparent; color: var(--muted); }
+  .tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  .item { display: flex; gap: 10px; align-items: flex-start; padding: 10px; border: 1px solid var(--line); border-radius: 10px; }
+  .item .n { font-weight: 600; }
+  .item .num { margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .step { width: 22px; height: 22px; border-radius: 50%; background: var(--bg-2); border: 1px solid var(--line); display: grid; place-items: center; font-size: 12px; flex: none; }
+  .split { display: flex; height: 12px; border-radius: 999px; overflow: hidden; background: var(--bg-2); }
+  .split .ap { background: var(--ap); }
+  .split .ad { background: var(--ad); }
+  .legend { display: flex; justify-content: space-between; font-size: 12px; margin-top: 4px; }
+  .warn { color: var(--warn); }
+  .section { margin-bottom: 14px; }
+  .section h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); font-weight: 600; }
+  .team { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 560px) { .team { grid-template-columns: 1fr; } }
+  .pl { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .pl .its { display: flex; gap: 2px; margin-left: auto; }
+  .pl .its img { width: 20px; height: 20px; border-radius: 4px; }
+  .empty { padding: 24px; text-align: center; color: var(--muted); }
+  .foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div id="root"><div class="empty">불러오는 중…</div></div>
+
+<script type="module">
+/*__EXT_APPS__*/
+const { App, applyDocumentTheme, applyHostStyleVariables, applyHostFonts } = globalThis.__ExtApps || {};
+
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const img = (src, cls = "ic", alt = "") => src ? `<img class="${cls}" src="${esc(src)}" alt="${esc(alt)}" loading="lazy" onerror="this.style.visibility='hidden'">` : `<span class="${cls}"></span>`;
+const gradeOf = (s) => (s >= 90 ? "S+" : s >= 80 ? "S" : s >= 70 ? "A" : s >= 55 ? "B" : "C");
+
+let app = null;
+let state = { data: null, tab: "buy", lastArgs: null };
+
+// ---------- 증강 선택 화면 ----------
+function renderAugments(d) {
+  const picked = (d.alreadyPicked || []).map((p) => `<span class="chip">${img(p.icon, "ic", "")}${esc(p.name)}</span>`).join("");
+  return `
+    ${header(d.header)}
+    ${d.summary ? `<div class="summary"><b>${esc(d.pick ? d.pick + " 추천" : "추천")}</b> — ${esc(d.summary)}</div>` : ""}
+    <div class="cards">
+      ${d.options.map((o, i) => {
+        const score = Math.max(0, Math.min(100, Number(o.score) || 0));
+        const grade = o.grade || gradeOf(score);
+        return `
+        <div class="card r-${esc(o.rarity)} ${o.isPick ? "pick" : ""}">
+          ${o.isPick ? `<span class="badge">1순위</span>` : ""}
+          <div class="slot">${esc(o.slot || ["왼쪽", "가운데", "오른쪽"][i] || "")} · ${esc(o.rarity || "")}${o.notFound ? " · 데이터 없음" : ""}</div>
+          <div class="top">
+            ${img(o.icon, "", o.name)}
+            <div style="min-width:0">
+              <h3>${esc(o.name)}</h3>
+              <div class="row small muted">${(o.tags || []).map((t) => `<span class="chip">${esc(t)}</span>`).join("")}${o.buildStyle ? `<span class="chip">${esc(o.buildStyle)}</span>` : ""}</div>
+            </div>
+            <div class="grade g-${esc(grade)}" title="점수 ${score}">${esc(grade)}</div>
+          </div>
+          <div class="bar" title="${score}/100"><i style="width:${score}%"></i></div>
+          ${o.sticker ? `<div class="sticker">★ HEARTSTEEL 스티커 · ${esc(o.sticker)}</div>` : ""}
+          ${o.reason ? `<div class="reason">${esc(o.reason)}</div>` : ""}
+          <details><summary class="small muted">효과</summary><div class="desc">${esc(o.desc || "설명 없음")}</div></details>
+          <div class="act"><button class="btn ${o.isPick ? "primary" : ""}" data-choose="${esc(o.name)}" ${d.chosen ? "disabled" : ""}>${d.chosen === o.name ? "✓ 골랐어요" : "이걸로 골랐어"}</button></div>
+        </div>`;
+      }).join("")}
+    </div>
+    ${picked ? `<div class="picked"><span class="small muted">지금까지:</span>${picked}</div>` : ""}
+    ${d.offerAgeSec != null ? `<div class="small muted" style="margin-top:8px">화면에서 ${d.offerAgeSec}초 전에 읽은 선택지</div>` : ""}`;
+}
+
+// ---------- 게임 패널 (구매 / 적응 / 증강 / 팀) ----------
+function header(h) {
+  if (!h) return "";
+  return `<div class="head">
+    ${img(h.icon, "", h.champion)}
+    <div><h1>${esc(h.champion || "내 챔피언")}${h.level ? ` <span class="muted small">Lv.${h.level}</span>` : ""}</h1>
+      <div class="sub">${[h.kda && `KDA ${h.kda}`, h.time, h.score && `팀 킬 ${h.score}`].filter(Boolean).map(esc).join(" · ")}</div>
+      ${h.event ? `<div style="margin-top:4px"><span class="chip event">🎤 이번 판: ${esc(h.event)}</span></div>` : ""}</div>
+    ${h.gold != null ? `<div class="right"><div class="gold-num">${Number(h.gold).toLocaleString()} G</div><div class="sub">보유 골드</div></div>` : ""}
+  </div>`;
+}
+
+function renderPanel(d) {
+  const tabs = [["buy", "구매"], ["adapt", "적응"], ["augs", "증강"], ["team", "팀"]];
+  let body = "";
+  if (state.tab === "buy") {
+    body = d.buy?.length ? `<div class="list">${d.buy.map((b, i) => `
+      <div class="item">
+        <span class="step">${i + 1}</span>${img(b.icon, "ic", b.name)}
+        <div><div class="n">${esc(b.name)}</div><div class="small muted">${esc(b.reason || "")}</div></div>
+        <div class="num">${b.gold != null ? `<span class="${b.affordable ? "gold-num" : "muted"}">${b.gold.toLocaleString()} G</span>` : ""}${b.affordable ? `<div class="small" style="color:var(--good)">지금 구매 가능</div>` : b.short ? `<div class="small muted">${b.short.toLocaleString()} G 부족</div>` : ""}</div>
+      </div>`).join("")}</div>` : `<div class="empty">추천 아이템이 아직 없어요. 채팅에서 "다음 템 뭐 사?"라고 물어보세요.</div>`;
+    if (d.myItems?.length) body += `<div class="section" style="margin-top:12px"><h4>지금 아이템</h4><div class="row" style="flex-wrap:wrap">${d.myItems.map((it) => `<span class="chip">${img(it.icon, "ic", it.name)}${esc(it.name)}</span>`).join("")}</div></div>`;
+  } else if (state.tab === "adapt") {
+    const a = d.adapt || {};
+    const ap = a.magicPct ?? 50;
+    body = `
+      <div class="section"><h4>적 피해 유형</h4>
+        <div class="split"><span class="ap" style="width:${ap}%"></span><span class="ad" style="width:${100 - ap}%"></span></div>
+        <div class="legend"><span style="color:var(--ap)">마법 ${ap}%</span><span style="color:var(--ad)">물리 ${100 - ap}%</span></div></div>
+      ${a.fed?.length ? `<div class="section"><h4>성장한 적</h4>${a.fed.map((f) => `<div class="warn">⚠ ${esc(f)}</div>`).join("")}</div>` : ""}
+      ${a.tanks?.length ? `<div class="section"><h4>탱커</h4>${a.tanks.map((t) => `<span class="chip">${esc(t)}</span>`).join(" ")}</div>` : ""}
+      ${a.notes?.length ? `<div class="section"><h4>코치 메모</h4><div class="list">${a.notes.map((n) => `<div class="item"><div>${esc(n)}</div></div>`).join("")}</div></div>` : ""}`;
+  } else if (state.tab === "augs") {
+    body = d.augments?.length
+      ? `<div class="list">${d.augments.map((p) => `<div class="item">${img(p.icon, "ic", p.name)}<div><div class="n">${esc(p.name)}</div><div class="small muted">${esc(p.rarity || "")}</div></div></div>`).join("")}</div>`
+      : `<div class="empty">고른 증강이 아직 없어요.</div>`;
+  } else {
+    const side = (title, list) => `<div><h4 class="muted small">${title}</h4>${(list || []).map((p) => `
+      <div class="pl">${img(p.icon, "ic", p.champion)}<div><div>${esc(p.champion)}</div><div class="small muted">Lv.${esc(p.level)} · ${esc(p.kda)}</div></div>
+      <div class="its">${(p.items || []).map((it) => img(it.icon, "", it.name)).join("")}</div></div>`).join("") || `<div class="muted small">정보 없음</div>`}</div>`;
+    body = `<div class="team">${side("아군", d.allies)}${side("적", d.enemies)}</div>`;
+  }
+  return `
+    ${header(d.header)}
+    ${!d.inGame ? `<div class="summary small">진행 중인 게임이 잡히지 않아 입력된 정보로 보여줍니다.</div>` : ""}
+    <div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button class="tab" role="tab" aria-selected="${state.tab === k}" data-tab="${k}">${l}</button>`).join("")}</div>
+    ${body}
+    <div class="foot"><button class="btn" data-refresh>새로고침</button></div>`;
+}
+
+function render() {
+  const d = state.data;
+  const root = $("#root");
+  if (!d) { root.innerHTML = `<div class="empty">불러오는 중…</div>`; return; }
+  root.innerHTML = d.view === "augments" ? renderAugments(d) : renderPanel(d);
+}
+
+// ---------- 상호작용 ----------
+document.addEventListener("click", async (e) => {
+  const t = e.target.closest("[data-tab],[data-choose],[data-refresh]");
+  if (!t) return;
+  if (t.dataset.tab) { state.tab = t.dataset.tab; render(); return; }
+  if (t.dataset.choose) {
+    const name = t.dataset.choose;
+    t.disabled = true;
+    try {
+      if (app) await app.callServerTool({ name: "set_game_context", arguments: { addAugment: name } });
+      state.data.chosen = name;
+      render();
+    } catch (err) { t.disabled = false; t.textContent = "기록 실패, 다시 시도"; }
+    return;
+  }
+  if (t.dataset.refresh && app && state.lastArgs) {
+    t.disabled = true; t.textContent = "불러오는 중…";
+    try {
+      const r = await app.callServerTool({ name: "show_game_panel", arguments: state.lastArgs });
+      if (r?.structuredContent) { state.data = r.structuredContent; }
+    } finally { render(); }
+  }
+});
+
+function onResult(params) {
+  const sc = params?.structuredContent;
+  if (sc && sc.view) { state.data = sc; render(); }
+}
+
+// ---------- 호스트 연결 ----------
+if (location.hash === "#preview" && globalThis.__PREVIEW__) {
+  state.data = globalThis.__PREVIEW__;
+  if (location.search.includes("tab=")) state.tab = new URLSearchParams(location.search).get("tab");
+  render();
+} else if (App) {
+  app = new App({ name: "lol-aram-coach", version: "1.0.0" });
+  app.ontoolinput = (p) => { if (p?.arguments) state.lastArgs = p.arguments; };
+  app.ontoolresult = onResult;
+  app.onhostcontextchanged = (ctx) => {
+    if (ctx?.theme) applyDocumentTheme?.(ctx.theme);
+    if (ctx?.styles?.variables) applyHostStyleVariables?.(ctx.styles.variables);
+    if (ctx?.styles?.css?.fonts) applyHostFonts?.(ctx.styles.css.fonts);
+  };
+  await app.connect();
+  const ctx = app.getHostContext?.();
+  if (ctx) app.onhostcontextchanged(ctx);
+}
+</script>
+</body>
+</html>

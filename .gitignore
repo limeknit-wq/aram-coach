@@ -1,0 +1,5 @@
+node_modules/
+dist/
+*.log
+# 세션 이동 때 복사된 예전 사본
+/lol-aram-mcp/

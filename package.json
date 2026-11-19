@@ -1,0 +1,30 @@
+{
+  "name": "lol-aram-mcp",
+  "version": "0.4.0",
+  "description": "증강 칼바람(ARAM: Mayhem) 증강·아이템 선택 도우미 MCP 서버. 각자 쓰는 Claude/ChatGPT가 판단하고, 이 서버는 게임 데이터와 실시간 게임 상황만 제공합니다.",
+  "type": "module",
+  "bin": {
+    "lol-aram-mcp": "src/main.js"
+  },
+  "scripts": {
+    "start": "node src/main.js",
+    "start:mcp": "node src/main.js --mcp",
+    "start:http": "node src/main.js --http",
+    "build:augments": "node scripts/build-augments.mjs",
+    "build:exe": "node scripts/build-exe.mjs",
+    "test": "node scripts/smoke-test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "^1.7.5",
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "postject": "^1.0.0-alpha.6",
+    "rcedit": "^5.0.2"
+  }
+}

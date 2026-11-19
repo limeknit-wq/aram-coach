@@ -1,0 +1,4496 @@
+{
+ "mode": "KIWI (증강 칼바람 / ARAM: Mayhem)",
+ "lang": "ko_kr",
+ "builtAt": "2026-11-19T12:27:57.202Z",
+ "augments": [
+  {
+   "id": 1180,
+   "apiName": "ARAM_BigBrain",
+   "name": "전술적 대비",
+   "nameEn": "Big Brain",
+   "rarity": "골드",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/bigbrain_large.png",
+   "desc": "각 라운드 시작 시 주문력 1당 3의 피해를 흡수하는 보호막을 얻습니다."
+  },
+  {
+   "id": 1141,
+   "apiName": "ARAM_AllForYou",
+   "name": "너만을 위해",
+   "nameEn": "All For You",
+   "rarity": "골드",
+   "tags": [
+    "Resilience",
+    "Ally"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/allforyou_large.png",
+   "desc": "아군에게 사용하는 체력 회복 및 보호막 효과가 25% 증가합니다."
+  },
+  {
+   "id": 1002,
+   "apiName": "ARAM_ApexInventor",
+   "name": "최첨단 발명가",
+   "nameEn": "Apex Inventor",
+   "rarity": "골드",
+   "tags": [
+    "Speed",
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/apexinventor_large.png",
+   "desc": "아이템 가속이 100 증가합니다. (50%의 아이템 재사용 대기시간 감소 효과와 동일)\n\n아이템 가속은 모든 아이템 스킬의 재사용 대기시간을 감소시킵니다."
+  },
+  {
+   "id": 1004,
+   "apiName": "ARAM_BacktoBasics",
+   "name": "기본으로 돌아가기",
+   "nameEn": "Back To Basics",
+   "rarity": "프리즘",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/backtobasics_large.png",
+   "desc": "궁극기가 봉인됩니다. 스킬 피해량이 25% 증가합니다. 체력 회복량, 보호막 흡수량이 증가하고 45의 스킬 가속을 얻습니다."
+  },
+  {
+   "id": 1007,
+   "apiName": "ARAM_BluntForce",
+   "name": "육중한 힘",
+   "nameEn": "Blunt Force",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/bluntforce_large.png",
+   "desc": "공격력이 10% 증가합니다."
+  },
+  {
+   "id": 1103,
+   "apiName": "ARAM_BreadAndButter",
+   "name": "빵과 버터",
+   "nameEn": "Bread And Butter",
+   "rarity": "골드",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_gold.png",
+   "desc": "? 스킬 가속을 100 얻습니다."
+  },
+  {
+   "id": 1151,
+   "apiName": "ARAM_BreadAndCheese",
+   "name": "빵과 치즈",
+   "nameEn": "Bread and Cheese",
+   "rarity": "골드",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_gold.png",
+   "desc": "E 스킬 가속을 100 얻습니다."
+  },
+  {
+   "id": 1150,
+   "apiName": "ARAM_BreadAndJam",
+   "name": "빵과 잼",
+   "nameEn": "Bread And Jam",
+   "rarity": "골드",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_gold.png",
+   "desc": "W 스킬 가속을 100 얻습니다."
+  },
+  {
+   "id": 1011,
+   "apiName": "ARAM_CantTouchThis",
+   "name": "난공불락",
+   "nameEn": "Can't Touch This",
+   "rarity": "프리즘",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/canttouchthis_large.png",
+   "desc": "궁극기를 사용하면 2초 동안 무적 상태가 됩니다. (재사용 대기시간 8초)"
+  },
+  {
+   "id": 1013,
+   "apiName": "ARAM_CelestialBody",
+   "name": "천상의 신체",
+   "nameEn": "Celestial Body",
+   "rarity": "골드",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/celestialbody_large.png",
+   "desc": "1000의 체력을 얻지만, 피해량이 10% 감소합니다."
+  },
+  {
+   "id": 1015,
+   "apiName": "ARAM_CircleofDeath",
+   "name": "죽음의 순환",
+   "nameEn": "Circle of Death",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/circleofdeath_large.png",
+   "desc": "체력을 회복하거나 체력을 재생하면 가장 가까운 적 챔피언에게 마법 피해를 입힙니다."
+  },
+  {
+   "id": 1018,
+   "apiName": "ARAM_CourageoftheColossus",
+   "name": "거석상의 용기",
+   "nameEn": "Courage of the Colossus",
+   "rarity": "프리즘",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/courageofthecolossus_large.png",
+   "desc": "적 챔피언을 이동 불가 상태로 만들거나 이동 스킬을 사용할 수 없게 하면 ?의 보호막을 얻습니다."
+  },
+  {
+   "id": 1118,
+   "apiName": "ARAM_CriticalHealing",
+   "name": "치명적 치유",
+   "nameEn": "Critical Healing",
+   "rarity": "골드",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/criticalhealing_large.png",
+   "desc": "체력 회복 및 보호막 효과에 치명타가 적용되어 35% 증폭될 수 있습니다. 치명타 확률이 25% 증가합니다."
+  },
+  {
+   "id": 1019,
+   "apiName": "ARAM_Dashing",
+   "name": "돌진",
+   "nameEn": "Dashing",
+   "rarity": "프리즘",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/dashing_large.png",
+   "desc": "돌진, 도약, 점멸, 순간이동 스킬의 스킬 가속이 200만큼 증가합니다."
+  },
+  {
+   "id": 1020,
+   "apiName": "ARAM_DawnbringersResolve",
+   "name": "빛의 인도자 결의",
+   "nameEn": "Dawnbringer's Resolve",
+   "rarity": "골드",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/dawnbringersresolve_large.png",
+   "desc": "체력이 60% 아래로 떨어지면 3초 동안 최대 체력의 35%를 회복합니다. \n사망 시 또는 ?초마다 초기화됩니다."
+  },
+  {
+   "id": 1022,
+   "apiName": "ARAM_Deft",
+   "name": "능수능란",
+   "nameEn": "Deft",
+   "rarity": "실버",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/deft_large.png",
+   "desc": "60%의 공격 속도를 얻습니다."
+  },
+  {
+   "id": 1025,
+   "apiName": "ARAM_DiveBomber",
+   "name": "폭격기",
+   "nameEn": "Dive Bomber",
+   "rarity": "실버",
+   "tags": [
+    "Ally",
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/divebomber_large.png",
+   "desc": "라운드마다 처음으로 사망하는 아군이 폭발해 막대한 고정 피해를 입힙니다."
+  },
+  {
+   "id": 1026,
+   "apiName": "ARAM_DontBlink",
+   "name": "속전속결",
+   "nameEn": "Don't Blink",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/dontblink_large.png",
+   "desc": "대상보다 이동 속도가 10 높을 때마다 추가 피해량이 1% 증가합니다."
+  },
+  {
+   "id": 1029,
+   "apiName": "ARAM_EtherealWeapon",
+   "name": "환영 무기",
+   "nameEn": "Ethereal Weapon",
+   "rarity": "골드",
+   "tags": [
+    "Damage",
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/etherealweapon_large.png",
+   "desc": "스킬이 적중 시 효과를 적용합니다. 대상마다 1초의 재사용 대기시간이 적용됩니다."
+  },
+  {
+   "id": 1030,
+   "apiName": "ARAM_Eureka",
+   "name": "유레카",
+   "nameEn": "Eureka",
+   "rarity": "프리즘",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/eureka_large.png",
+   "desc": "주문력의 20%에 해당하는 스킬 가속을 얻습니다."
+  },
+  {
+   "id": 1036,
+   "apiName": "ARAM_Firebrand",
+   "name": "화염 낙인",
+   "nameEn": "Firebrand",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/firebrand_large.png",
+   "desc": "기본 공격 시 무한히 중첩되는 화상() 효과를 적용해 지속적으로 피해를 입힙니다."
+  },
+  {
+   "id": 1037,
+   "apiName": "ARAM_FirstAidKit",
+   "name": "응급처치 키트",
+   "nameEn": "First-Aid Kit",
+   "rarity": "실버",
+   "tags": [
+    "Utility",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/firstaidkit_large.png",
+   "desc": "체력 회복 및 보호막 효과가 20% 증가합니다."
+  },
+  {
+   "id": 1116,
+   "apiName": "ARAM_Flashy",
+   "name": "점멸 난사",
+   "nameEn": "Flashy",
+   "rarity": "골드",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/flashy_large.png",
+   "desc": "점멸 사용 가능 횟수가 4번, 재사용 대기시간이 2초가 됩니다."
+  },
+  {
+   "id": 1322,
+   "apiName": "ARAM_GetExcited",
+   "name": "신난다!",
+   "nameEn": "Get Excited!",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/getexcited_large.png",
+   "desc": "처치 관여 시 ?초 동안 이동 속도 및 공격 속도를 얻습니다."
+  },
+  {
+   "id": 1041,
+   "apiName": "ARAM_Goliath",
+   "name": "거인",
+   "nameEn": "Goliath",
+   "rarity": "프리즘",
+   "tags": [
+    "Resilience",
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/goliath_large.png",
+   "desc": "크기가 커져 체력이 15% 증가하고 적응형 능력치가 10% 증가합니다."
+  },
+  {
+   "id": 1138,
+   "apiName": "ARAM_Goredrink",
+   "name": "선혈포식",
+   "nameEn": "Goredrink",
+   "rarity": "실버",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/goredrink_large.png",
+   "desc": "모든 피해 흡혈 15%를 얻습니다."
+  },
+  {
+   "id": 1181,
+   "apiName": "ARAM_HeavyHitter",
+   "name": "강타자",
+   "nameEn": "Heavy Hitter",
+   "rarity": "실버",
+   "tags": [
+    "Resilience",
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/heavyhitter_large.png",
+   "desc": "기본 공격 시 최대 체력의 3.5%에 해당하는 추가 물리 피해를 입힙니다."
+  },
+  {
+   "id": 1044,
+   "apiName": "ARAM_IceCold",
+   "name": "차가운 냉기",
+   "nameEn": "Ice Cold",
+   "rarity": "실버",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/icecold_large.png",
+   "desc": "둔화 효과가 이동 속도를 추가로 75 감소시킵니다."
+  },
+  {
+   "id": 1045,
+   "apiName": "ARAM_InfernalConduit",
+   "name": "지옥의 전도체",
+   "nameEn": "Infernal Conduit",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage",
+    "Speed"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/infernalconduit_large.png",
+   "desc": "스킬 사용 시 무한히 중첩되는 화상 효과를 적용해 지속적으로 마법 피해를 입힙니다.\n\n화상 효과가 기본 스킬의 재사용 대기시간을 감소시킵니다."
+  },
+  {
+   "id": 1046,
+   "apiName": "ARAM_InfernalSoul",
+   "name": "지옥불 영혼",
+   "nameEn": "Infernal Soul",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/infernalsoul_large.png",
+   "desc": "스킬 또는 기본 공격으로 적을 공격할 때마다 추가 피해를 입히는 화염의 드래곤 영혼을 얻습니다."
+  },
+  {
+   "id": 1047,
+   "apiName": "ARAM_ItsCritical",
+   "name": "치명적인 공격",
+   "nameEn": "It's Critical",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/itscritical_large.png",
+   "desc": "치명타 확률이 50% 증가합니다."
+  },
+  {
+   "id": 1048,
+   "apiName": "ARAM_JeweledGauntlet",
+   "name": "보석 건틀릿",
+   "nameEn": "Jeweled Gauntlet",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/jeweledgauntlet_large.png",
+   "desc": "스킬에 총 140%의 피해를 입히는 치명타가 적용될 수 있습니다. 치명타 확률이 25% 증가합니다. \n\n 치명타 확률을 ? 얻습니다."
+  },
+  {
+   "id": 1305,
+   "apiName": "ARAM_LegDay",
+   "name": "하체 운동의 날",
+   "nameEn": "Leg Day",
+   "rarity": "실버",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/legday_large.png",
+   "desc": "40의 이동 속도와 35%의 둔화 저항을 얻습니다."
+  },
+  {
+   "id": 1053,
+   "apiName": "ARAM_MadScientist",
+   "name": "미친 과학자",
+   "nameEn": "Mad Scientist",
+   "rarity": "프리즘",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/madscientist_large.png",
+   "desc": "부활할 때마다 크기가 커져 30%의 적응형 능력치와 20%의 체력을 얻거나, 크기가 작아져 70의 스킬 가속과 40%의 이동 속도를 얻습니다."
+  },
+  {
+   "id": 1129,
+   "apiName": "ARAM_Marksmage",
+   "name": "마법 명사수",
+   "nameEn": "Marksmage",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/marksmage_large.png",
+   "desc": "기본 공격 시 주문력의 75%만큼 추가 물리 피해를 입힙니다."
+  },
+  {
+   "id": 1054,
+   "apiName": "ARAM_MasterofDuality",
+   "name": "결투의 대가",
+   "nameEn": "Master of Duality",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/masterofduality_large.png",
+   "desc": "기본 공격 시 중첩되는 주문력을 얻고 스킬로 적에게 피해를 입히면 공격력을 얻습니다."
+  },
+  {
+   "id": 1056,
+   "apiName": "ARAM_MindtoMatter",
+   "name": "정신 변환",
+   "nameEn": "Mind to Matter",
+   "rarity": "실버",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/mindtomatter_large.png",
+   "desc": "최대 체력이 마나의 절반만큼 증가합니다."
+  },
+  {
+   "id": 1104,
+   "apiName": "ARAM_Minionmancer",
+   "name": "소환술사",
+   "nameEn": "Minionmancer",
+   "rarity": "골드",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/minionmancer_large.png",
+   "desc": "소환물의 크기, 체력, 피해량이 55% 증가합니다."
+  },
+  {
+   "id": 1057,
+   "apiName": "ARAM_MountainSoul",
+   "name": "대지의 영혼",
+   "nameEn": "Mountain Soul",
+   "rarity": "실버",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/mountainsoul_large.png",
+   "desc": "전투에서 벗어나면 잠시 동안 보호막을 획득하는 대지의 영혼을 얻습니다."
+  },
+  {
+   "id": 1058,
+   "apiName": "ARAM_MysticPunch",
+   "name": "신비한 주먹",
+   "nameEn": "Mystic Punch",
+   "rarity": "프리즘",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/mysticpunch_large.png",
+   "desc": "적중 시 스킬의 재사용 대기시간이 1.25초 감소합니다."
+  },
+  {
+   "id": 1060,
+   "apiName": "ARAM_OceanSoul",
+   "name": "바다의 영혼",
+   "nameEn": "Ocean Soul",
+   "rarity": "실버",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/oceansoul_large.png",
+   "desc": "적에게 피해를 입힌 후 높은 체력 및 마나 재생 효과를 얻는 바다의 영혼을 획득합니다."
+  },
+  {
+   "id": 1062,
+   "apiName": "ARAM_OmniSoul",
+   "name": "전능의 영혼",
+   "nameEn": "Omni Soul",
+   "rarity": "프리즘",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/omnisoul_large.png",
+   "desc": "무작위 드래곤 영혼 2개를 획득합니다."
+  },
+  {
+   "id": 1063,
+   "apiName": "ARAM_OutlawsGrit",
+   "name": "무법자의 투지",
+   "nameEn": "Outlaw's Grit",
+   "rarity": "골드",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/outlawsgrit_large.png",
+   "desc": "돌진, 점멸, 순간이동 스킬을 사용한 후 10의 방어력 및 마법 저항력을 얻습니다. 최대 5회 중첩됩니다."
+  },
+  {
+   "id": 1311,
+   "apiName": "ARAM_Overflow",
+   "name": "범람",
+   "nameEn": "Overflow",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/overflow_large.png",
+   "desc": "마나 소모량이 2배가 됩니다. \n\n스킬의 체력 회복량, 보호막 흡수량 및 피해량이 최대 마나에 비례해 증가합니다."
+  },
+  {
+   "id": 1324,
+   "apiName": "ARAM_ProteinShake",
+   "name": "프로틴 음료",
+   "nameEn": "Protein Shake",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/proteinshake_large.png",
+   "desc": "추가 방어력 및 마법 저항력에 비례하여 ?%의 체력 회복 및 보호막 효과를 얻습니다."
+  },
+  {
+   "id": 1154,
+   "apiName": "ARAM_Quest_UrfsChampion",
+   "name": "우르프의 챔피언",
+   "nameEn": "Urf's Champion",
+   "rarity": "프리즘",
+   "tags": [
+    "General",
+    "Damage",
+    "Quest"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/quest_urfschampion_large.png",
+   "desc": "조건: 처치에 10회 관여해야 합니다.\n\n보상: 황금 뒤집개"
+  },
+  {
+   "id": 1156,
+   "apiName": "ARAM_Quest_WoogletsWitchcap",
+   "name": "우글렛의 마녀 모자",
+   "nameEn": "Wooglet's Witchcap",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage",
+    "Utility",
+    "Quest"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/quest_woogletswitchcap_large.png",
+   "desc": "즉시: 쓸데없이 큰 지팡이를 획득합니다.\n\n조건: 라바돈의 죽음모자와 존야의 모래시계를 보유해야 합니다.\n\n보상: 우글렛의 마녀 모자를 획득합니다."
+  },
+  {
+   "id": 1067,
+   "apiName": "ARAM_RabbleRousing",
+   "name": "원기 회복",
+   "nameEn": "Rejuvenation",
+   "rarity": "골드",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/rabblerousing_large.png",
+   "desc": "? 스킬 사용 시 체력을 회복합니다."
+  },
+  {
+   "id": 1068,
+   "apiName": "ARAM_Recursion",
+   "name": "되풀이",
+   "nameEn": "Recursion",
+   "rarity": "골드",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/recursion_large.png",
+   "desc": "스킬 가속이 40 증가합니다."
+  },
+  {
+   "id": 1170,
+   "apiName": "ARAM_ScopedWeapons",
+   "name": "조준경 부착",
+   "nameEn": "Scoped Weapons",
+   "rarity": "실버",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/scopedweapons_large.png",
+   "desc": "공격 사거리가 ? 증가합니다."
+  },
+  {
+   "id": 1071,
+   "apiName": "ARAM_ScopierWeapons",
+   "name": "상급 조준경 부착",
+   "nameEn": "Scopier Weapons",
+   "rarity": "골드",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/scopierweapons_large.png",
+   "desc": "공격 사거리가 ? 증가합니다."
+  },
+  {
+   "id": 1115,
+   "apiName": "ARAM_ScopiestWeapons",
+   "name": "최상급 조준경 부착",
+   "nameEn": "Scopiest Weapons",
+   "rarity": "프리즘",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/scopiestweapons_large.png",
+   "desc": "공격 사거리가 ? 증가합니다."
+  },
+  {
+   "id": 1113,
+   "apiName": "ARAM_SkilledSniper",
+   "name": "노련한 저격수",
+   "nameEn": "Skilled Sniper",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/skilledsniper_large.png",
+   "desc": "멀리 떨어진 적에게 궁극기 이외의 스킬을 적중시키면 해당 스킬의 재사용 대기시간이 대폭 감소합니다."
+  },
+  {
+   "id": 1136,
+   "apiName": "ARAM_SlapAround",
+   "name": "우당탕탕",
+   "nameEn": "Slap Around",
+   "rarity": "실버",
+   "tags": [
+    "Damage",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/slaparound_large.png",
+   "desc": "적을 이동 불가 상태로 만들거나 이동 스킬을 사용할 수 없게 하면 해당 라운드에 15의 적응형 능력치를 얻습니다."
+  },
+  {
+   "id": 1076,
+   "apiName": "ARAM_SonicBoom",
+   "name": "음속 폭발",
+   "nameEn": "Sonic Boom",
+   "rarity": "실버",
+   "tags": [
+    "Ally",
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/sonicboom_large.png",
+   "desc": "아군에게 이로운 효과, 회복, 보호막을 부여하면 아군 주변 적들에게 피해를 입히고 둔화시킵니다."
+  },
+  {
+   "id": 1077,
+   "apiName": "ARAM_SoulSiphon",
+   "name": "영혼 흡수",
+   "nameEn": "Soul Siphon",
+   "rarity": "골드",
+   "tags": [
+    "Damage",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/soulsiphon_large.png",
+   "desc": "치명타로 입힌 피해량의 10%만큼 체력을 회복합니다. \n\n 치명타 확률이 25% 증가합니다."
+  },
+  {
+   "id": 1214,
+   "apiName": "ARAM_SpinToWin",
+   "name": "승리를 위한 회전",
+   "nameEn": "Spin To Win",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/spintowin_large.png",
+   "desc": "회전 스킬의 피해량이 35%, 스킬 가속이 25 증가합니다!"
+  },
+  {
+   "id": 1353,
+   "apiName": "ARAM_TankEngine",
+   "name": "탱크 엔진",
+   "nameEn": "Tank Engine",
+   "rarity": "골드",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/tank_engine_large.png",
+   "desc": "처치 관여 시 중첩을 얻어 크기가 커지고 최대 체력이 증가합니다. 사망 시 중첩을 잃습니다."
+  },
+  {
+   "id": 1080,
+   "apiName": "ARAM_TankItOrLeaveIt",
+   "name": "확률적 방어",
+   "nameEn": "Tank It Or Leave It",
+   "rarity": "실버",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/tankitorleaveit_large.png",
+   "desc": "공격당할 때 치명타 확률(최대 50%)에 따라 치명 방어가 발동해 받는 피해가 감소할 수 있습니다. \n\n 치명타 확률이 25% 증가합니다."
+  },
+  {
+   "id": 1081,
+   "apiName": "ARAM_TapDancer",
+   "name": "탭 댄서",
+   "nameEn": "Tap Dancer",
+   "rarity": "프리즘",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/tapdancer_large.png",
+   "desc": "기본 공격 시 이동 속도가 증가합니다. 이동 속도에 비례하여 공격 속도가 증가합니다."
+  },
+  {
+   "id": 1084,
+   "apiName": "ARAM_ThreadtheNeedle",
+   "name": "바늘에 실 끼우기",
+   "nameEn": "Thread the Needle",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/threadtheneedle_large.png",
+   "desc": "방어구 관통력 및 마법 관통력 15%를 얻습니다."
+  },
+  {
+   "id": 1320,
+   "apiName": "ARAM_Upgrade_Collector",
+   "name": "징수의 총 업그레이드",
+   "nameEn": "Upgrade Collector",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/upgradecollector_large.png",
+   "desc": "징수의 총 기본 지속 효과로 적을 처형하면 처형 기준치가 높아지며 추가 골드를 얻습니다. \n250골드를 획득합니다."
+  },
+  {
+   "id": 1336,
+   "apiName": "ARAM_Upgrade_IE",
+   "name": "무한의 대검 업그레이드",
+   "nameEn": "Upgrade Infinity Edge",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/upgradeie_large.png",
+   "desc": "500골드를 얻습니다.\n무한의 대검을 보유하고 있으면 치명타 확률이 기본 공격 시 무작위로 치명타 피해량을 부여합니다."
+  },
+  {
+   "id": 1319,
+   "apiName": "ARAM_Upgrade_Immolate",
+   "name": "불사르기 업그레이드",
+   "nameEn": "Upgrade Immolate",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/upgradeimmolate_large.png",
+   "desc": "공허한 광휘 및 태양불꽃 방패가 불사르기 효과가 적용된 대상 수에 비례하여 ?골드를 제공합니다. 250골드를 획득합니다."
+  },
+  {
+   "id": 1318,
+   "apiName": "ARAM_Upgrade_ZH",
+   "name": "존야 업그레이드",
+   "nameEn": "Upgrade Zhonya's",
+   "rarity": "실버",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/upgradezh_large.png",
+   "desc": "존야의 모래시계 재사용 대기시간이 ?초로 감소합니다. 이제 존야의 모래시계, 추적자의 팔목 보호대 또는 우글렛의 마녀모자 경직 상태에서 이동할 수 있으며 이동 속도가 증가합니다.\n\n250골드를 획득합니다."
+  },
+  {
+   "id": 1092,
+   "apiName": "ARAM_Vulnerability",
+   "name": "취약",
+   "nameEn": "Vulnerability",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/vulnerability_large.png",
+   "desc": "아이템 및 지속 피해 효과에 치명타가 적용될 수 있습니다. \n\n 치명타 확률이 25% 증가합니다."
+  },
+  {
+   "id": 1097,
+   "apiName": "ARAM_WitchfulThinking",
+   "name": "사악한 정신",
+   "nameEn": "Witchful Thinking",
+   "rarity": "실버",
+   "tags": [
+    "Damage",
+    "General"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/witchfulthinking_large.png",
+   "desc": "주문력이 60 증가합니다."
+  },
+  {
+   "id": 1098,
+   "apiName": "ARAM_WithHaste",
+   "name": "속행",
+   "nameEn": "With Haste",
+   "rarity": "골드",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/withhaste_large.png",
+   "desc": "스킬 가속의 120%에 해당하는 이동 속도를 얻습니다."
+  },
+  {
+   "id": 1326,
+   "apiName": "Nightstalking",
+   "name": "밤의 추적",
+   "nameEn": "Nightstalking",
+   "rarity": "골드",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/nightstalking_large.png",
+   "desc": "자신이 피해를 입힌 챔피언이 ?초 안에 죽으면 이동 속도가 증가하고 투명 상태가 됩니다."
+  },
+  {
+   "id": 1028,
+   "apiName": "ARAM_Erosion",
+   "name": "부식",
+   "nameEn": "Erosion",
+   "rarity": "실버",
+   "tags": [
+    "Utility",
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/erosion_large.png",
+   "desc": "적에게 피해를 입히면 4초 동안 방어력 및 마법 저항력 감소 중첩을 얻습니다."
+  },
+  {
+   "id": 1034,
+   "apiName": "VeilOfWarding",
+   "name": "감시의 장막",
+   "nameEn": "Veil of Warding",
+   "rarity": "실버",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/poltergeist_large.png",
+   "desc": "?초마다 적의 다음 스킬을 막아 주는 주문 방어막을 생성합니다."
+  },
+  {
+   "id": 1211,
+   "apiName": "ARAM_ItsKillingTime",
+   "name": "처형 시간",
+   "nameEn": "It's Killing Time",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/itskillingtime_large.png",
+   "desc": "궁극기 사용 후 모든 적 챔피언에게 죽음의 표식을 남깁니다. 표식은 대상이 받는 피해의 35%를 비축하며, 5초 후에 폭발해 비축된 피해를 입힙니다. (재사용 대기시간 8초)"
+  },
+  {
+   "id": 1105,
+   "apiName": "ARAM_Homeguard",
+   "name": "민병대",
+   "nameEn": "Homeguard",
+   "rarity": "실버",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/homeguard_large.png",
+   "desc": "이동 속도가 70% 증가합니다. 피해를 입은 후 3초 동안은 효과가 멈춥니다."
+  },
+  {
+   "id": 1051,
+   "apiName": "ARAM_LightemUp",
+   "name": "불을 밝혀",
+   "nameEn": "Light 'Em Up!",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/lightemup_large.png",
+   "desc": "4번째 기본 공격마다 투사체 4개를 발사해 적중 시 마법 피해를 입힙니다."
+  },
+  {
+   "id": 1072,
+   "apiName": "ARAM_SearingDawn",
+   "name": "타오르는 새벽",
+   "nameEn": "Searing Dawn",
+   "rarity": "골드",
+   "tags": [
+    "Damage",
+    "Ally"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/searingdawn_large.png",
+   "desc": "스킬이 적에게 표식을 남깁니다. 적은 아군의 다음 기본 공격 또는 스킬로부터 마법 피해를 추가로 입습니다."
+  },
+  {
+   "id": 1073,
+   "apiName": "ARAM_ShadowRunner",
+   "name": "그림자 질주",
+   "nameEn": "Shadow Runner",
+   "rarity": "실버",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/shadowrunner_large.png",
+   "desc": "돌진, 점멸, 순간이동 스킬을 사용하거나 은신 상태에서 벗어난 후 2초 동안 이동 속도가 200 증가합니다."
+  },
+  {
+   "id": 1087,
+   "apiName": "ARAM_Typhoon",
+   "name": "태풍",
+   "nameEn": "Typhoon",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/typhoon_large.png",
+   "desc": "기본 공격 시 추가 대상에게 투사체를 발사해 20%의 피해를 입히고 적중 시 효과를 적용합니다."
+  },
+  {
+   "id": 1095,
+   "apiName": "ARAM_WindspeakersBlessing",
+   "name": "바람전달자의 축복",
+   "nameEn": "Windspeaker's Blessing",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/windspeakersblessing_large.png",
+   "desc": "회복 및 보호막 효과를 부여하면 3초 동안 대상의 방어력 및 마법 저항력이 증가합니다."
+  },
+  {
+   "id": 1112,
+   "apiName": "ARAM_UltimateUnstoppable",
+   "name": "궁극의 저지 불가",
+   "nameEn": "Ultimate Unstoppable",
+   "rarity": "실버",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/ultimateunstoppable_large.png",
+   "desc": "궁극기 사용 시 2초 동안 군중 제어 효과에 면역이 됩니다. (재사용 대기시간 8초)"
+  },
+  {
+   "id": 1301,
+   "apiName": "ARAM_DivineIntervention",
+   "name": "신성한 중재",
+   "nameEn": "Divine Intervention",
+   "rarity": "골드",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/slowactingpainkillers_large.png",
+   "desc": "25초마다 보호의 별을 자동 사용해 자신에게 서서히 내려오게 합니다. 별이 착지하면 자신과 주변 아군이 2.5초 동안 무적 상태가 됩니다."
+  },
+  {
+   "id": 1134,
+   "apiName": "ARAM_DrawYourSword",
+   "name": "검을 뽑아라",
+   "nameEn": "Draw Your Sword",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/drawyoursword_large.png",
+   "desc": "이제 근접 챔피언으로 간주됩니다. 25%의 공격력, 25%의 체력, 20%의 공격 속도, 25%의 생명력 흡수 효과, 15%의 이동 속도를 얻습니다. 각 능력치는 잃은 공격 사거리에 따라 추가로 증가합니다."
+  },
+  {
+   "id": 1225,
+   "apiName": "ARAM_DualWield",
+   "name": "양손잡이",
+   "nameEn": "Dual Wield",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/dualwield_large.png",
+   "desc": "기본 공격 시 감소한 적중 시 효과를 적용하는 투사체를 발사합니다. 총 공격 속도가 20% 증가합니다."
+  },
+  {
+   "id": 1194,
+   "apiName": "ARAM_FeyMagic",
+   "name": "요정 마법",
+   "nameEn": "Fey Magic",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/feymagic_large.png",
+   "desc": "궁극기로 적에게 피해를 입히면 2초 동안 변이시킵니다. (재사용 대기시간 15초)"
+  },
+  {
+   "id": 1187,
+   "apiName": "ARAM_Flashbang",
+   "name": "점멸탄",
+   "nameEn": "Flashbang",
+   "rarity": "실버",
+   "tags": [
+    "Speed",
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/flashbang_large.png",
+   "desc": "점멸 사용 시 주변에 폭발을 일으켜 적중당한 적에게 마법 피해를 입히고 둔화시킵니다. 추가로 점멸이 라운드마다 초기화됩니다."
+  },
+  {
+   "id": 1088,
+   "apiName": "ARAM_UltimateRevolution",
+   "name": "궁극기 대변혁",
+   "nameEn": "Ultimate Revolution",
+   "rarity": "프리즘",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/ultimaterevolution_large.png",
+   "desc": "라운드마다 한 번 궁극기를 사용한 다음 초기화합니다."
+  },
+  {
+   "id": 1133,
+   "apiName": "ARAM_MagicMissile",
+   "name": "마법 미사일",
+   "nameEn": "Magic Missile",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/maps/particles/kiwi/magicmissile_large.png",
+   "desc": "스킬로 피해를 입히면 각 적중당한 적에게 마법 탄환 3발을 발사합니다. 마법 탄환은 이동한 거리에 따라 최대 최대 체력의 1%에 해당하는 고정 피해를 입힙니다."
+  },
+  {
+   "id": 1061,
+   "apiName": "ARAM_OkBoomerang",
+   "name": "부메랑 투척",
+   "nameEn": "Ok Boomerang",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/okboomerang_large.png",
+   "desc": "자동 사용 7초마다 근처 적에게 부메랑을 던집니다."
+  },
+  {
+   "id": 1038,
+   "apiName": "ARAM_FromBeginningToEnd",
+   "name": "시작부터 끝까지",
+   "nameEn": "From Beginning To End",
+   "rarity": "골드",
+   "tags": [
+    "Damage",
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/frombeginningtoend_large.png",
+   "desc": "선제공격과 어둠의 수확 핵심 룬을 얻습니다.\n선제공격 - 챔피언에게 피해를 입히면 3초 동안 해당 챔피언이 받는 피해가 증가합니다. 지속시간 종료 시 입힌 추가 피해량에 따라 + 골드를 획득합니다.\n어둠의 수확 - 체력이 50% 아래인 적에게 피해를 입히면 추가 피해를 입히고 해당 추가 피해량이 영구적으로 증가합니다."
+  },
+  {
+   "id": 1149,
+   "apiName": "ARAM_Impassable",
+   "name": "넘을 수 없는 벽",
+   "nameEn": "Impassable",
+   "rarity": "골드",
+   "tags": [
+    "Utility",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/impassable_large.png",
+   "desc": "여진과 빙결 강화 핵심 룬을 얻습니다.\n여진: 적 챔피언을 이동 불가 상태로 만들면 방어력/마법 저항력이 증가하고 잠시 후 주변에 큰 마법 피해를 입힙니다.빙결 강화: 적 챔피언을 이동 불가 상태로 만들면 3줄기의 빙결 광선이 뻗어 나와 근처 적들을 둔화하고 아군에게 입히는 피해를 감소시킵니다."
+  },
+  {
+   "id": 1079,
+   "apiName": "ARAM_SymphonyofWar",
+   "name": "전장의 교향곡",
+   "nameEn": "Symphony of War",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage",
+    "Speed"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/symphonyofwar_large.png",
+   "desc": "치명적 속도와 정복자 핵심 룬을 얻습니다.\n치명적 속도 - 챔피언을 기본 공격하면 공격 속도가 증가합니다. 이 효과는 6회까지 중첩됩니다. 6회 중첩되면 기본 공격 시 투사체를 날려 추가 피해를 입힙니다.\n정복자 - 챔피언에게 기본 공격 및 스킬 적중 시 적응형 능력치를 얻습니다. 이 효과는 12회까지 중첩됩니다. 12회 중첩되면 챔피언에게 입힌 피해의 일정 비율만큼 체력을 회복합니다."
+  },
+  {
+   "id": 1332,
+   "apiName": "OminousPact",
+   "name": "불길한 서약",
+   "nameEn": "Ominous Pact",
+   "rarity": "프리즘",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/wisdomofages_large.png",
+   "desc": "잃은 체력에 비례하여 주문력, 이동 속도, 모든 피해 흡혈을 얻지만, 스킬을 사용할 때마다 피해를 입습니다."
+  },
+  {
+   "id": 1328,
+   "apiName": "CriticalRhythm",
+   "name": "치명적 리듬",
+   "nameEn": "Critical Rhythm",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/criticalrhythm_large.png",
+   "desc": "기본 공격 시 치명타가 발동하면 공격 속도 중첩을 획득합니다.\n\n 치명타 확률을 ?% 획득합니다."
+  },
+  {
+   "id": 1333,
+   "apiName": "EscapePlan",
+   "name": "도주 계획",
+   "nameEn": "Escape Plan",
+   "rarity": "실버",
+   "tags": [
+    "Speed",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/escapeplan_large.png",
+   "desc": "체력이 ?%가 되면 막대한 보호막, 이동 속도, 축소 효과를 얻습니다. 이러한 효과는 시간이 지나면 점차 사라집니다."
+  },
+  {
+   "id": 1325,
+   "apiName": "GlassCannon",
+   "name": "유리 대포",
+   "nameEn": "Glass Cannon",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/glasscannon_large.png",
+   "desc": "최대 체력이 ?% 감소합니다. 피해량의 ?만큼 추가 고정 피해를 입힙니다."
+  },
+  {
+   "id": 1152,
+   "apiName": "ARAM_Quest_SteelYourHeart",
+   "name": "강철 같은 심장",
+   "nameEn": "Steel Your Heart",
+   "rarity": "골드",
+   "tags": [
+    "Resilience",
+    "Quest"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/quest_steelyourheart_large.png",
+   "desc": "조건: 효과가 400중첩 이상 적용된 강철심장을 보유해야 합니다.\n\n보상: 강철심장 중첩이 3배가 됩니다. 체력 재생이 강철심장 중첩의 12.5%만큼 증가합니다."
+  },
+  {
+   "id": 1329,
+   "apiName": "BiggestSnowballEver",
+   "name": "데굴데굴 눈덩이!",
+   "nameEn": "Biggest Snowball Ever",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/biggestsnowballever_large.png",
+   "desc": "눈덩이의 스킬 가속이 ?만큼 증가합니다. \n\n눈덩이가 거대해지고 미니언을 관통합니다. 눈덩이는 챔피언을 둔화시키고, 공중에 띄우며, 피해를 추가로 입힙니다.\n\n눈덩이를 보유하지 않은 경우 눈덩이를 얻습니다."
+  },
+  {
+   "id": 1337,
+   "apiName": "KingMe",
+   "name": "나는 왕이다",
+   "nameEn": "King Me",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/kingme_large.png",
+   "desc": "전설급 아이템을 소지하고 처음으로 적 이동 수단을 사용하면 왕이 되어 아이템이 업그레이드되며, 무작위 프리즘 증강을 얻습니다."
+  },
+  {
+   "id": 1335,
+   "apiName": "Goldrend",
+   "name": "골드 강탈",
+   "nameEn": "Goldrend",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/goldrend_large.png",
+   "desc": "기본 공격이나 스킬로 챔피언에게 피해를 입히면 추가 마법 피해를 입히고 골드를 획득하며 이동 속도가 증가합니다."
+  },
+  {
+   "id": 1205,
+   "apiName": "ARAM_ADAPt",
+   "name": "적응형 능력치",
+   "nameEn": "ADAPt",
+   "rarity": "실버",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/adapt_large.png",
+   "desc": "추가 공격력을 주문력으로 전환합니다. 주문력이 10% 증가합니다."
+  },
+  {
+   "id": 1206,
+   "apiName": "ARAM_escAPADe",
+   "name": "마법사 (물리)",
+   "nameEn": "escAPADe",
+   "rarity": "실버",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/escapade_large.png",
+   "desc": "주문력을 추가 공격력으로 전환합니다. 공격력이 10% 증가합니다."
+  },
+  {
+   "id": 1331,
+   "apiName": "EmpyreanPromise",
+   "name": "창공의 서약",
+   "nameEn": "Empyrean Promise",
+   "rarity": "프리즘",
+   "tags": [
+    "Resilience",
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/empyreampromise_large.png",
+   "desc": "체력 회복 및 보호막 효과가 ?% 증가합니다. 창공의 서약 소환사 주문을 얻습니다.\n\n경계\n아군에게 순간이동하고, 착지 후 ?초 동안 ?의 피해를 흡수하는 보호막을 부여합니다."
+  },
+  {
+   "id": 1195,
+   "apiName": "ARAM_GiantSlayer",
+   "name": "거인 학살자",
+   "nameEn": "Giant Slayer",
+   "rarity": "프리즘",
+   "tags": [
+    "Speed",
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/giantslayer_large.png",
+   "desc": "크기가 작아져 이동 속도가 증가하며 상대가 자신보다 큰 정도에 비례해 챔피언에게 추가 피해를 입힙니다."
+  },
+  {
+   "id": 1323,
+   "apiName": "ARAM_Cruelty",
+   "name": "잔혹 행위",
+   "nameEn": "Cruelty",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/cruelty_large.png",
+   "desc": "챔피언을 이동 불가 상태로 만들거나 이동 스킬을 사용할 수 없게 하면 혜성을 소환합니다. 혜성은 잠시 후 떨어지며, 주변 적에게 마법 피해를 입힙니다."
+  },
+  {
+   "id": 1343,
+   "apiName": "Quest_Sneakerhead",
+   "name": "신발 수집가",
+   "nameEn": "Sneakerhead",
+   "rarity": "프리즘",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/sneakerhead_large.png",
+   "desc": "즉시: 한 쌍의 무작위 업그레이드 장화를 얻습니다. \n\n조건: 해당 장화의 퀘스트를 완료하여 다음 퀘스트를 받으세요.\n\n보상: 자르반 1세의 장화"
+  },
+  {
+   "id": 1238,
+   "apiName": "ARAM_TransmutePrismatic",
+   "name": "전환: 프리즘",
+   "nameEn": "Transmute: Prismatic",
+   "rarity": "골드",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/transmuteprismatic_large.png",
+   "desc": "무작위 프리즘 증강을 획득합니다."
+  },
+  {
+   "id": 1243,
+   "apiName": "ARAM_TransmuteChaos",
+   "name": "전환: 혼돈",
+   "nameEn": "Transmute: Chaos",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/transmutechaos_large.png",
+   "desc": "무작위 증강 2개를 획득합니다."
+  },
+  {
+   "id": 1344,
+   "apiName": "FinalForm",
+   "name": "최종 형태",
+   "nameEn": "Final Form",
+   "rarity": "프리즘",
+   "tags": [
+    "Resilience",
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/finalform_large.png",
+   "desc": "궁극기를 사용하면 ?초 동안 최대 체력 비례 보호막, 모든 피해 흡혈, 이동 속도를 얻습니다."
+  },
+  {
+   "id": 1347,
+   "apiName": "Poltergeist",
+   "name": "폴터가이스트",
+   "nameEn": "Poltergeist",
+   "rarity": "실버",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/poltergeist_large.png",
+   "desc": "폴터가이스트 소환사 주문을 얻습니다.\n\n폴터가이스트는 방어막과 유체화를 동시에 사용합니다."
+  },
+  {
+   "id": 1348,
+   "apiName": "Flash2",
+   "name": "점멸 2",
+   "nameEn": "Flash 2",
+   "rarity": "실버",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/flash2_large.png",
+   "desc": "두 번째 점멸 소환사 주문을 얻고 소환사 주문 가속이 ? 증가합니다."
+  },
+  {
+   "id": 1996,
+   "apiName": "ARAM_Upgrade_Sheen",
+   "name": "광휘의 검 업그레이드",
+   "nameEn": "Upgrade Sheen",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/upgradesheen_large.png",
+   "desc": "주문 검 효과가 추가 피해를 입히고 대상 체력의 일정 비율만큼 자신의 체력을 회복시킵니다. 추가로 250골드를 획득합니다."
+  },
+  {
+   "id": 1349,
+   "apiName": "UltimateAwakening",
+   "name": "궁극의 각성",
+   "nameEn": "Ultimate Awakening",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/zerohour_large.png",
+   "desc": "궁극기 가속이 ? 증가합니다. \n궁극기 사용 시 기본 스킬이 초기화되고 ?초 동안 기본 스킬 가속이 ? 증가합니다. (재사용 대기시간 ?초)"
+  },
+  {
+   "id": 1314,
+   "apiName": "MightyShield",
+   "name": "강력한 방패",
+   "nameEn": "Mighty Shield",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/mightyshield_large.png",
+   "desc": "보호막을 얻으면 ?초 동안 ?의 적응형 능력치를 얻습니다. (재사용 대기시간 ?초)"
+  },
+  {
+   "id": 1315,
+   "apiName": "SwiftAndSafe",
+   "name": "빠르고 안전하게",
+   "nameEn": "Swift and Safe",
+   "rarity": "실버",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/swiftandsafe_large.png",
+   "desc": "돌진하거나 점멸한 후에 ?초 동안 ?의 보호막을 얻습니다. (재사용 대기시간 ?초)"
+  },
+  {
+   "id": 1027,
+   "apiName": "ARAM_Earthwake",
+   "name": "대지의 각성",
+   "nameEn": "Earthwake",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/earthwake_large.png",
+   "desc": "돌진, 점멸, 순간이동 스킬이 0.75초 후에 폭발하는 흔적을 남깁니다."
+  },
+  {
+   "id": 1074,
+   "apiName": "ARAM_ShrinkRay",
+   "name": "감쇠 광선",
+   "nameEn": "Shrink Ray",
+   "rarity": "골드",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/shrinkray_large.png",
+   "desc": "기본 공격 시 대상의 입히는 피해량과 크기를 15% 감소시킵니다. (적중 시 )"
+  },
+  {
+   "id": 1402,
+   "apiName": "ARAM_StatsOnStatsOnStats",
+   "name": "능력치 더하기 능력치 더하기 능력치!",
+   "nameEn": "Stats on Stats on Stats!",
+   "rarity": "프리즘",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/statsonstatsonstats_large.png",
+   "desc": "능력치 모루 4개를 획득합니다. 골드 및 프리즘 모루를 획득할 확률이 더 높습니다!\n\n다음 증강 선택 시 슬롯마다 새로고침 1회를 추가로 얻습니다."
+  },
+  {
+   "id": 12317,
+   "apiName": "ARAM_PandorasBox",
+   "name": "판도라의 상자",
+   "nameEn": "Pandora's Box",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/pandoras_box_large.png",
+   "desc": "모든 증강을 무작위 프리즘 증강으로 전환합니다."
+  },
+  {
+   "id": 1358,
+   "apiName": "PinballSnowball",
+   "name": "핀볼",
+   "nameEn": "Pinball",
+   "rarity": "골드",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/pinballsnowball_large.png",
+   "desc": "눈덩이의 스킬 가속이 증가하고 추가 고정 피해를 입힙니다.\n\n눈덩이가 벽에 튕기면 크기와 피해량이 증가하고 재사용 대기시간이 감소합니다."
+  },
+  {
+   "id": 1361,
+   "apiName": "ARAM_Quest_VoidImmolation",
+   "name": "이케시아의 몰락",
+   "nameEn": "Icathia's Fall",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage",
+    "Resilience",
+    "Quest"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/quest_voidimmolation_large.png",
+   "desc": "즉시: 바미의 불씨를 획득합니다.\n\n조건: 태양불꽃 방패와 공허한 광휘를 보유해야 합니다.\n\n보상: 태양불꽃 방패와 공허한 광휘가 공허의 불길로 합쳐집니다."
+  },
+  {
+   "id": 1403,
+   "apiName": "ARAM_StatsOnStats",
+   "name": "능력치 더하기 능력치!",
+   "nameEn": "Stats on Stats!",
+   "rarity": "골드",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/statsonstats_large.png",
+   "desc": "능력치 모루를 3개 획득합니다."
+  },
+  {
+   "id": 1388,
+   "apiName": "InfiniteRecursion",
+   "name": "무한 반복",
+   "nameEn": "Infinite Recursion",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/infiniterecursion_large.png",
+   "desc": "스킬 가속을 ?+처치 관여당 ? 얻습니다."
+  },
+  {
+   "id": 1404,
+   "apiName": "ARAM_Stats",
+   "name": "능력치!",
+   "nameEn": "Stats!",
+   "rarity": "실버",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/stats_large.png",
+   "desc": "능력치 모루 2개를 획득합니다. 골드 및 프리즘 모루를 획득할 확률이 더 높습니다!"
+  },
+  {
+   "id": 1384,
+   "apiName": "Donation",
+   "name": "후원",
+   "nameEn": "Donation",
+   "rarity": "골드",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/donation_large.png",
+   "desc": "?골드를 획득합니다. 채팅창 여러분 고마워요! :)"
+  },
+  {
+   "id": 1373,
+   "apiName": "ShrinkEngine",
+   "name": "축소 엔진",
+   "nameEn": "Shrink Engine",
+   "rarity": "골드",
+   "tags": [
+    "Utility",
+    "Speed"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/shrinkengine_large.png",
+   "desc": "처치 관여 시 크기가 작아지고 스킬 가속 및 이동 속도를 얻습니다.\n\n사망 시 중첩을 ?% 잃습니다."
+  },
+  {
+   "id": 1006,
+   "apiName": "ARAM_BladeWaltz",
+   "name": "검무",
+   "nameEn": "Blade Waltz",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage",
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/bladewaltz_large.png",
+   "desc": "검무 소환사 주문을 얻습니다.\n\n검무를 사용하면 적에게 돌진해 6회 공격하는 동안 대상으로 지정되지 않습니다."
+  },
+  {
+   "id": 1386,
+   "apiName": "YouSpinMeRightRound",
+   "name": "빙글빙글",
+   "nameEn": "Spin Me Right Round",
+   "rarity": "실버",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/youspinmerightround_large.png",
+   "desc": "소환사 주문이 영웅의 비상으로 변경됩니다.\n\n영웅의 비상을 사용하면 갈고리총을 발사해 지형에 고정시키며, 이후 스킬을 재사용하면 갈고리에 매달려 이동합니다. 매달려 이동하는 동안 주변 적을 자동 공격합니다. 적 챔피언에게 부딪히거나 스킬을 재사용하면 영웅의 비상이 끝납니다."
+  },
+  {
+   "id": 1375,
+   "apiName": "SoulEater",
+   "name": "영혼의 포식자",
+   "nameEn": "Soul Eater",
+   "rarity": "골드",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/souleater_large.png",
+   "desc": "적 챔피언을 이동 불가 상태로 만들면 최대 체력을 ? 얻습니다.\n\n두 번째 증강일 경우 ?의 체력으로 시작합니다."
+  },
+  {
+   "id": 1401,
+   "apiName": "GrowthSpurt",
+   "name": "급속 성장",
+   "nameEn": "Growth Spurt",
+   "rarity": "골드",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/growthspurt_large.png",
+   "desc": "급속 성장 소환사 주문을 얻습니다.\n\n급속 성장으로 급격히 크기가 커져 주변 적을 공중으로 띄워 올리고, 최대 체력을 얻습니다."
+  },
+  {
+   "id": 1390,
+   "apiName": "ARAM_PhenomenalEvil",
+   "name": "극악무도",
+   "nameEn": "Phenomenal Evil",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/aram_phenomenalevil_large.png",
+   "desc": "적을 스킬로 맞히면 영구적으로 1의 주문력을 얻습니다.\n\n스킬당 5초의 재사용 대기시간이 적용됩니다.\n\n4라운드 이후 이 증강을 선택할 경우 40의 주문력을 얻습니다."
+  },
+  {
+   "id": 1392,
+   "apiName": "GoldenSnowball",
+   "name": "신성한 눈덩이",
+   "nameEn": "Holy Snowball",
+   "rarity": "프리즘",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/goldensnowball_large.png",
+   "desc": "눈덩이의 스킬 가속이 ?만큼 증가합니다.\n\n눈덩이로 돌진하면 잠시 무적 상태가 됩니다.\n\n눈덩이를 보유하지 않은 경우 눈덩이를 얻습니다."
+  },
+  {
+   "id": 1413,
+   "apiName": "ARAM_StuckInHereWithMe",
+   "name": "도망갈 수 없어",
+   "nameEn": "Stuck In Here With Me",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/stuckinherewithme_large.png",
+   "desc": "궁극기를 사용하면 주변 적을 도발하고 피해량 감소를 얻습니다. \n\n궁극기 스킬 가속이 ? 증가합니다."
+  },
+  {
+   "id": 2004,
+   "apiName": "ARAM_EmpoweredByTheFaithful",
+   "name": "신념을 통한 강화",
+   "nameEn": "Empowered By The Faithful",
+   "rarity": "프리즘",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/empoweredbythefaithful_large.png",
+   "desc": "아군을 상대로 체력을 회복시키거나 보호막을 씌우면 대상을 ?초 동안 축복합니다. 축복받은 아군이 적 챔피언에게 피해를 입히면 헌신 중첩을 얻습니다. 헌신이 ?중첩이 되면 충격파를 내보내 ?의 마법 피해를 입히고 체력이 ? 아래인 적을 처형합니다.\n\n입힌 피해량: ?\n처치한 불신자: ?"
+  },
+  {
+   "id": 1415,
+   "apiName": "Twinfire",
+   "name": "쌍둥이 불꽃",
+   "nameEn": "Twin Fire",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/twinfire_large.png",
+   "desc": "스킬 피해를 입히면 투사체 1+?개를 발사해 각각 ?의 마법 피해를 입힙니다. \n\n 치명타 확률이 ?% 증가합니다."
+  },
+  {
+   "id": 1416,
+   "apiName": "HextechSoul",
+   "name": "마법공학의 영혼",
+   "nameEn": "Hextech Soul",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/infernalsoul_large.png",
+   "desc": "주기적으로 스킬 또는 기본 공격으로 피해를 입히면 번개를 발사해 적에게 연쇄적으로 피해를 입히고 둔화시킵니다."
+  },
+  {
+   "id": 2005,
+   "apiName": "ARAM_InfernoTriggered",
+   "name": "지옥불 난사 발동",
+   "nameEn": "Triggered Inferno",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/madscientist_large.png",
+   "desc": "이전 공격과 다른 기본 공격 또는 스킬로 적 챔피언에게 피해를 입히면 스타일(F~S)을 얻습니다.\n\n스타일 등급마다 이동 속도를 ? 얻습니다.\n\n스타일이 S등급에 도달하면 스타일을 소모하고 총을 난사해 2초 동안 10회에 걸쳐 주변의 모든 적에게 공격을 퍼붓습니다. 각 사격은 ?의 물리 피해를 입힙니다. 체력이 ? 아래인 적에게는 치명타가 적용되어 ?의 물리 피해를 입힙니다. 이 효과는 ?초의 재사용 대기시간이 적용됩니다.\n\n사격에는 생명력 흡수가 적용되며, 미니언을 대상으로 ?%의 피해를 입힙니다.\n\n입힌 피해량: ?\n지옥불 난사 발동: ?"
+  },
+  {
+   "id": 1237,
+   "apiName": "ARAM_TransmuteGold",
+   "name": "전환: 골드",
+   "nameEn": "Transmute: Gold",
+   "rarity": "실버",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/transmutegold_large.png",
+   "desc": "무작위 골드 증강을 획득합니다."
+  },
+  {
+   "id": 1389,
+   "apiName": "HandOfBaron",
+   "name": "남작의 도움",
+   "nameEn": "Hand of Baron",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/handofbaron_large.png",
+   "desc": "적응형 능력치를 ?% 얻습니다. 주변 아군 미니언이 대폭 강화됩니다."
+  },
+  {
+   "id": 1420,
+   "apiName": "Sonata",
+   "name": "소나타",
+   "nameEn": "Sonata",
+   "rarity": "골드",
+   "tags": [
+    "Utility",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/sonata_large.png",
+   "desc": "?초마다 인내의 아리아와 기민함의 노래를 번갈아 자동 사용합니다.\n\n인내의 아리아는 주변 아군의 체력을 회복시키고 일시적으로 보호막 오라를 부여합니다.\n\n기민함의 노래는 추가 이동 속도를 부여하는 오라를 잠시 동안 생성합니다."
+  },
+  {
+   "id": 1421,
+   "apiName": "PromQueen",
+   "name": "퀸카",
+   "nameEn": "Prom Queen",
+   "rarity": "프리즘",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/promqueen_large.png",
+   "desc": "?초마다 반짝이는 티아라를 자동 사용해 자신에게 내려오게 합니다. 티아라를 쓰면 라칸의 궁극기를 얻어 닿는 적을 매혹합니다."
+  },
+  {
+   "id": 2026,
+   "apiName": "KillSecured",
+   "name": "확보된 킬",
+   "nameEn": "Kill Secured",
+   "rarity": "실버",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/killsecure_large.png",
+   "desc": "체력이 낮은 적에게 접근 시 이동 속도가 증가합니다."
+  },
+  {
+   "id": 1308,
+   "apiName": "ARAM_Firefox",
+   "name": "불여우",
+   "nameEn": "FireFox",
+   "rarity": "실버",
+   "tags": [
+    "Speed",
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/firfox_large.png",
+   "desc": "자동 사용\n이동 속도가 증가하고 주위를 빙빙 도는 불꽃 3개를 생성합니다. 불꽃은 시야에 들어오는 가장 가까운 적을 대상으로 지정해 마법 피해를 입힙니다."
+  },
+  {
+   "id": 2009,
+   "apiName": "ARAM_Zealot",
+   "name": "광신자",
+   "nameEn": "Zealot",
+   "rarity": "실버",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/zealot_large.png",
+   "desc": "치명타 확률을 ?, 공격 속도를 ? 얻습니다."
+  },
+  {
+   "id": 2018,
+   "apiName": "ARAM_Purist_Caster",
+   "name": "순수주의자 - 마법사",
+   "nameEn": "Purist - Caster",
+   "rarity": "실버",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/puristcaster_large.png",
+   "desc": "백분율 기반 재사용 대기시간 감소를 얻고 모든 공격 속도를 스킬 가속으로 전환합니다."
+  },
+  {
+   "id": 2010,
+   "apiName": "ARAM_DoubleTap",
+   "name": "한 발에 두 놈",
+   "nameEn": "Double Tap",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/dualwield_large.png",
+   "desc": "치명타 발동 시 적중 시 효과를 한 번 더 적용합니다.\n\n 치명타 확률을 ? 획득합니다."
+  },
+  {
+   "id": 2016,
+   "apiName": "ARAM_Juiced",
+   "name": "도취",
+   "nameEn": "Juiced",
+   "rarity": "실버",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/juiced_large.png",
+   "desc": "적중 시 ?의 마법 피해를 입힙니다. 이 피해에는 치명타가 적용될 수 있습니다."
+  },
+  {
+   "id": 1379,
+   "apiName": "Upgrade_SwordOfBlossom",
+   "name": "꽃피는 새벽의 검 업그레이드",
+   "nameEn": "Upgrade Sword of Blossoming Dawn",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/upgrademikaelsblessing_large.png",
+   "desc": "공격 속도를 ?% 획득합니다.\n\n적 챔피언 공격 시 꽃피는 새벽의 검 체력 회복량이 ?%로 증가합니다."
+  },
+  {
+   "id": 2032,
+   "apiName": "FishBait",
+   "name": "상어 미끼",
+   "nameEn": "Shark Bait",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/fishbait_large.png",
+   "desc": "사망 몇 초 후 상어가 주변 모든 적을 물어뜯습니다. 사망 후에도 이동하여 상어 공격의 대상을 정할 수 있습니다."
+  },
+  {
+   "id": 2043,
+   "apiName": "NatureIsHealing",
+   "name": "자연의 회복",
+   "nameEn": "Nature is Healing",
+   "rarity": "골드",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/natureishealing_large.png",
+   "desc": "수풀에 들어가면 ?+잃은 체력의 ?만큼 체력을 회복합니다. 수풀마다 ?초의 재사용 대기시간이 적용됩니다.\n\n체력 회복량: 총 ?"
+  },
+  {
+   "id": 2054,
+   "apiName": "SpellVolley",
+   "name": "3연발",
+   "nameEn": "Tripleshot",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_prismatic.png",
+   "desc": "? 스킬이 전방에 있는 적 2명을 추가로 대상 지정합니다.\n\n추가 대상 적중: ?\n같은 스킬에 여러 번 적중 시 유닛이 받는 피해가 감소합니다."
+  },
+  {
+   "id": 2055,
+   "apiName": "ARAM_Multishot",
+   "name": "다중 공격",
+   "nameEn": "Multishot",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage",
+    "Questline"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_prismatic.png",
+   "desc": "퀘스트: ? 스킬로 적 챔피언을 ?회 맞혀야 합니다.\n\n보상: ? 사용 시 투사체를 추가로 발사합니다.\n\n맞힌 적: ?/?\n추가 투사체 획득: ?\n\n빗나가는 법이 없군요. 빗나갔다면, 그건 착각일 뿐입니다."
+  },
+  {
+   "id": 2065,
+   "apiName": "ARAM_Terror",
+   "name": "공포",
+   "nameEn": "Terror",
+   "rarity": "골드",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/desecrator_large.png",
+   "desc": "공포 재사용 대기 중"
+  },
+  {
+   "id": 2064,
+   "apiName": "ARAM_Quickstep",
+   "name": "날쌘걸음",
+   "nameEn": "Quickstep",
+   "rarity": "골드",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_gold.png",
+   "desc": ""
+  },
+  {
+   "id": 2072,
+   "apiName": "Missile_Split",
+   "name": "주문 분산",
+   "nameEn": "Spell Split",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_prismatic.png",
+   "desc": "? 투사체가 적중하거나 최대 사거리에 도달하거나 재사용 시 두 개로 나뉩니다."
+  },
+  {
+   "id": 2073,
+   "apiName": "ARAM_SustainingStrike",
+   "name": "흡수",
+   "nameEn": "Siphon",
+   "rarity": "실버",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_silver.png",
+   "desc": "적 챔피언에게 ? 스킬로 피해를 입히면 체력을 회복합니다."
+  },
+  {
+   "id": 2076,
+   "apiName": "TitansPulse",
+   "name": "확고한 의지로",
+   "nameEn": "Stay Resolute",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_silver.png",
+   "desc": "? 스킬로 적 챔피언에게 피해를 입히면 대상의 피해 유형에 따라 방어력 또는 마법 저항력을 ? 얻습니다. \n\n추가 방어력: ?\n추가 마법 저항력: ?\n\n\n이 증강이 첫 번째 증강이 아닐 경우 방어력 및 마법 저항력을 ? 얻습니다."
+  },
+  {
+   "id": 2078,
+   "apiName": "ChainReaction",
+   "name": "연쇄 반응",
+   "nameEn": "Chain Reaction",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_gold.png",
+   "desc": "? 스킬로 뒤로 밀어낸 대상이 다른 챔피언과 부딪히면 둘 다 공중에 뜨고 피해를 입습니다. 지형에 충돌하면 공중에 뜨는 시간이 길어지고 추가 피해를 입습니다."
+  },
+  {
+   "id": 2077,
+   "apiName": "DarkWind",
+   "name": "굶주린 속박",
+   "nameEn": "Ravenous Bind",
+   "rarity": "골드",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/upgradehubris_large.png",
+   "desc": "? 스킬로 적 챔피언을 이동 불가 상태로 만들거나 이동 스킬을 사용할 수 없게 하면 추가로 ?의 마법 피해를 입히고 ?의 체력을 회복합니다.\n\n피해량: 총 ?\n최소 체력 회복량: ?\n체력 회복량: 총 ?\n\n체력 회복량은 스킬 재사용 대기시간에 비례해 ?%까지 증가합니다."
+  },
+  {
+   "id": 1001,
+   "apiName": "ARAM_ImTheJuggernaut",
+   "name": "거인의 결의",
+   "nameEn": "Titan's Resolve",
+   "rarity": "프리즘",
+   "tags": [
+    "Resilience",
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/iamthejuggernaut_large.png",
+   "desc": "챔피언에게 피해를 입히거나 받으면 ?초 동안 전쟁기계 출동 ?중첩을 얻습니다. 전쟁기계 출동 ?중첩마다 적응형 능력치를 ?, 방어력을 ?, 마법 저항력을 ?, 크기를 ?, 강인함을 ? 얻습니다.\n\n중첩 수가 많을수록 중첩이 빠르게 사라집니다.\n최대 전쟁기계 출동 레벨: ?"
+  },
+  {
+   "id": 2088,
+   "apiName": "ARAM_Snowday",
+   "name": "눈 오는 날",
+   "nameEn": "Snowday",
+   "rarity": "실버",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/snowday_large.png",
+   "desc": "눈덩이 스킬 가속이 ? 증가하고 피해량이 100% 증가합니다."
+  },
+  {
+   "id": 2062,
+   "apiName": "Ability_SelfAOE_DoubleCast",
+   "name": "메아리 시전",
+   "nameEn": "Echo Cast",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_prismatic.png",
+   "desc": "? 스킬을 사용하면 마우스 커서 위치로 분신을 보내고 스킬을 재사용합니다."
+  },
+  {
+   "id": 2091,
+   "apiName": "EndlessDecimation",
+   "name": "끝없는 학살",
+   "nameEn": "Endless Decimation",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/endlessdecimate_large.png",
+   "desc": "전투 중 자동 사용으로 도끼를 원형으로 휘둘러 물리 피해를 입힙니다. 바깥쪽 칼날에 적 적중 시 추가 피해를 입히고 체력을 회복합니다."
+  },
+  {
+   "id": 1005,
+   "apiName": "ARAM_WeeWooWeeWoo",
+   "name": "삐뽀삐뽀",
+   "nameEn": "Wee Woo Wee Woo",
+   "rarity": "골드",
+   "tags": [
+    "Ally"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/weewooweewoo_large.png",
+   "desc": ""
+  },
+  {
+   "id": 2087,
+   "apiName": "ARAM_Archmage",
+   "name": "대마법사",
+   "nameEn": "Archmage",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/eureka_large.png",
+   "desc": "스킬을 사용하면 사용한 스킬 재사용 대기시간의 ?%만큼 다른 무작위 스킬의 재사용 대기시간을 반환합니다."
+  },
+  {
+   "id": 1204,
+   "apiName": "ARAM_StackosaurusRex",
+   "name": "다단 중첩",
+   "nameEn": "Stackosaurus Rex",
+   "rarity": "실버",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/stackosaurusrex_large.png",
+   "desc": "스킬 중첩을 영구적으로 획득할 때마다 75% 더 획득합니다!"
+  },
+  {
+   "id": 2096,
+   "apiName": "LittleExtraHelp",
+   "name": "작은 도움",
+   "nameEn": "Lil' Extra Help",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_gold.png",
+   "desc": "? 지속시간 동안 공격 사거리가 ?, 공격 속도가 ? 증가합니다."
+  },
+  {
+   "id": 2100,
+   "apiName": "ARAM_SpecializedRecursion",
+   "name": "가속 추구",
+   "nameEn": "Pursuit of Haste",
+   "rarity": "골드",
+   "tags": [
+    "Utility",
+    "Questline"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_gold.png",
+   "desc": "퀘스트: ? 스킬로 적 챔피언을 ?회 맞혀야 합니다.\n\n보상: 퀘스트 레벨당 ? 스킬 가속이 증가합니다. (최대 ?)"
+  },
+  {
+   "id": 2099,
+   "apiName": "ARAM_DivineDomain",
+   "name": "초월 의식",
+   "nameEn": "Rite of Ascension",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage",
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/glasscannon_large.png",
+   "desc": "적 챔피언에게 피해를 입힌 후 ?초 안에 해당 챔피언 처치에 관여하면 ?초 동안 정수를 남깁니다. 정수를 공격하면 소모됩니다.\n\n정수를 소모하면 해당 위치로 순간적으로 이동하며 대상 지정 불가 및 저지 불가 상태가 되고, 이동 속도가 ? 증가했다가 ?초에 걸쳐 원래대로 돌아오며, 잃은 체력에 비례해 ?~?의 체력을 회복합니다. 또한 기본 스킬의 재사용 대기시간이 초기화됩니다. \n\n체력 회복량: ?\n돌려받은 재사용 대기시간: ?\n\n오늘, 경들은 초월의 힘을 목도하게 될 것이네! - 사막의 황제 아지르"
+  },
+  {
+   "id": 2103,
+   "apiName": "ARAM_BangBang",
+   "name": "초장거리 저격",
+   "nameEn": "From Downtown",
+   "rarity": "골드",
+   "tags": [
+    "Damage",
+    "Quest"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/questbangbang_large.png",
+   "desc": "빵야! 빵야! 멋진 사격이군요!"
+  },
+  {
+   "id": 2104,
+   "apiName": "ARAM_SpiritBomb",
+   "name": "영혼 폭탄",
+   "nameEn": "Spirit Bomb",
+   "rarity": "프리즘",
+   "tags": [
+    "Ally",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/spiritbomb_large.png",
+   "desc": "체력을 회복시키거나 보호막을 씌우면 영혼 폭탄이 중첩됩니다. 최대 중첩 시 체력이 가장 낮은 아군에게 영혼 폭탄을 던집니다. 폭탄이 대상에게 도달하면 주변 아군 체력을 잃은 체력의 ?만큼 회복시키고 ?초 동안 현재 체력의 ?에 해당하는 보호막을 부여합니다.\n\n던진 영혼 폭탄: ?\n체력 회복량: ?\n보호막 흡수량: ?"
+  },
+  {
+   "id": 2107,
+   "apiName": "ARAM_Hellbent",
+   "name": "열의",
+   "nameEn": "Hellbent",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/hellbent_large.png",
+   "desc": "기본 공격 또는 스킬로 적 챔피언을 타격하면 ?초 동안 부활 극대화 중첩을 얻습니다. 최대 ?회 중첩되며, 최대 중첩 시 열의 상태가 됩니다.\n\n열의: 사망 시 ?초에 걸쳐 ?의 최대 체력으로 부활합니다. 이후 ?초 동안 적응형 능력치를 ? 얻고 적 챔피언을 향해 이동 시 이동 속도가 ? 증가하며 모든 피해 흡혈을 ? 얻습니다.\n\n?초의 재사용 대기시간이 적용됩니다."
+  },
+  {
+   "id": 2098,
+   "apiName": "ARAM_EndlessHunt",
+   "name": "앙파상",
+   "nameEn": "En Passant",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/dashing_large.png",
+   "desc": "주기적으로 적 챔피언의 급소를 파악합니다. 급소를 기본 공격 또는 스킬로 타격하면 최대 체력 비례 고정 피해를 입히고, 체력을 회복하며, 이동 속도가 증가합니다. 이 효과는 중첩될 수 있습니다."
+  },
+  {
+   "id": 2080,
+   "apiName": "Snowbomb",
+   "name": "눈 폭발",
+   "nameEn": "Snowblast",
+   "rarity": "골드",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/snowbomb_large.png",
+   "desc": ""
+  },
+  {
+   "id": 2102,
+   "apiName": "PressureCooker",
+   "name": "압력솥",
+   "nameEn": "Pressure Cooker",
+   "rarity": "골드",
+   "tags": [
+    "Damage",
+    "Questline"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/questpressurecooker_large.png",
+   "desc": "매초 주변 적 챔피언에게 무한히 중첩되는 화상 효과를 적용해 ?초 동안 매초 ?의 마법 피해를 입힙니다.\n\n퀘스트: 적 챔피언에게 ?의 화상 피해를 입혀야 합니다.\n\n보상: 주위에 입히는 화상 피해의 범위가 증가합니다.\n\n입힌 화상 피해량: ?/?"
+  },
+  {
+   "id": 2109,
+   "apiName": "SnapBack",
+   "name": "원상복구",
+   "nameEn": "Snap Back",
+   "rarity": "골드",
+   "tags": [
+    "Damage",
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_gold.png",
+   "desc": "? 재사용 시 폭발하며 원래 위치로 돌아갑니다."
+  },
+  {
+   "id": 2116,
+   "apiName": "SpecializedEmpowerment",
+   "name": "위력 추구",
+   "nameEn": "Pursuit of Power",
+   "rarity": "골드",
+   "tags": [
+    "Damage",
+    "Quest"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/marksmage_large.png",
+   "desc": ""
+  },
+  {
+   "id": 2119,
+   "apiName": "Overextender",
+   "name": "무리한 진입",
+   "nameEn": "Overextender",
+   "rarity": "골드",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/overextender_large.png",
+   "desc": "귀환하여 대포 발사기에 탑승하세요. 발사기의 사거리, 이동 속도, 피해량이 대폭 증가했습니다."
+  },
+  {
+   "id": 2115,
+   "apiName": "SquishySlappyGrab",
+   "name": "말랑 찰싹 손",
+   "nameEn": "Squishy Slappy Grab",
+   "rarity": "프리즘",
+   "tags": [],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/squishyslappygrab_large.png",
+   "desc": "때때로 주변 모든 적 챔피언에게 말랑 찰싹 손을 내보내 연결합니다. 다음 기본 공격 시 연결된 모든 적을 끌어당깁니다."
+  },
+  {
+   "id": 2111,
+   "apiName": "Bonk",
+   "name": "꽁!",
+   "nameEn": "BONK!",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/bonk_large.png",
+   "desc": "? 효과로 강화된 기본 공격과 스킬이 대상 및 주변 적에게 추가로 피해를 입힙니다."
+  },
+  {
+   "id": 2123,
+   "apiName": "Overloaded",
+   "name": "과충전",
+   "nameEn": "Overloaded",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_prismatic.png",
+   "desc": "다른 스킬 사용 시 ? 재사용 대기시간이 초기화됩니다.\n\n초기화: ?\n유용한 초기화: ?\n초기화 효율: ?%\n\n\"다들 내 두루마릴 노리는군... 계획에 충실해야지... EQEQEQ...\" - 파란 존재"
+  },
+  {
+   "id": 2125,
+   "apiName": "ItsGoTime",
+   "name": "출발할 시간",
+   "nameEn": "It's Go Time",
+   "rarity": "실버",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_silver.png",
+   "desc": "? 사용 시 지속시간 동안 이동 속도가 증가합니다."
+  },
+  {
+   "id": 2126,
+   "apiName": "KeepGoing",
+   "name": "재장전",
+   "nameEn": "Reload",
+   "rarity": "골드",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/lightningstrikes_large.png",
+   "desc": "? 지속시간 동안 기본 공격 적중 시 재사용 대기시간이 감소합니다."
+  },
+  {
+   "id": 2129,
+   "apiName": "Terraind",
+   "name": "지형 생성됨",
+   "nameEn": "Terrain'd",
+   "rarity": "골드",
+   "tags": [],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/lightningstrikes_large.png",
+   "desc": "? 스킬이 주변 지역에 피해를 입힙니다."
+  },
+  {
+   "id": 2131,
+   "apiName": "DontChangeTheChannel",
+   "name": "채널 고정",
+   "nameEn": "Don't Change the Channel",
+   "rarity": "실버",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/dontchangethechannel_large.png",
+   "desc": "정신 집중 시 매초 보호막을 얻습니다."
+  },
+  {
+   "id": 2133,
+   "apiName": "MercysStrike",
+   "name": "자비의 일격",
+   "nameEn": "Mercy's Strike",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_gold.png",
+   "desc": "? 스킬로 아군의 체력을 회복시키거나 보호막을 부여하면 다음 기본 공격 시 공격 사거리와 공격 속도가 증가하고 추가로 최대 체력 비례 마법 피해를 입힙니다."
+  },
+  {
+   "id": 2127,
+   "apiName": "ForgedByTheMaster",
+   "name": "장인의 솜씨",
+   "nameEn": "Forged By The Master",
+   "rarity": "실버",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/forgedbythemaster_large.png",
+   "desc": "아이템 및 증강으로 입히는 피해량이 ? 증가합니다."
+  },
+  {
+   "id": 2136,
+   "apiName": "TrustyWeapon",
+   "name": "믿음직한 무기",
+   "nameEn": "Trusty Weapon",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_silver.png",
+   "desc": "? 스킬로 적 챔피언을 타격하면 우정의 결속이 형성됩니다.\n\n우정 레벨에 따라 ? 피해량이 일시적으로 증가합니다."
+  },
+  {
+   "id": 2132,
+   "apiName": "WarlockJuicebox",
+   "name": "마도사의 주스 상자",
+   "nameEn": "Warlock Juicebox",
+   "rarity": "골드",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/warlockjuicebox_large.png",
+   "desc": "모든 피해 흡혈을 ? 얻습니다."
+  },
+  {
+   "id": 2135,
+   "apiName": "Overkill",
+   "name": "바늘꽂이",
+   "nameEn": "Pin Cushion",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage",
+    "Speed"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/symphonyofwar_large.png",
+   "desc": "? 지속시간 동안 기본 공격 시 대상에게 대못을 박습니다. 대못은 피해량을 축적하고 처형하며 만료 시 이동 속도를 부여합니다."
+  },
+  {
+   "id": 2139,
+   "apiName": "PinCushion",
+   "name": "고슴도치",
+   "nameEn": "Porcupine",
+   "rarity": "골드",
+   "tags": [
+    "Resilience",
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/pincushion_large.png",
+   "desc": "챔피언에게 피해를 입으면 바늘 폭발이 축적되며, 이후 바늘이 튀어 나가 주변 적에게 피해를 입히고 둔화시킵니다."
+  },
+  {
+   "id": 2144,
+   "apiName": "DoubleDefense",
+   "name": "보강",
+   "nameEn": "Bolstered",
+   "rarity": "실버",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_silver.png",
+   "desc": "? 스킬로 부여되는 보호막이 더 강력해지며, 효과가 대상 잃은 체력에 비례합니다."
+  },
+  {
+   "id": 2138,
+   "apiName": "WardingWeapon",
+   "name": "적응형 와드",
+   "nameEn": "Adaptive Ward",
+   "rarity": "실버",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_silver.png",
+   "desc": "? 스킬로 적 챔피언을 타격하면 대상의 피해 유형에 따라 ?초 동안 방어력 또는 마법 저항력이 ? 증가합니다. 이 효과는 중첩될 수 있습니다."
+  },
+  {
+   "id": 2143,
+   "apiName": "Upgrade_SunderedSky",
+   "name": "갈라진 하늘 업그레이드",
+   "nameEn": "Upgrade Sundered Sky",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/upgradeie_large.png",
+   "desc": ""
+  },
+  {
+   "id": 2140,
+   "apiName": "Upgrade_Ravenous",
+   "name": "굶주린 히드라 업그레이드",
+   "nameEn": "Upgrade Ravenous Hydra",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/upgradesheen_large.png",
+   "desc": "적에게 스킬 적중 시 쪼개기 효과가 발동됩니다. 굶주린 히드라의 생명력 흡수가 ? 수치로 증가합니다.\n\n?골드를 획득합니다."
+  },
+  {
+   "id": 3025,
+   "apiName": "Sound_Barrier",
+   "name": "음속 장벽",
+   "nameEn": "Sound Barrier",
+   "rarity": "실버",
+   "tags": [
+    "Speed",
+    "Ally"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/swiftandsafe_large.png",
+   "desc": "아군에게 보호막을 씌우면 ?초에 걸쳐 점차 원래대로 돌아오는 이동 속도 및 유체화 효과를 얻습니다."
+  },
+  {
+   "id": 3039,
+   "apiName": "Salvation",
+   "name": "구원",
+   "nameEn": "Salvation",
+   "rarity": "골드",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/salvation_large.png",
+   "desc": "체력이 ?% 아래로 떨어질 만큼 피해를 입으면 충격파를 방출해 주변 적에게 피해를 입히고 뒤로 밀어내며, 주변 넓은 범위 내 모든 아군 챔피언의 체력을 회복시킵니다."
+  },
+  {
+   "id": 3071,
+   "apiName": "BrassBlast",
+   "name": "트럼펫 폭발",
+   "nameEn": "Brass Blast",
+   "rarity": "골드",
+   "tags": [
+    "Utility",
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/camo_large.png",
+   "desc": "소환사 주문이 트럼펫 폭발로 변경됩니다.\n\n트럼펫 폭발: 거대한 트럼펫에 힘을 모아 적을 뒤로 밀어내고 마법 피해를 입힙니다."
+  },
+  {
+   "id": 3053,
+   "apiName": "MoshMonster",
+   "name": "모시핏 괴물",
+   "nameEn": "Mosh Monster",
+   "rarity": "프리즘",
+   "tags": [
+    "Resilience",
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_prismatic.png",
+   "desc": "? 사용 시 ? 지속시간 동안 ?의 추가 체력을 얻고 주변 적을 둔화시킵니다.\n\n처치 관여 시 이 효과가 영구적으로 강화됩니다."
+  },
+  {
+   "id": 3075,
+   "apiName": "Recoil",
+   "name": "고반동",
+   "nameEn": "Recoil",
+   "rarity": "골드",
+   "tags": [
+    "Damage",
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_gold.png",
+   "desc": "? 피해량이 증가하고 사용 시 플레이어를 뒤로 밀어냅니다."
+  },
+  {
+   "id": 3079,
+   "apiName": "Totentanz",
+   "name": "죽음의 춤",
+   "nameEn": "Totentanz",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/totentanz_large.png",
+   "desc": "소환사 주문이 죽음과 함께하는 춤으로 변경됩니다.\n\n죽음과 함께하는 춤: ?초 동안 불사 상태가 되고 전방으로 순간적으로 이동합니다.\n\n지속시간이 끝나기 전에 처치 관여를 달성하면 ?의 체력을 회복하고 원래 위치로 돌아가며, 이 소환사 주문의 재사용 대기시간이 ?초 감소합니다. 그러지 못할 경우 사망합니다.\n\n극복한 죽음: ?\n헌납한 목숨: ?\n\n\"어차피 죽을 목숨, 내가 끝내주지.\" - 죽음을 노래하는 자 카서스"
+  },
+  {
+   "id": 2141,
+   "apiName": "Quest_UltraHydra",
+   "name": "궁극의 히드라",
+   "nameEn": "Ultra Hydra",
+   "rarity": "프리즘",
+   "tags": [
+    "Quest",
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/ultrahydra_large.png",
+   "desc": "히드라 아이템을 완성하면 티아맷을 획득합니다.\n\n퀘스트: 굶주린 히드라, 불경한 히드라, 거대한 히드라를 획득해야 합니다.\n\n보상: 궁극의 히드라를 획득합니다."
+  },
+  {
+   "id": 3058,
+   "apiName": "TickleMonster",
+   "name": "간지럼 괴물",
+   "nameEn": "Tickle Monster",
+   "rarity": "골드",
+   "tags": [
+    "Speed"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/ticklemonster_large.png",
+   "desc": "공격력이\n공격 속도로 전환됩니다.\n\n기본 공격 적중 시 추가 마법 피해를 입힙니다."
+  },
+  {
+   "id": 3059,
+   "apiName": "NoManaNoProblem",
+   "name": "마나 없음, 상관없음",
+   "nameEn": "No Mana, No Problem",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/nomananoproblem_large.png",
+   "desc": "아이템으로 얻는 마나가\n주문력으로 전환됩니다.\n\n총주문력이 ?% 증가합니다."
+  },
+  {
+   "id": 3063,
+   "apiName": "GiftoftheDrowned",
+   "name": "가라앉은 자의 축복",
+   "nameEn": "Gift of the Drowned",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/giftofthedrowned_large.png",
+   "desc": "추가 체력이\n물리 관통력으로 전환됩니다.\n\n물리 관통력을 ? 얻습니다."
+  },
+  {
+   "id": 3094,
+   "apiName": "LichBrain",
+   "name": "리치 두뇌",
+   "nameEn": "Lich Brain",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/lichbrain_large.png",
+   "desc": "주문력을 ? 얻습니다."
+  },
+  {
+   "id": 3018,
+   "apiName": "BigShot",
+   "name": "묵직한 한 방",
+   "nameEn": "Big Shot",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/bigshot_large.png",
+   "desc": "치명타 피해량을 ?, 추가 공격력을 ? 얻습니다.\n\n공격 속도의 ?에 해당하는 수치가 치명타 피해량으로 전환됩니다."
+  },
+  {
+   "id": 3048,
+   "apiName": "BouncingBees",
+   "name": "튕기는 꿀벌",
+   "nameEn": "Bouncing Bees",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/kingme_large.png",
+   "desc": "스킬 사용 후 다음 기본 공격이 가장 가까운 적에게 튕깁니다.\n\n퀘스트: 기본 공격을 적 챔피언에게 튕기세요.\n\n보상: 퀘스트 레벨당 공격력이 +? 증가하고 추가로 튕깁니다."
+  },
+  {
+   "id": 3036,
+   "apiName": "DoubleTime",
+   "name": "더블 타임",
+   "nameEn": "Double Time",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/aram_phenomenalevil_large.png",
+   "desc": "적 챔피언에게 서로 다른 스킬 2개를 연달아 빠르게 사용해 피해를 입히면 마법 피해를 입히고 최대 마나를 얻습니다."
+  },
+  {
+   "id": 3016,
+   "apiName": "ThirdTimesTheHarm",
+   "name": "해악의 숫자 3",
+   "nameEn": "Third Times the Harm",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/silverbeats_large.png",
+   "desc": "적 챔피언에게 연속해서 3회 기본 공격할 때마다 고정 피해를 입히고 이 효과의 피해량이 영구적으로 증가합니다."
+  },
+  {
+   "id": 2157,
+   "apiName": "Upgrade_DeathDance",
+   "name": "죽음의 무도 업그레이드",
+   "nameEn": "Upgrade Death's Dance",
+   "rarity": "실버",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/upgradedeathdance_large.png",
+   "desc": ""
+  },
+  {
+   "id": 3086,
+   "apiName": "BEES",
+   "name": "벌이다!!!",
+   "nameEn": "BEES!!!",
+   "rarity": "골드",
+   "tags": [
+    "Utility",
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/bees_large.png",
+   "desc": "주기적으로 적 챔피언에게 적중하는 다음 스킬이 벌집을 날립니다. 벌집은 폭발하여 잠시 대상을 둔화시키고 마법 피해를 입힙니다.\n\n벌은 적중 시 효과를 적용합니다."
+  },
+  {
+   "id": 1310,
+   "apiName": "ARAM_ClownCollege",
+   "name": "광대 대학",
+   "nameEn": "Clown College",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/clowncollege_large.png",
+   "desc": "속임수 소환사 주문을 얻습니다.\n\n속임수: 근처로 순간이동해 투명 상태가 됩니다. 투명 상태에서 다음 기본 공격 시 물리 피해를 추가로 입힙니다. \n\n사망 시, 폭발하는 상자를 생성하여 엄청난 마법 피해를 입히고 주변 적을 공포에 빠뜨립니다."
+  },
+  {
+   "id": 3078,
+   "apiName": "TheBoomAndTheBass",
+   "name": "붐 앤 베이스",
+   "nameEn": "The Boom and the Bass",
+   "rarity": "골드",
+   "tags": [
+    "Damage",
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/theboomandthebass_large.png",
+   "desc": "스킬을 사용하고 나면 다음 기본 공격이 빨라지고 추가 마법 피해를 입히며 점차 원래대로 돌아오는 이동 속도를 얻습니다."
+  },
+  {
+   "id": 3116,
+   "apiName": "TakeemDownDownDown",
+   "name": "전부 다 무너뜨려",
+   "nameEn": "Take'em Down Down Down",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/takeemdowndowndown_large.png",
+   "desc": "기본 공격 및 스킬이 적 챔피언에게 추가 마법 피해를 입히고 중첩을 적용합니다. \n\n최대 중첩 시 중첩을 모두 소모하여 잃은 체력에 비례한 마법 피해를 입히고, 입힌 피해량에 비례해 체력을 회복합니다."
+  },
+  {
+   "id": 3049,
+   "apiName": "ArmoredImpact",
+   "name": "장갑 충격",
+   "nameEn": "Armored Impact",
+   "rarity": "골드",
+   "tags": [
+    "Damage",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/armoredimpact_large.png",
+   "desc": "스킬 사용 후 다음 기본 공격 시 주변 적에게 ?의 추가 물리 피해를 입힙니다."
+  },
+  {
+   "id": 3121,
+   "apiName": "Fruitify",
+   "name": "과일화",
+   "nameEn": "Fruitify",
+   "rarity": "실버",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/fruitseason_large.png",
+   "desc": "처치 관여 시 과일이 폭발합니다.\n\n과일은 체력 및 마나를 회복시킵니다."
+  },
+  {
+   "id": 3123,
+   "apiName": "JeweledBracelet",
+   "name": "보석 팔찌",
+   "nameEn": "Jeweled Bracelet",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_gold.png",
+   "desc": "? 스킬에 치명타가 적용될 수 있습니다.\n\n치명타 확률을 ? 얻습니다."
+  },
+  {
+   "id": 3004,
+   "apiName": "GetJinxed",
+   "name": "떴다, 징크스",
+   "nameEn": "Get Jinxed",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/overextender_large.png",
+   "desc": "소환사 주문이 떴다, 징크스!로 변경됩니다.\n\n떴다, 징크스!: 적 챔피언, 구조물 또는 지형에 부딪히면 폭발하는 로켓에 올라탑니다. 로켓은 이동한 거리에 따라 대상 및 주변 적에게 ?+잃은 체력의 ?에 해당하는 물리 피해~?+잃은 체력의 ?에 해당하는 물리 피해를 입힙니다.\n\n폭발 반경은 로켓의 이동 거리에 따라 증가합니다.\n로켓에 탑승한 동안에는 무적 및 대상 지정 불가 상태가 됩니다.\n\n\n\n\"진정해. 그래 봤자 죽기밖에 더 하겠어?\" - 난폭한 말괄량이 징크스"
+  },
+  {
+   "id": 3131,
+   "apiName": "StillHere",
+   "name": "죽지 않아",
+   "nameEn": "Still Here",
+   "rarity": "골드",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/stillhere_large.png",
+   "desc": "잃은 체력에 비례해 공격 속도 및 생명력 흡수를 얻습니다."
+  },
+  {
+   "id": 3129,
+   "apiName": "SapMagic",
+   "name": "마법 흡수",
+   "nameEn": "Sap Magic",
+   "rarity": "골드",
+   "tags": [
+    "Damage",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/mercysstrike_large.png",
+   "desc": "?초마다 다음 기본 공격 적중 시 추가 물리 피해를 입히고 체력을 회복합니다.\n\n스킬을 사용하면 이 효과의 재사용 대기시간이 감소합니다."
+  },
+  {
+   "id": 3132,
+   "apiName": "HeavyIsTheCrown",
+   "name": "왕관의 무게",
+   "nameEn": "Heavy Is The Crown",
+   "rarity": "골드",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/heavyisthecrown_large.png",
+   "desc": "공격력, 주문력, 공격 속도가 증가하지만, 이동 속도가 감소합니다.\n\n처치 관여 시 부담 중첩을 얻고 효과가 증가합니다. 사망 시 중첩의 절반을 잃습니다."
+  },
+  {
+   "id": 3051,
+   "apiName": "BlueBarrier",
+   "name": "푸른 방어막",
+   "nameEn": "Blue Barrier",
+   "rarity": "실버",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/bluenote_large.png",
+   "desc": "사용한 마나의 ?만큼 ?초 동안 보호막을 얻습니다."
+  },
+  {
+   "id": 3088,
+   "apiName": "CrimsonCobalt",
+   "name": "핏빛 코발트",
+   "nameEn": "CRIMSON COBALT",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_gold.png",
+   "desc": "? 스킬 피해를 입은 적 챔피언에게 표식이 남습니다. 표식이 있는 적 기본 공격 시 추가 마법 피해를 입히고 ? 재사용 대기시간이 감소합니다."
+  },
+  {
+   "id": 3081,
+   "apiName": "WeaponOfDestiny",
+   "name": "운명의 무기",
+   "nameEn": "Weapon of Destiny",
+   "rarity": "골드",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/protagonistssignatureweapon_large.png",
+   "desc": "첫 번째 전설급 아이템이 운명의 무기가 됩니다. 피해를 입힌 챔피언이 3초 안에 죽으면 운명의 무기 능력치가 증가합니다.\n\n운명의 무기는 판매할 수 없습니다.\n업그레이드: ?"
+  },
+  {
+   "id": 3085,
+   "apiName": "FlowOfSpirit",
+   "name": "영혼의 흐름",
+   "nameEn": "Flow of Spirit",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_gold.png",
+   "desc": "? 사용 시 지속시간 동안 공격 속도를 얻습니다."
+  },
+  {
+   "id": 3149,
+   "apiName": "GroupHug",
+   "name": "단체 포옹",
+   "nameEn": "Group Hug",
+   "rarity": "프리즘",
+   "tags": [
+    "Ally"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/empyreampromise_large.png",
+   "desc": "? 스킬로 아군 챔피언의 체력을 회복시키거나 보호막을 씌우면 추가로 주변 다른 아군 챔피언 ?명에게 동일한 스킬을 사용합니다.\n\n체력 회복 및 보호막 효과가 ? 효율로 적용됩니다.\n역시 우정의 힘은 위대해!"
+  },
+  {
+   "id": 3163,
+   "apiName": "EnchantingButterflies",
+   "name": "황홀한 나비",
+   "nameEn": "Enchanting Butterflies",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/enchantedbuttery_large.png",
+   "desc": "아군 챔피언의 체력을 회복시키거나 보호막을 씌우면 나비가 모입니다.\n\n나비 ?마리를 모은 후, 적 챔피언에게 피해를 입히면 모든 나비가 날아가 마법 피해를 입힙니다."
+  },
+  {
+   "id": 3055,
+   "apiName": "UltimateRecursion",
+   "name": "궁극의 반복",
+   "nameEn": "Ultimate Recursion",
+   "rarity": "실버",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/zealot_large.png",
+   "desc": "궁극기 가속이 ? 증가합니다."
+  },
+  {
+   "id": 3052,
+   "apiName": "HandsOffTheTalent",
+   "name": "아티스트 보호",
+   "nameEn": "Hands off the Talent",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/bonk_large.png",
+   "desc": "최대 공격 사거리에 근접한 기본 공격은 적중 시 추가 물리 피해를 입힙니다."
+  },
+  {
+   "id": 3134,
+   "apiName": "LonelyWarrior",
+   "name": "고독한 전사",
+   "nameEn": "Lonely Warrior",
+   "rarity": "실버",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/adamant_large.png",
+   "desc": "주변에 있는 적 챔피언 한 명당 공격 속도, 방어력, 마법 저항력을 얻습니다."
+  },
+  {
+   "id": 3170,
+   "apiName": "GoH_PentakillAug_Q",
+   "name": "헤비",
+   "nameEn": "HEAVY",
+   "rarity": "골드",
+   "tags": [],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/pentakill_large.png",
+   "desc": ""
+  },
+  {
+   "id": 3171,
+   "apiName": "GoH_PentakillAug_W",
+   "name": "파워",
+   "nameEn": "POWER",
+   "rarity": "골드",
+   "tags": [],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/pentakill_large.png",
+   "desc": ""
+  },
+  {
+   "id": 3172,
+   "apiName": "GoH_PentakillAug_E",
+   "name": "스래시",
+   "nameEn": "THRASH",
+   "rarity": "골드",
+   "tags": [],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/pentakill_large.png",
+   "desc": ""
+  },
+  {
+   "id": 3173,
+   "apiName": "GoH_PentakillAug_R",
+   "name": "둠",
+   "nameEn": "DOOM",
+   "rarity": "골드",
+   "tags": [],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/pentakill_large.png",
+   "desc": ""
+  },
+  {
+   "id": 3118,
+   "apiName": "ArcaneAxiom",
+   "name": "비전 원칙",
+   "nameEn": "Arcane Axiom",
+   "rarity": "골드",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/arcaneaxiom_large.png",
+   "desc": "자신이 피해를 입힌 챔피언이 ?초 안에 죽으면 궁극기 전체 재사용 대기시간의 일부를 돌려받습니다."
+  },
+  {
+   "id": 3176,
+   "apiName": "GoH_PentakillAug_Generic",
+   "name": "GoH_PentakillAug_Generic",
+   "rarity": "골드",
+   "tags": [],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/pentakill_large.png",
+   "desc": "강화 ? 스킬은 스킬 가속이 20, 피해량이 10%, 체력 회복량 및 보호막 흡수량이 10% 증가합니다."
+  },
+  {
+   "id": 3150,
+   "apiName": "Upgrade_Stormsurge",
+   "name": "폭풍 쇄도 업그레이드",
+   "nameEn": "Upgrade Stormsurge",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/upgradehubris_large.png",
+   "desc": "이제 폭풍 쇄도의 질풍이 항상 폭발하여 범위 내에 최대 체력에 비례한 마법 피해를 입힙니다.\n\n최초 폭발에 휩쓸린 적 챔피언은 질풍 표식이 남습니다.\n\n?골드를 획득합니다."
+  },
+  {
+   "id": 3159,
+   "apiName": "RISE",
+   "name": "RISE",
+   "nameEn": "RISE",
+   "rarity": "프리즘",
+   "tags": [],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/zerohour_large.png",
+   "desc": "? 스킬로 적 챔피언을 처치하면 ?초 안에 해당 스킬을 한 번 재사용할 수 있습니다. 이후 재사용할 때마다 추가 피해를 입힙니다.\n\n최대 2회 추가로 재사용할 수 있으며, 각각 이전보다 ? 증가한 피해를 입힙니다. \n\n모두가 기억하게 만드세요."
+  },
+  {
+   "id": 3060,
+   "apiName": "OneHitWonder",
+   "name": "원 히트 원더",
+   "nameEn": "One Hit Wonder",
+   "rarity": "골드",
+   "tags": [],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_gold.png",
+   "desc": "? 피해량이 스킬 가속 ?당 ?% 증가하지만, 더 이상 스킬 가속 효과를 받지 않습니다.\n\n추가 피해량: ?%"
+  },
+  {
+   "id": 3265,
+   "apiName": "Fortified",
+   "name": "요새화",
+   "nameEn": "Fortified",
+   "rarity": "실버",
+   "tags": [],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/fortified_large.png",
+   "desc": ""
+  },
+  {
+   "id": 3263,
+   "apiName": "SteadfastPresence",
+   "name": "더욱 굳건한 태세",
+   "nameEn": "Steadfaster Presence",
+   "rarity": "골드",
+   "tags": [],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/steadfastpresence_large.png",
+   "desc": ""
+  },
+  {
+   "id": 3262,
+   "apiName": "ARAM_SlimeTime",
+   "name": "점액 천지",
+   "nameEn": "Slime Time",
+   "rarity": "실버",
+   "tags": [
+    "Damage",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/slimetime_large.png",
+   "desc": "몇 초마다 자동 사용으로 몸에서 점액을 터뜨려 주변 적에게 마법 피해를 입힙니다. \n\n챔피언에게 적중 시, 밟으면 체력이 회복되는 방울을 분비합니다."
+  },
+  {
+   "id": 3264,
+   "apiName": "MysticGuard",
+   "name": "신비한 방호",
+   "nameEn": "Mystic Guard",
+   "rarity": "실버",
+   "tags": [],
+   "pools": [
+    "KIWI"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/mysticguard_large.png",
+   "desc": ""
+  },
+  {
+   "id": 2083,
+   "apiName": "BurstingTeeth",
+   "name": "이빨 요정",
+   "nameEn": "Tooth Fairy",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI",
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/questburstingteeth_large.png",
+   "desc": "?초 안에 적 챔피언 체력의 ? 이상 피해를 입히면 해당 적이 이빨을 떨어뜨립니다.\n\n?개의 이빨 수집품이 현재 물리 관통력을 ?, 마법 관통력을 ? 부여합니다.\n\n 대상당 ?초의 재사용 대기시간이 적용됩니다."
+  },
+  {
+   "id": 1064,
+   "apiName": "ARAM_Perseverance",
+   "name": "인내심",
+   "nameEn": "Perseverance",
+   "rarity": "골드",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/perseverance_large.png",
+   "desc": "체력 재생 효과가 크게 증가하고 체력이 낮으면 추가로 증가합니다."
+  },
+  {
+   "id": 1327,
+   "apiName": "Adamant",
+   "name": "단호함",
+   "nameEn": "Adamant",
+   "rarity": "실버",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/adamant_large.png",
+   "desc": "적을 이동 불가 상태로 만들거나 이동 스킬을 사용할 수 없게 할 때마다 방어력 및 마법 저항력을 얻습니다."
+  },
+  {
+   "id": 1066,
+   "apiName": "ARAM_QuantumComputing",
+   "name": "양자 연산",
+   "nameEn": "Quantum Computing",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/quantumcomputing_large.png",
+   "desc": "주기적으로 주변에 강력한 베기를 자동 사용하여 물리 피해를 입힙니다. \n\n바깥쪽 칼날에 맞은 적은 둔화되고 추가 피해를 받으며, 자신은 체력을 회복합니다."
+  },
+  {
+   "id": 1334,
+   "apiName": "SnowballUpgrade",
+   "name": "눈덩이 업그레이드",
+   "nameEn": "Snowball Upgrade",
+   "rarity": "골드",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/snowballupgrade_large.png",
+   "desc": "눈덩이의 스킬 가속이 ?만큼 증가합니다. 적에게 눈덩이가 적중하면 눈이 내려 주변 적에게 광역 피해를 입히고 둔화시킵니다.\n\n눈덩이를 보유하지 않은 경우 눈덩이를 얻습니다."
+  },
+  {
+   "id": 1345,
+   "apiName": "ARAM_SpiritualPurification",
+   "name": "영혼의 정화",
+   "nameEn": "Spiritual Purification",
+   "rarity": "골드",
+   "tags": [
+    "Damage",
+    "Utility"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/spiritualpurification_large.png",
+   "desc": "처치 관여 시 폭발을 일으켜 주변 다른 적을 ?% 둔화시키고 적 현재 체력에 비례하는 피해를 입힙니다."
+  },
+  {
+   "id": 1346,
+   "apiName": "Vampirism",
+   "name": "흡혈병",
+   "nameEn": "Vampirism",
+   "rarity": "골드",
+   "tags": [
+    "Resilience",
+    "Utility"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/vampired_large.png",
+   "desc": "아군이 자신의 체력을 회복시키거나 자신이 체력 재생을 얻을 수 없습니다. ?%의 모든 피해 흡혈 효과를 얻습니다."
+  },
+  {
+   "id": 1400,
+   "apiName": "TrainOfTheDead",
+   "name": "최후의 도시 대중교통",
+   "nameEn": "Final City Transit",
+   "rarity": "골드",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/nightstalking_large.png",
+   "desc": "사망하면 처치자를 향해 열차를 발사합니다. 열차에 적중당한 적은 ?의 물리 피해를 입습니다. 열차는 멈추지 않습니다."
+  },
+  {
+   "id": 1414,
+   "apiName": "Dropybara_Active",
+   "name": "카피바라 폭격",
+   "nameEn": "Droppybara",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/orbitallaser_large.png",
+   "desc": ""
+  },
+  {
+   "id": 2006,
+   "apiName": "ARAM_Dropkick",
+   "name": "드롭킥",
+   "nameEn": "Dropkick",
+   "rarity": "프리즘",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/dropkick_large.png",
+   "desc": "기본 공격 및 스킬이 체력이 최대 체력의 ? 아래인 적 챔피언을 처형하고, 체력을 ? 회복하며 대상을 뒤로 밀어냅니다.\n\n대상이 적 또는 지형과 충돌하거나 한계에 도달하면 밀려난 적이 폭발해 주변 적에게 ?의 마법 피해를 입힙니다.\n\n이 폭발은 연쇄적으로 일어날 수 있습니다.\n\n드롭킥에 맞은 적: ?\n체력 획득량: 총 ?\n입힌 피해량: ?"
+  },
+  {
+   "id": 1356,
+   "apiName": "CriticalMissile",
+   "name": "치명적 미사일",
+   "nameEn": "Critical Missile",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/criticalmissile_large.png",
+   "desc": "치명타 적중 시 미사일을 발사해 마법 피해를 입힙니다.\n\n 치명타 확률이 ?% 증가합니다."
+  },
+  {
+   "id": 2007,
+   "apiName": "ARAM_LittleDevil",
+   "name": "어깨 위의 악마",
+   "nameEn": "Devil on Your Shoulder",
+   "rarity": "프리즘",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/littledevil_large.png",
+   "desc": "작은 악마와 직접 계약을 맺었습니다. 작은 악마는 매초 현재 체력의 ?만큼 체력을 흡수하며, 주변에 적이 있을 경우 흡수량은 ?까지 증가합니다.\n\n이에 대한 보상으로 작은 악마는 기본 공격 및 스킬을 강화해, 추가로 ?의 고정 피해를 입히고 주변에 ?초 동안 생명의 파편을 생성합니다.\n\n생명의 파편을 흡수하면 ?의 체력을 회복하고 ?초 동안 이동 속도가 ? 증가합니다.\n\n체력 흡수: ?\n입힌 피해량: ?\n획득한 파편: ?\n체력 회복량: ?\n지속 피해는 ?초에 한 번씩만 효과를 발동시킵니다."
+  },
+  {
+   "id": 1220,
+   "apiName": "ARAM_FanTheHammer",
+   "name": "탄환 세례",
+   "nameEn": "Fan The Hammer",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/fanthehammer_large.png",
+   "desc": "기본 공격 시 탄환을 5발 발사해 각각 물리 피해를 입히고  효과를 적용합니다."
+  },
+  {
+   "id": 2031,
+   "apiName": "ARAM_DropBear",
+   "name": "곰 투하",
+   "nameEn": "DropBear",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/cherry/augments/icons/drop_bear.png",
+   "desc": "사망 시, 플레이어의 증강을 모두 지닌 거대 티버가 하늘에서 떨어져 주변 적에게 피해를 입힙니다."
+  },
+  {
+   "id": 2034,
+   "apiName": "SharkTempest",
+   "name": "상어 폭풍",
+   "nameEn": "Shark Tempest",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/sharktempest_large.png",
+   "desc": "상어가 눈덩이 주위를 돌며 통과하는 적을 둔화시키고 ?의 마법 피해를 입힙니다. 눈덩이가 챔피언에게 적중하면 상어가 대상에게 고정되어 상어 폭풍을 일으킵니다. 상어 폭풍은 매초 ?의 마법 피해를 입히고 주변 적을 ?초 동안 ?% 둔화시킵니다."
+  },
+  {
+   "id": 2042,
+   "apiName": "BrushPower",
+   "name": "Hide on bush",
+   "nameEn": "Hide on Bush",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/brushpower_large.png",
+   "desc": "수풀에 들어가면 ?초 동안 수풀의 힘을 얻습니다. 수풀의 힘이 활성화된 동안 피해량이 ?% 증가합니다.\n\n입힌 피해량: ?\n\n수풀에 있으면 수풀의 힘이 초기화됩니다."
+  },
+  {
+   "id": 2063,
+   "apiName": "DimensionShift_Active",
+   "name": "차원 이동",
+   "nameEn": "Dimension Shift",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/whenthedarknesscomes_large.png",
+   "desc": ""
+  },
+  {
+   "id": 2082,
+   "apiName": "Equilibrium",
+   "name": "우리의 치유",
+   "nameEn": "Our Healing",
+   "rarity": "골드",
+   "tags": [
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/equillibrium_large.png",
+   "desc": "주변의 누군가가 체력을 회복할 때마다 그 회복량의 ?%만큼 자신의 체력을 회복합니다. 적의 체력 회복 효과는 두 배로 적용됩니다."
+  },
+  {
+   "id": 2089,
+   "apiName": "ARAM_YowchMyCoins",
+   "name": "으악, 내 동전!",
+   "nameEn": "Yowch, My Coins!",
+   "rarity": "골드",
+   "tags": [
+    "Economy"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/youchmycoins_large.png",
+   "desc": ""
+  },
+  {
+   "id": 2097,
+   "apiName": "VoidDash",
+   "name": "공허 돌진",
+   "nameEn": "Void Dash",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/genericabilityaugmenticon_gold.png",
+   "desc": "? 스킬로 돌진 시 적 챔피언을 둔화시키고 마법 피해를 입히는 공허 지대를 생성합니다."
+  },
+  {
+   "id": 2128,
+   "apiName": "BloodMoneyBurn",
+   "name": "타오르는 이자",
+   "nameEn": "Combusting Interest",
+   "rarity": "골드",
+   "tags": [
+    "Economy"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/bloodmoney2_large.png",
+   "desc": "챔피언에게 적용한 화상 및 지속 피해 효과가 골드를 생성합니다."
+  },
+  {
+   "id": 2137,
+   "apiName": "PatOnTheBack",
+   "name": "격려하기",
+   "nameEn": "Pat On The Back",
+   "rarity": "골드",
+   "tags": [],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/patontheback_large.png",
+   "desc": "근처를 지나갈 때 아군이 격려하며 보호막과 이동 속도를 부여합니다."
+  },
+  {
+   "id": 2148,
+   "apiName": "DoubleStrike",
+   "name": "2연속 공격",
+   "nameEn": "Double Strike",
+   "rarity": "실버",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/adamant_large.png",
+   "desc": "2연속 공격마스터 이의 7번째 공격 시, 두 번 공격합니다.시전자: ?"
+  },
+  {
+   "id": 7002,
+   "apiName": "DontStopCleavin",
+   "name": "끝없는 양날 베기",
+   "nameEn": "Don't Stop Cleavin'",
+   "rarity": "골드",
+   "tags": [
+    "Classicish"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/dont_stop_cleaving.png",
+   "desc": "칠흑의 양날도끼를 수량 제한 없이 구매할 수 있습니다. 구매 시 칠흑의 양날도끼 능력치가 해당 아이템 복사본 하나당 ?% 증가합니다.\n\n즉시 야수화를 획득합니다."
+  },
+  {
+   "id": 7001,
+   "apiName": "Upgrade_ZzRotPortal",
+   "name": "업그레이드: 즈롯 차원문",
+   "nameEn": "Upgrade: Zz'Rot Portal",
+   "rarity": "실버",
+   "tags": [
+    "Classicish"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/upgrade_zzrotportal.png",
+   "desc": "즈롯 차원문이 미니언을 ?마리 및 ?레벨당 1마리 추가로 소환합니다.\n\n또한 차원문이 파괴될 때 미니언을 소환합니다."
+  },
+  {
+   "id": 7003,
+   "apiName": "DoOrDie",
+   "name": "모 아니면 도",
+   "nameEn": "Do or Die",
+   "rarity": "프리즘",
+   "tags": [
+    "Classicish",
+    "General"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/do_or_die.png",
+   "desc": "메자이의 영혼약탈자, 레비아탄 갑옷, 비술의 검 최대 중첩이 두 배가 됩니다.\n\n'아니, 아니, 자르반 1세가 모 아니면 도라고 했어.'"
+  },
+  {
+   "id": 7004,
+   "apiName": "DrinkUp",
+   "name": "들이켜",
+   "nameEn": "Drink Up",
+   "rarity": "실버",
+   "tags": [
+    "Classicish"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/drink_up.png",
+   "desc": "팀원 모두가 즉시 체력 물약 ?개를 획득합니다.\n\n처치 관여 ?회마다 체력 물약 ?개를 획득합니다."
+  },
+  {
+   "id": 7010,
+   "apiName": "FutureSightHeartsteel",
+   "name": "시간 왜곡: 강철심장",
+   "nameEn": "Time Warp: Heartsteel",
+   "rarity": "골드",
+   "tags": [
+    "Classicish",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/fs_heart_steal.png",
+   "desc": "추가 체력을 ? 얻으면 미래로 손을 뻗어 강철심장을 획득합니다.\n\n강철심장은 판매할 수 없습니다.\n\n기력 10 소모..."
+  },
+  {
+   "id": 7005,
+   "apiName": "HasteMakesWaste",
+   "name": "급할수록 돌아가라",
+   "nameEn": "Haste Makes Waste",
+   "rarity": "프리즘",
+   "tags": [
+    "Classicish"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/haste_makes_waste.png",
+   "desc": "재사용 대기시간 감소를 ?% 얻습니다.\n\n 재사용 대기시간 감소 상한이 ?% 증가합니다."
+  },
+  {
+   "id": 7006,
+   "apiName": "StabbyStabby",
+   "name": "심술쟁이",
+   "nameEn": "Stabby Stabby",
+   "rarity": "실버",
+   "tags": [
+    "Classicish"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/stabby_stabby.png",
+   "desc": "재사용 대기시간 감소를 ? 얻습니다.\n\n재사용 대기시간 감소 상한이 ?% 증가합니다."
+  },
+  {
+   "id": 7007,
+   "apiName": "Upgrade_DeathFireGrasp",
+   "name": "업그레이드: 죽음불꽃 손아귀",
+   "nameEn": "Upgrade: Deathfire Grasp",
+   "rarity": "골드",
+   "tags": [
+    "Classicish",
+    "Damage"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/upgrade_deathfire.png",
+   "desc": "죽음불꽃 손아귀 피해 증폭 효과가 ?%로 증가하고 재사용 대기시간이 ?% 감소합니다. \n\n죽음불꽃 손아귀가 이제 대상 반경 ? 거리 내 모든 적 챔피언을 대상으로 합니다."
+  },
+  {
+   "id": 7009,
+   "apiName": "Upgrade_InnervatingLocket",
+   "name": "업그레이드: 활력증진의 펜던트",
+   "nameEn": "Upgrade: Innervating Locket",
+   "rarity": "골드",
+   "tags": [
+    "Classicish",
+    "Utility"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/upgrade_innervating.png",
+   "desc": "활력증진의 펜던트의 체력 및 마나 회복량이 ?% 증가합니다.\n\n활력증진의 펜던트가 대상 주변 모든 아군 챔피언의 체력과 마나를 회복시킵니다.\n\n예전에도 우디르가 죽지 않는다고 생각하셨다면..."
+  },
+  {
+   "id": 7008,
+   "apiName": "DoransBiggestFan",
+   "name": "도란 열혈 팬",
+   "nameEn": "Doran's Biggest Fan",
+   "rarity": "프리즘",
+   "tags": [
+    "Classicish"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/dorans_fan.png",
+   "desc": "도란의 검, 반지, 방패 첫 구매 후 추가로 구매할 때마다 기존 아이템에 중첩이 쌓입니다. \n\n중첩당 아이템 능력치의 ?%를 부여합니다.\n\n이 아이템들의 기본 지속 효과는 증가하지 않습니다. 해당 도란 아이템을 더 이상 판매할 수 없습니다.\n\n도란 아이템 30개쯤"
+  },
+  {
+   "id": 7011,
+   "apiName": "TrueEternity",
+   "name": "진정한 영원",
+   "nameEn": "True Eternity",
+   "rarity": "프리즘",
+   "tags": [
+    "Classicish"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/do_or_die.png",
+   "desc": "영겁의 지팡이를 수량 제한 없이 구매할 수 있습니다. 영겁의 지팡이 중첩이 더 빨리 쌓이며, 중첩 횟수에 제한이 없습니다. 수호자 카탈리스트를 획득합니다.\n\n시작 아이템, 핵심 빌드 그리고 최후의 수단입니다."
+  },
+  {
+   "id": 7012,
+   "apiName": "HexCore",
+   "name": "마공학 핵",
+   "nameEn": "The Hex Core",
+   "rarity": "프리즘",
+   "tags": [
+    "Classicish"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/do_or_die.png",
+   "desc": "프로토타입 마공학 핵을 획득합니다. 골드를 사용해 마공학 핵을 업그레이드하고 스킬을 영구적으로 강화하세요."
+  },
+  {
+   "id": 7013,
+   "apiName": "SpiritOfTheJungleMain",
+   "name": "정글 장인의 영혼",
+   "nameEn": "Spirit of the Jungle Main",
+   "rarity": "골드",
+   "tags": [
+    "Classicish"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/spiritualpurification_large.png",
+   "desc": "보유한 정글 아이템의 기본 능력치가 ?% 증가합니다.\n\n각 아이템당 하나만 능력치가 증가합니다.\n\n망령의 영혼, 고대 골렘의 영혼, 도마뱀 장로의 영혼, 마드레드의 피갈퀴손, 리글의 랜턴, 야생의 섬광"
+  },
+  {
+   "id": 7014,
+   "apiName": "DipDiveDodge",
+   "name": "분노 유발",
+   "nameEn": "Ragebait",
+   "rarity": "실버",
+   "tags": [
+    "Classicish"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/stabby_stabby.png",
+   "desc": "회피 확률 ?% 증가"
+  },
+  {
+   "id": 2003,
+   "apiName": "ARAM_PoroKing",
+   "name": "포로 왕의 바운스",
+   "nameEn": "Bounce of the Poro King",
+   "rarity": "프리즘",
+   "tags": [
+    "General"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/poroking_large.png",
+   "desc": "포로 왕의 바운스를 획득합니다!\n\n포로 왕의 바운스: 포로 왕으로 변신하여 주기적으로 튀어 오르며 주변 적에게 물리 피해를 입히고 뒤로 밀어냅니다."
+  },
+  {
+   "id": 1406,
+   "apiName": "GrandmasChiliOil",
+   "name": "할머니의 고추기름",
+   "nameEn": "Grandma's Chili Oil",
+   "rarity": "골드",
+   "tags": [
+    "Damage",
+    "Utility"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/grandmaschilioil_large.png",
+   "desc": "적에게 기본 공격 및 스킬 적중 시 화상을 적용하고, 주변에 고추기름 웅덩이를 생성합니다. 고추기름은 체력을 회복시키고 적에게 화상을 적용합니다.\n\n고추기름의 효과는 적용한 화상의 수에 비례해 강력해집니다."
+  },
+  {
+   "id": 1339,
+   "apiName": "LaserHeal",
+   "name": "체력 회복 광선",
+   "nameEn": "Laser Heal",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage",
+    "Resilience"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/laseheal_large.png",
+   "desc": "2.5초 동안 광선을 발사해 아군에게는 체력을 회복시키고, 적에게는 마법 피해를 입히며 둔화시킵니다."
+  },
+  {
+   "id": 1342,
+   "apiName": "SnowballRoulette",
+   "name": "눈덩이 룰렛",
+   "nameEn": "Snowball Roulette",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/snowballupgrade_large.png",
+   "desc": "눈덩이의 스킬 가속이 ?만큼 증가합니다. 적을 맞추면 자신에게 무작위 이로운 소환사 주문을, 대상에게 해로운 소환사 주문을 사용합니다. 돌진하면 자신에게 이로운 소환사 주문을 재사용합니다.\n\n눈덩이를 보유하지 않은 경우 눈덩이를 얻습니다."
+  },
+  {
+   "id": 1409,
+   "apiName": "ARAM_Poro_Blast",
+   "name": "포로 발사기",
+   "nameEn": "Poro Blaster",
+   "rarity": "골드",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/poroblast_large.png",
+   "desc": "시간에 따라 포로를 모읍니다. 적에게 피해를 입히면 모든 포로를 대상에게 발사해 각각 최대 체력 비례 고정 피해를 입힙니다. 포로가 5마리 있다면 대상을 잠시 뒤로 밀어냅니다."
+  },
+  {
+   "id": 1372,
+   "apiName": "BabyKitty",
+   "name": "엄마 찾는 아기 고양이",
+   "nameEn": "I'm a Baby Kitty Where is Mama",
+   "rarity": "프리즘",
+   "tags": [
+    "Utility"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/babykitty_large.png",
+   "desc": "아군 옆에 서 있으면 해당 아군에게 자신의 엄마라는 표식을 남깁니다. \n엄마를 향해 이동할 때 이동 속도를 얻습니다. 엄마 주위에 있으면 이동 속도, 체력 회복 및 보호막 효과를 얻습니다."
+  },
+  {
+   "id": 1424,
+   "apiName": "ARAM_MissingPingAugment",
+   "name": "???",
+   "nameEn": "???",
+   "rarity": "프리즘",
+   "tags": [
+    "Damage"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/missingping_large.png",
+   "desc": "사라짐 신호를 보내면 신호 위치에 미사일을 발사해 적에게는 ?+잃은 체력의 ?%만큼 마법 피해를 입히고 아군에게는 ?+잃은 체력의 ?%만큼 체력을 회복시킵니다."
+  },
+  {
+   "id": 7015,
+   "apiName": "SummonersSafari",
+   "name": "소환사의 사파리",
+   "nameEn": "Summoner's Safari",
+   "rarity": "실버",
+   "tags": [
+    "Classicish"
+   ],
+   "pools": [
+    "KIWI_JADE"
+   ],
+   "icon": "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/assets/ux/kiwi/augments/icons/stabby_stabby.png",
+   "desc": "정글 또는 강에 있을 때 빠르게 소모품을 발견합니다.\n\n'중단? 우리가 가는 곳엔 중단이 필요 없다!'"
+  }
+ ]
+}
