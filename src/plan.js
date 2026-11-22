@@ -84,8 +84,12 @@ export async function addPick(name, gameKey, source = "직접 입력") {
   return picks;
 }
 
-export async function resetPicks(gameKey) {
+export async function resetPicks(gameKey, { force = false } = {}) {
   await mkdir(DATA_DIR, { recursive: true });
+  // 같은 판이면(프로그램을 게임 중에 다시 켠 경우) 기록을 지우지 않음
+  if (!force && gameKey) {
+    try { if (JSON.parse(await readFile(PICKS_FILE, "utf8")).gameKey === gameKey) return; } catch {}
+  }
   await writeFile(PICKS_FILE, JSON.stringify({ gameKey, picks: [] }));
 }
 

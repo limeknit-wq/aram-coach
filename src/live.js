@@ -3,11 +3,13 @@
 import https from "node:https";
 import { champions, damageProfile, itemById, norm } from "./data.js";
 import { keyFromChampionIds, loadingGame } from "./lcu.js";
+import { fakeLive, test } from "./testmode.js";
 
 const PORT = process.env.LOL_LIVE_PORT || 2999;
 const agent = new https.Agent({ rejectUnauthorized: false }); // 클라이언트가 자체 서명 인증서를 씀
 
 function getLive(path) {
+  if (test.active) return fakeLive(path); // 게임 없이 테스트하는 중
   return new Promise((resolve, reject) => {
     const req = https.get({ host: "127.0.0.1", port: PORT, path, agent, timeout: 3000 }, (res) => {
       let body = "";
@@ -36,7 +38,9 @@ async function playerView(p) {
   const statSum = {};
   for (const i of p.items || []) {
     const data = await itemById(i.itemID);
-    its.push({ id: i.itemID, name: i.displayName, gold: data?.gold?.total, count: i.count > 1 ? i.count : undefined });
+    // completed: 완성 아이템(상위 아이템 없음, 900골드 이상) 또는 2단계 신발 → 아이템 칸이 다 찼는지 판단에 씀
+    const completed = Boolean(data && (data.gold?.total ?? 0) >= 900 && (!data.into?.length || data.tags?.includes("Boots")));
+    its.push({ id: i.itemID, name: i.displayName, gold: data?.gold?.total, count: i.count > 1 ? i.count : undefined, slot: i.slot, completed });
     for (const [k, v] of Object.entries(data?.stats || {})) {
       const key = STAT_KEYS[k];
       if (key) statSum[key] = Math.round(((statSum[key] || 0) + v * (i.count || 1)) * 100) / 100;

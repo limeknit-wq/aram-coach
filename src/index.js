@@ -170,7 +170,7 @@ function createServer() {
         await addPick(hit.notFound ? a.addAugment : hit.name, coord.gameKey, "채팅 입력");
       }
       if (a.note) memory.notes.push(a.note);
-      if (a.reset) { await shareEvent(null); await resetPicks(coord.gameKey); }
+      if (a.reset) { await shareEvent(null); await resetPicks(coord.gameKey, { force: true }); }
       if (a.event) {
         const ev = await findEvent(a.event);
         await shareEvent(ev ? { id: ev.id, name: ev.name, at: Date.now(), source: "사용자 입력" } : null);
