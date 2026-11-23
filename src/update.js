@@ -2,7 +2,7 @@
 import { APP_VERSION } from "./paths.js";
 
 // GitHub 저장소를 만든 뒤 "owner/repo" 로 채웁니다. 비어 있으면 확인하지 않습니다.
-export const REPO = process.env.ARAM_REPO || "limeknit-wq/aram-coach-public";
+export const REPO = process.env.ARAM_REPO || "limeknit-wq/aram-coach";
 export const update = { checked: false, latest: null, url: null, newer: false };
 
 const parse = (v) => String(v).replace(/^v/, "").split(".").map((n) => Number(n) || 0);

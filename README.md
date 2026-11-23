@@ -7,7 +7,7 @@
 
 ## Windows에서 시작하기
 
-[Windows 실행 파일 다운로드](https://github.com/limeknit-wq/aram-coach-public/releases/latest/download/AramCoach.exe)
+[Windows 실행 파일 다운로드](https://github.com/limeknit-wq/aram-coach/releases/latest/download/AramCoach.exe)
 
 Windows x64용입니다. 자동 추천을 사용하려면 본인 PC에 Claude Code 또는 Codex CLI를 설치하고 로그인하세요. 실행 파일에는 공통 게임 데이터와 화면 구성 리소스가 들어 있습니다. 선택 기록과 설정은 실행한 사람의 PC에서 생성됩니다.
 
