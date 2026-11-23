@@ -166,7 +166,7 @@ export async function scoreOffer(offer, { event, gameKey, gameVersion, championI
     }
     if (score != null) score = Math.max(0, Math.min(100, Math.round(score)));
     return {
-      name, apiName: a?.apiName, rarity: a?.rarity, x: offer.xs?.[i] ?? null, slot: offer.slots?.[i] ?? null,
+      name, apiName: a?.apiName, rarity: a?.rarity, icon: a?.icon || null, x: offer.xs?.[i] ?? null, slot: offer.slots?.[i] ?? null,
       score, grade: score == null ? "?" : gradeOf(score), reason: live?.reason || base?.reason || description,
       description, style: base?.style, notes, sticker: offer.stickers?.[i] || null, unrated: score == null,
       statistics: statistics?.cards[i] || null, evaluationKey,

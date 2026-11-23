@@ -73,6 +73,7 @@ async function statusState() {
       : null,
     matchup: coord.inGame ? coord.matchup || null : null,
     picks: picks.map((p) => p.name),
+    pickInfo: picks.map((p) => ({ name: p.name, rarity: p.rarity || null, icon: p.icon || null })),
     items: coord.inGame ? coord.itemsView || null : null,
     offer: openOffer(watch.offer) ? (await scoreOffer(watch.offer, offerContext()))?.cards.map((c) => `${c.name} ${c.grade}${c.score ?? ""}${c.isPick ? " ★" : ""}`) : [],
     engines: await detectEnginesCached(),

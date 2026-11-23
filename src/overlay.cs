@@ -214,6 +214,38 @@ public static class Ui
         catch { im = null; }
         iconCache[url] = im; return im;
     }
+    static readonly HashSet<string> iconLoading = new HashSet<string>();
+    /// <summary>증강 아이콘: 화면을 멈추지 않게 백그라운드로 받고, 다 받으면 target 을 다시 그립니다. 아직이면 null.</summary>
+    public static Image IconAsync(string url, Control target)
+    {
+        if (string.IsNullOrEmpty(url)) return null;
+        Image im;
+        if (iconCache.TryGetValue(url, out im)) return im;
+        if (!iconLoading.Add(url)) return null;
+        try
+        {
+            WebClient wc = new WebClient();
+            wc.DownloadDataCompleted += delegate (object o, DownloadDataCompletedEventArgs e)
+            {
+                Image got = null;
+                if (e.Error == null && !e.Cancelled)
+                    try { using (MemoryStream ms = new MemoryStream(e.Result)) got = new Bitmap(Image.FromStream(ms)); } catch { }
+                iconCache[url] = got; iconLoading.Remove(url); wc.Dispose();
+                if (target != null && !target.IsDisposed && target.IsHandleCreated) target.Invalidate();
+            };
+            wc.DownloadDataAsync(new Uri(url));
+        }
+        catch { iconCache[url] = null; iconLoading.Remove(url); }
+        return null;
+    }
+    /// <summary>증강 희귀도별 테두리 색 (위, 아래)</summary>
+    public static Color[] RarityColors(string rarity)
+    {
+        if (rarity == "프리즘") return new[] { Color.FromArgb(214, 150, 255), Color.FromArgb(90, 210, 235) };
+        if (rarity == "골드") return new[] { Color.FromArgb(240, 205, 125), Color.FromArgb(150, 110, 50) };
+        if (rarity == "실버") return new[] { Color.FromArgb(205, 214, 224), Color.FromArgb(105, 116, 130) };
+        return new[] { Color.FromArgb(80, 96, 112), Color.FromArgb(50, 62, 75) };
+    }
     /// <summary>/overlay 데이터의 아이템 아이콘을 미리 받아 둡니다</summary>
     public static void Prefetch(Dictionary<string, object> ov)
     {
@@ -1333,7 +1365,6 @@ public class LiveView : Panel
             sections[section].Add(line);
         }
 
-        y = Heading(g, "내 역할과 전략", null, x, y, w, s);
         bool sideBySide = w >= 260 * s;
         float labelWidth = sideBySide ? 74 * s : 0;
         for (int i = 0; i < titles.Length; i++)
@@ -1344,7 +1375,44 @@ public class LiveView : Panel
             y = Wrap(g, string.Join(" ", sections[i]), "Regular", 12 * s, Color.FromArgb(212, 216, 220),
                 x + labelWidth, y, w - labelWidth, int.MaxValue) + 6 * s;
         }
-        return y + 6 * s;
+        return y;
+    }
+
+    // ----- 주제별 고정 섹션 -----
+    // 섹션마다 자리(최소 높이)를 미리 잡고, 한 번 커진 높이는 같은 판·같은 창 너비에서는 줄이지 않습니다.
+    // 그래서 내용이 생기거나 사라져도 아래 섹션이 위아래로 움직이지 않습니다.
+    readonly Dictionary<string, float> sectionHeights = new Dictionary<string, float>();
+    string sectionLayoutKey;
+    float sectionTop, sectionDrawn;
+    const float SectionPad = 12, SectionGap = 10;
+
+    /// <summary>섹션 상자와 제목을 그리고 내용이 시작될 y를 돌려줍니다. 내용은 x + SectionPad*s, 너비 w - 2*SectionPad*s 안에 그립니다.</summary>
+    float BeginSection(Graphics g, string key, string title, string note, float minHeight, float x, float y, float w, float s)
+    {
+        float stored;
+        sectionHeights.TryGetValue(key, out stored);
+        sectionTop = y;
+        sectionDrawn = Math.Max(minHeight * s, stored);
+        RectangleF box = new RectangleF(x, y, w, sectionDrawn);
+        Ui.Fill(g, box, 8 * s, Ui.Panel, Ui.Panel);
+        Ui.Stroke(g, box, 8 * s, Ui.PanelLine, Math.Max(1f, .6f * s));
+        float pad = SectionPad * s;
+        return Heading(g, title, note, x + pad, y + pad, w - 2 * pad, s) + 2 * s;
+    }
+
+    /// <summary>섹션을 닫고 다음 섹션이 시작될 y를 돌려줍니다. 내용이 상자보다 길면 상자를 키워 다시 그립니다.</summary>
+    float EndSection(string key, float contentBottom, float s)
+    {
+        float need = contentBottom + SectionPad * s - sectionTop, stored;
+        sectionHeights.TryGetValue(key, out stored);
+        if (need > stored) sectionHeights[key] = need;
+        if (need > sectionDrawn + .5f) BeginInvoke((Action)Invalidate); // 상자가 작았음 → 커진 상자로 한 번 더 그림
+        return sectionTop + Math.Max(sectionDrawn, need) + SectionGap * s;
+    }
+
+    static float Placeholder(Graphics g, string t, float x, float y, float w, float s)
+    {
+        return Wrap(g, t, "Medium", 12 * s, Ui.Sub, x, y, w, 2) + 4 * s;
     }
 
     void PaintAll(Graphics g)
@@ -1368,81 +1436,124 @@ public class LiveView : Panel
             st == null ? "연결 안 됨" : previous ? "지난 경기" : preview ? "미리보기" : "대기 중";
         if ((previous || preview) && !string.IsNullOrEmpty(champ) && champ != "?") game += " · " + champ;
         Text1(g, game, "Bold", 17 * s, Ui.Text, x, y, w);
+        y += 29 * s;
         if (inGame)
         {
-            float offset = Math.Min(w, TextW(g, game, "Bold", 17 * s) + 12 * s);
+            // AI 상태는 항상 둘째 줄 (길이에 따라 줄이 바뀌면 아래가 밀리므로)
             Color sc = sState == "완료" ? Ui.Green : sState == "실패" ? Ui.Amber : sState == "진행 중" ? Ui.Gold : Ui.Sub;
             string engine = Ui.S(setup, "engine");
             string aiT = "AI " + sState + (engine != null ? " · " + engine : "");
             string ev = Ui.S(st, "event");
             if (!string.IsNullOrEmpty(ev)) aiT += " · " + ev;
-            if (offset + TextW(g, aiT, "Medium", 12 * s) > w) { offset = 0; y += 23 * s; }
-            Text1(g, aiT, "Medium", 12 * s, sc, x + offset, y + 4 * s, w - offset);
+            Text1(g, aiT, "Medium", 12 * s, sc, x, y - 4 * s, w);
+            y += 20 * s;
         }
-        y += 29 * s;
         if (st != null && matchState == "idle")
             y = Wrap(g, "게임이 시작되면 자동으로 분석해요", "Medium", 12.5f * s, Ui.Sub, x, y, w, 2) + 6 * s;
 
-        // 2) 증강 선택지 (뜰 때만, 맨 위에 크게)
-        ArrayList cards = inGame && Ui.B(ov, "show") ? Ui.A(ov, "cards") : null;
-        if (cards != null && cards.Count > 0)
+        // 판·화면 너비가 바뀌면 섹션 높이 기억을 새로 시작
+        string layoutKey = (Ui.S(st, "gameKey") ?? "") + "|" + matchState + "|" + (int)w;
+        if (layoutKey != sectionLayoutKey) { sectionLayoutKey = layoutKey; sectionHeights.Clear(); }
+
+        // 경기 화면(진행·지난·미리보기)에서는 섹션을 항상 같은 순서·자리에 둡니다. 대기 중에는 내용 있는 섹션만.
+        bool fixedLayout = inGame || previous || preview;
+        float ip = SectionPad * s, cx = x + ip, cw = w - 2 * ip, c;
+
+        // 1) 지금 증강 선택 (게임 중: 선택지 4장 자리를 늘 비워 둠)
+        if (inGame)
         {
-            y = Heading(g, "지금 증강 선택", Ui.StatisticsLabel(ov), x, y, w, s);
-            bool hasPlan = Ui.B(ov, "hasPlan");
-            string analysis = Ui.S(ov, "analysisState");
-            if (analysis == "pending") y = Highlight(g, Ui.N(ov, "ratedCount", 0) > 0 ? "1차 추천 · 세부 분석 중" : "현재 선택지 분석 중", x, y, w, s, Ui.GoldLight);
-            else if (!hasPlan) y = Highlight(g, Ui.S(ov, "setupState") == "진행 중" ? "AI가 증강을 분석 중이에요" : "점수표를 만들려면 ‘다시 세팅’을 누르세요", x, y, w, s, Ui.Amber);
-            foreach (object o in cards) y = DrawCardRow(g, o as Dictionary<string, object>, x, y, w, s, hasPlan) + 4 * s;
-            y += 6 * s;
+            ArrayList cards = Ui.B(ov, "show") ? Ui.A(ov, "cards") : null;
+            bool offer = cards != null && cards.Count > 0;
+            c = BeginSection(g, "offer", "지금 증강 선택", offer ? Ui.StatisticsLabel(ov) : null, 2 * SectionPad + 24 + 22 + 190, x, y, w, s);
+            if (offer)
+            {
+                bool hasPlan = Ui.B(ov, "hasPlan");
+                string analysis = Ui.S(ov, "analysisState");
+                if (analysis == "pending") c = Highlight(g, Ui.N(ov, "ratedCount", 0) > 0 ? "1차 추천 · 세부 분석 중" : "현재 선택지 분석 중", cx, c, cw, s, Ui.GoldLight);
+                else if (!hasPlan) c = Highlight(g, Ui.S(ov, "setupState") == "진행 중" ? "AI가 증강을 분석 중이에요" : "점수표를 만들려면 ‘다시 세팅’을 누르세요", cx, c, cw, s, Ui.Amber);
+                c = DrawOfferCards(g, cards, cx, c, cw, s, hasPlan);
+            }
+            else c = Placeholder(g, "증강 선택지가 뜨면 카드별 점수가 여기에 떠요", cx, c, cw, s);
+            y = EndSection("offer", c, s);
         }
 
-        Dictionary<string, object> matchup = Ui.D(st, "matchup");
-        y = DrawStrategy(g, plan, x, y, w, s);
-
+        // 2) 내가 고른 증강
         ArrayList picks = Ui.A(st, "picks");
-        if (inGame || (picks != null && picks.Count > 0))
+        int pickCount = picks == null ? 0 : picks.Count;
+        if (fixedLayout || pickCount > 0)
         {
-            int count = picks == null ? 0 : picks.Count;
-            y = Heading(g, "내가 고른 증강", count + "개", x, y, w, s);
-            if (count > 0) y = DrawAdviceGrid(g, picks, AdviceKind.Picked, x, y, w, s) + 8 * s;
-            else y = Wrap(g, "아직 고른 증강이 없어요", "Medium", 12 * s, Ui.Sub, x, y, w, 1) + 8 * s;
+            ArrayList pickInfo = Ui.A(st, "pickInfo");
+            c = BeginSection(g, "picks", "내가 고른 증강", pickCount + "개", 2 * SectionPad + 24 + 104, x, y, w, s);
+            c = pickCount > 0 ? DrawPickedCards(g, pickInfo != null && pickInfo.Count == pickCount ? pickInfo : picks, cx, c, cw, s)
+                : Placeholder(g, "아직 고른 증강이 없어요", cx, c, cw, s);
+            y = EndSection("picks", c, s);
         }
 
+        // 3) 추천 증강
         ArrayList top = Ui.A(plan, "recommendations");
-        if (top != null && top.Count > 0)
+        bool hasTop = top != null && top.Count > 0;
+        if (fixedLayout || hasTop)
         {
-            y = Heading(g, "추천 증강", previous ? "당시 추천" : "아직 고르지 않은 증강", x, y, w, s);
-            y = DrawAdviceGrid(g, top, AdviceKind.Recommended, x, y, w, s) + 8 * s;
+            c = BeginSection(g, "recs", "추천 증강", previous ? "당시 추천" : "아직 고르지 않은 증강", 2 * SectionPad + 24 + 44, x, y, w, s);
+            c = hasTop ? DrawAdviceGrid(g, top, AdviceKind.Recommended, cx, c, cw, s)
+                : Placeholder(g, previous ? "기록 없음" : sState == "진행 중" ? "AI가 증강을 분석 중이에요" : "추천 증강이 아직 없어요", cx, c, cw, s);
+            y = EndSection("recs", c, s);
         }
 
-        // 3) 아이템
+        // 4) 아이템
         Dictionary<string, object> it = Ui.D(ov, "items") ?? Ui.D(st, "items");
         ArrayList next = Ui.A(it, "build") ?? Ui.A(it, "next");
-        if (next != null && next.Count > 0) y = DrawItems(g, it, next, x, y, w, s) + 8 * s;
-        else if (plan != null) y = DrawPlannedBuild(g, Ui.D(plan, "build"), Ui.A(plan, "plannedItems"), x, y, w, s) + 8 * s;
+        Dictionary<string, object> build = Ui.D(plan, "build");
+        ArrayList core = Ui.A(build, "core");
+        bool liveItems = next != null && next.Count > 0, planned = core != null && core.Count > 0;
+        if (fixedLayout || liveItems || planned)
+        {
+            string itemTitle = liveItems ? "아이템 " + (int)Ui.N(it, "haveCount", 0) + "/6" : "추천 빌드";
+            string itemNote = liveItems ? ItemStatus(it) : planned ? "구매 순서" : null;
+            c = BeginSection(g, "items", itemTitle, itemNote, 2 * SectionPad + 24 + (inGame ? 22 + 2 * 46 + 5 : 46), x, y, w, s);
+            if (liveItems) c = DrawItems(g, it, next, cx, c, cw, s);
+            else if (planned) c = DrawPlannedBuild(g, build, Ui.A(plan, "plannedItems"), cx, c, cw, s);
+            else c = Placeholder(g, previous ? "기록 없음" : "아이템 추천을 기다리는 중", cx, c, cw, s);
+            y = EndSection("items", c, s);
+        }
 
+        // 5) 능력치 모루 (게임 중)
         if (inGame)
         {
             ArrayList anvils = Ui.A(it, "anvils") ?? Ui.A(plan, "anvils");
-            y = Heading(g, "능력치 모루", "획득·구매 시 선택", x, y, w, s);
-            if (anvils != null && anvils.Count > 0)
-                y = DrawAdviceGrid(g, anvils, AdviceKind.Anvil, x, y, w, s) + 8 * s;
-            else
-                y = Wrap(g, "추천 대기 중", "Medium", 12 * s, Ui.Sub, x, y, w, 1) + 8 * s;
+            c = BeginSection(g, "anvils", "능력치 모루", "획득·구매 시 선택", 2 * SectionPad + 24 + 44, x, y, w, s);
+            c = anvils != null && anvils.Count > 0 ? DrawAdviceGrid(g, anvils, AdviceKind.Anvil, cx, c, cw, s) : Placeholder(g, "추천 대기 중", cx, c, cw, s);
+            y = EndSection("anvils", c, s);
         }
 
-        ArrayList combos = Ui.A(plan, "matchupCombos");
-        if (matchup != null && combos != null && combos.Count > 0)
+        // 6) 내 역할과 전략 (길이가 들쭉날쭉해서 아래쪽에 둠)
+        bool hasStrategy = !string.IsNullOrWhiteSpace(Ui.S(plan, "role")) || !string.IsNullOrWhiteSpace(Ui.S(plan, "strategy"));
+        if (fixedLayout || hasStrategy)
         {
-            y = Heading(g, "상대 조합에 맞는 증강 조합", null, x, y, w, s);
-            foreach (object entry in combos)
-            {
-                Dictionary<string, object> combo = entry as Dictionary<string, object>;
-                ArrayList names = Ui.A(combo, "augments");
-                if (names == null || names.Count != 2) continue;
-                y = Wrap(g, string.Join(" + ", names.ToArray()), "SemiBold", 12 * s, Ui.GoldLight, x, y, w, 2) + 2 * s;
-                y = Wrap(g, Ui.S(combo, "reason"), "Medium", 11.5f * s, Ui.Sub, x, y, w, 3) + 8 * s;
-            }
+            c = BeginSection(g, "strategy", "내 역할과 전략", null, 2 * SectionPad + 24 + 20, x, y, w, s);
+            c = hasStrategy ? DrawStrategy(g, plan, cx, c, cw, s)
+                : Placeholder(g, previous ? "기록 없음" : sState == "진행 중" ? "AI가 이번 판을 분석 중이에요" : "AI 분석이 끝나면 전략이 표시돼요", cx, c, cw, s);
+            y = EndSection("strategy", c, s);
+        }
+
+        // 7) 상대 조합에 맞는 증강 조합 (적 조합이 잡힌 판만)
+        Dictionary<string, object> matchup = Ui.D(st, "matchup");
+        ArrayList combos = Ui.A(plan, "matchupCombos");
+        if (matchup != null && (fixedLayout || (combos != null && combos.Count > 0)))
+        {
+            c = BeginSection(g, "combos", "상대 조합에 맞는 증강 조합", null, 2 * SectionPad + 24 + 20, x, y, w, s);
+            float start = c;
+            if (combos != null)
+                foreach (object entry in combos)
+                {
+                    Dictionary<string, object> combo = entry as Dictionary<string, object>;
+                    ArrayList names = Ui.A(combo, "augments");
+                    if (names == null || names.Count != 2) continue;
+                    c = Wrap(g, string.Join(" + ", names.ToArray()), "SemiBold", 12 * s, Ui.GoldLight, cx, c, cw, 2) + 2 * s;
+                    c = Wrap(g, Ui.S(combo, "reason"), "Medium", 11.5f * s, Ui.Sub, cx, c, cw, 3) + 8 * s;
+                }
+            if (c == start) c = Placeholder(g, previous ? "기록 없음" : "추천 조합을 기다리는 중", cx, c, cw, s);
+            y = EndSection("combos", c, s);
         }
         string msg = Ui.S(setup, "message");
         if (inGame && sState == "실패" && !string.IsNullOrEmpty(msg)) y = Wrap(g, msg, "Regular", 12 * s, Ui.Sub, x, y, w, 2) + 6 * s;
@@ -1518,12 +1629,15 @@ public class LiveView : Panel
     }
 
     /// <summary>구매 상태, 아이콘, 비용을 아이템마다 한 칸에 표시합니다.</summary>
+    static string ItemStatus(Dictionary<string, object> it)
+    {
+        double gold = Ui.N(it, "gold", 0), respawn = Ui.N(it, "respawnIn", 0);
+        return ((int)gold).ToString("N0") + "G" + (Ui.B(it, "dead") && respawn > 0 ? "  ·  부활 " + (int)respawn + "초" : "");
+    }
+
+    /// <summary>섹션 제목(아이템 n/6 · 골드)은 부르는 쪽에서 그립니다.</summary>
     float DrawItems(Graphics g, Dictionary<string, object> it, ArrayList next, float x, float y, float w, float s)
     {
-        int haveN = (int)Ui.N(it, "haveCount", 0);
-        double gold = Ui.N(it, "gold", 0), respawn = Ui.N(it, "respawnIn", 0);
-        string status = ((int)gold).ToString("N0") + "G" + (Ui.B(it, "dead") && respawn > 0 ? "  ·  부활 " + (int)respawn + "초" : "");
-        y = Heading(g, "아이템 " + haveN + "/6", status, x, y, w, s);
         string buy = Ui.BuyText(it);
         if (!string.IsNullOrEmpty(buy))
             y = Highlight(g, buy, x, y, w, s, Ui.B(Ui.D(it, "buy"), "affordable") ? Ui.Green : Ui.Amber);
@@ -1563,7 +1677,6 @@ public class LiveView : Panel
     {
         ArrayList core = Ui.A(build, "core");
         if (core == null || core.Count == 0) return y;
-        y = Heading(g, "추천 빌드", "구매 순서", x, y, w, s);
         y = (preview != null && preview.Count > 0 ? DrawItemGrid(g, preview, x, y, w, s) : ChipFlow(g, core, x, y, w, s)) + 8 * s;
         ArrayList sit = Ui.A(build, "situational");
         if (sit != null)
@@ -1584,6 +1697,142 @@ public class LiveView : Panel
             }
         }
         return y;
+    }
+
+    // ----- 카드 프레임 -----
+    static float WrapC(Graphics g, string t, string weight, float px, Color c, float x, float y, float w, int maxLines)
+    {
+        if (string.IsNullOrEmpty(t)) return y;
+        using (Font f = Ui.F(weight, px)) using (SolidBrush b = new SolidBrush(c))
+        using (StringFormat sf = new StringFormat { Alignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisCharacter })
+        {
+            SizeF sz = g.MeasureString(t, f, (int)w, sf);
+            float h = Math.Min(sz.Height, px * 1.5f * maxLines);
+            g.DrawString(t, f, b, new RectangleF(x, y, w, h + 2), sf);
+            return y + h;
+        }
+    }
+
+    /// <summary>희귀도 색 테두리의 카드 바탕</summary>
+    static void CardFrame(Graphics g, RectangleF r, string rarity, float s, bool glow)
+    {
+        Color[] rc = Ui.RarityColors(rarity);
+        Ui.Fill(g, r, 9 * s, Color.FromArgb(27, 37, 49), Color.FromArgb(13, 19, 27));
+        if (glow)
+            using (GraphicsPath p = Ui.Round(RectangleF.Inflate(r, 2.5f * s, 2.5f * s), 11 * s))
+            using (Pen pen = new Pen(Color.FromArgb(110, Ui.Gold), 4 * s)) g.DrawPath(pen, p);
+        using (GraphicsPath p = Ui.Round(r, 9 * s))
+        using (LinearGradientBrush b = new LinearGradientBrush(new RectangleF(r.X, r.Y - 1, r.Width, r.Height + 2), rc[0], rc[1], 90f))
+        using (Pen pen = new Pen(b, Math.Max(1.2f, 1.6f * s))) g.DrawPath(pen, p);
+        // 위쪽 안쪽 빛
+        using (Pen hi = new Pen(Color.FromArgb(40, rc[0]), Math.Max(1f, s)))
+            g.DrawLine(hi, r.X + 10 * s, r.Y + 3 * s, r.Right - 10 * s, r.Y + 3 * s);
+    }
+
+    /// <summary>증강 아이콘을 희귀도 원 테두리 안에 그림 (아직 못 받았으면 빈 원)</summary>
+    void AugIcon(Graphics g, string url, string rarity, float cx, float cy, float size, float s)
+    {
+        Color[] rc = Ui.RarityColors(rarity);
+        RectangleF disc = new RectangleF(cx - size / 2, cy - size / 2, size, size);
+        using (SolidBrush back = new SolidBrush(Color.FromArgb(8, 12, 18))) g.FillEllipse(back, disc);
+        Image icon = Ui.IconAsync(url, this);
+        if (icon != null)
+        {
+            using (GraphicsPath clip = new GraphicsPath())
+            {
+                clip.AddEllipse(RectangleF.Inflate(disc, -1.5f * s, -1.5f * s));
+                GraphicsState saved = g.Save();
+                g.SetClip(clip, CombineMode.Intersect);
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.DrawImage(icon, RectangleF.Inflate(disc, -1.5f * s, -1.5f * s));
+                g.Restore(saved);
+            }
+        }
+        using (LinearGradientBrush b = new LinearGradientBrush(RectangleF.Inflate(disc, 1, 1), rc[0], rc[1], 90f))
+        using (Pen ring = new Pen(b, Math.Max(1.2f, 1.8f * s))) g.DrawEllipse(ring, disc);
+    }
+
+    /// <summary>증강 선택지를 카드로 나란히 그림. 끝난 y를 돌려줍니다.</summary>
+    float DrawOfferCards(Graphics g, ArrayList cards, float x, float y, float w, float s, bool hasPlan)
+    {
+        int n = cards.Count;
+        float gap = 8 * s;
+        int columns = Math.Max(1, Math.Min(n, (int)((w + gap) / (104 * s))));
+        float cardW = (w - gap * (columns - 1)) / columns;
+        int maxDetails = 0;
+        foreach (object o in cards)
+        {
+            Dictionary<string, object> c = o as Dictionary<string, object>;
+            int d = (Ui.A(c, "notes") == null ? 0 : Ui.A(c, "notes").Count) + (Ui.S(c, "sticker") != null ? 1 : 0) + (Ui.S(c, "rerollHint") != null ? 1 : 0);
+            maxDetails = Math.Max(maxDetails, d);
+        }
+        float iconSize = Math.Min(56 * s, cardW - 30 * s);
+        float cardH = 30 * s + iconSize + 92 * s + maxDetails * 30 * s;
+        float bottom = y;
+        for (int i = 0; i < n; i++)
+        {
+            Dictionary<string, object> card = cards[i] as Dictionary<string, object>;
+            RectangleF r = new RectangleF(x + (i % columns) * (cardW + gap), y + 4 * s + (i / columns) * (cardH + gap), cardW, cardH);
+            bottom = r.Bottom;
+            string grade = hasPlan ? Ui.S(card, "grade") ?? "?" : "?";
+            int score = (int)Ui.N(card, "score", -1);
+            bool pick = Ui.B(card, "isPick"), provisional = Ui.B(card, "isProvisionalPick");
+            CardFrame(g, r, Ui.S(card, "rarity"), s, pick || provisional);
+
+            // 위: 등급·점수 / 칸
+            string label = hasPlan && score >= 0 ? grade + " " + score : "—";
+            Text1(g, label, "Bold", 12.5f * s, Ui.GradeColors(grade)[0], r.X + 8 * s, r.Y + 6 * s, r.Width * .6f);
+            if (pick || provisional)
+            {
+                string tag = pick ? "추천" : "1순위?";
+                float tw = TextW(g, tag, "Bold", 10.5f * s) + 10 * s;
+                RectangleF chip = new RectangleF(r.Right - tw - 6 * s, r.Y + 6 * s, tw, 17 * s);
+                Ui.Fill(g, chip, 8 * s, Ui.Gold, Color.FromArgb(170, 140, 80));
+                WrapC(g, tag, "Bold", 10.5f * s, Ui.GoldText, chip.X, chip.Y + 1 * s, chip.Width, 1);
+            }
+
+            // 가운데: 아이콘
+            float iy = r.Y + 28 * s;
+            AugIcon(g, Ui.S(card, "icon"), Ui.S(card, "rarity"), r.X + r.Width / 2, iy + iconSize / 2, iconSize, s);
+
+            // 아래: 이름·이유·메모
+            float ty = iy + iconSize + 7 * s, inner = r.Width - 14 * s;
+            string title = Ui.S(card, "name") ?? "";
+            WrapC(g, title, "Bold", 12.5f * s, pick ? Ui.GoldLight : Ui.Text, r.X + 7 * s, ty, inner, 2);
+            ty += 36 * s;
+            string meta = Ui.S(card, "style");
+            if (!string.IsNullOrEmpty(meta)) { WrapC(g, meta, "Medium", 10 * s, Ui.Gold, r.X + 7 * s, ty - 4 * s, inner, 1); ty += 12 * s; }
+            WrapC(g, Ui.S(card, "reason"), "Medium", 10.5f * s, Ui.Sub, r.X + 7 * s, ty, inner, string.IsNullOrEmpty(meta) ? 3 : 2);
+            float dy = r.Y + 30 * s + iconSize + 92 * s - 2 * s;
+            var details = new List<string>();
+            ArrayList notes = Ui.A(card, "notes");
+            if (notes != null) foreach (object note in notes) details.Add(note.ToString());
+            if (Ui.S(card, "sticker") != null) details.Add(Ui.S(card, "sticker"));
+            if (Ui.S(card, "rerollHint") != null) details.Add(Ui.S(card, "rerollHint"));
+            foreach (string d in details) dy = WrapC(g, d, "Medium", 10 * s, Ui.Amber, r.X + 7 * s, dy, inner, 2) + 2 * s;
+        }
+        return bottom + 4 * s;
+    }
+
+    /// <summary>고른 증강을 작은 카드로 줄바꿈하며 그림</summary>
+    float DrawPickedCards(Graphics g, ArrayList info, float x, float y, float w, float s)
+    {
+        float gap = 7 * s, cardW = 104 * s, cardH = 96 * s;
+        int columns = Math.Max(1, (int)((w + gap) / (cardW + gap)));
+        float bottom = y;
+        for (int i = 0; i < info.Count; i++)
+        {
+            Dictionary<string, object> p = info[i] as Dictionary<string, object>;
+            string name = p != null ? Ui.S(p, "name") : info[i] as string;
+            string rarity = Ui.S(p, "rarity");
+            RectangleF r = new RectangleF(x + (i % columns) * (cardW + gap), y + 4 * s + (i / columns) * (cardH + gap), cardW, cardH);
+            bottom = r.Bottom;
+            CardFrame(g, r, rarity, s, false);
+            Text1(g, (i + 1).ToString(), "Bold", 10 * s, Ui.Gold, r.X + 6 * s, r.Y + 4 * s, 16 * s);
+            AugIcon(g, Ui.S(p, "icon"), rarity, r.X + r.Width / 2, r.Y + 30 * s, 40 * s, s);
+            WrapC(g, name, "SemiBold", 10.5f * s, Ui.Text, r.X + 4 * s, r.Y + 56 * s, r.Width - 8 * s, 2);
+        }
+        return bottom + 4 * s;
     }
 
     float DrawCardRow(Graphics g, Dictionary<string, object> card, float x, float y, float w, float s, bool hasPlan)
