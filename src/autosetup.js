@@ -203,12 +203,27 @@ export async function shop() {
     // 아이템 추천용: 이번 패치 효과까지
     detail: "(아이템 효과는 이번 패치 공식 데이터야. 네 기억과 다르면 이 설명을 따라.)\n" +
       filled.map(([k, v]) => "[" + k + "]\n" + v.map(line).join("\n")).join("\n") + "\n" + rules,
+    /**
+     * 아이템 추천용, 짧은 판: 내 빌드(계획·보유)가 속한 딜 분류(AD 또는 AP)와 신발·방어·기타만 효과까지 쓰고,
+     * 쓰지 않는 딜 분류는 이름·가격만 씁니다. 상점 설명이 프롬프트의 대부분(약 1만 4천 자)이라 호출 비용이 크게 줄어듦.
+     * 빌드 정보가 없거나 AD·AP를 둘 다 쓰면 전체 설명.
+     */
+    detailFor: (names = []) => {
+      const want = new Set(names.map(norm));
+      const used = new Set(filled.filter(([, v]) => v.some((i) => want.has(norm(i.name)))).map(([k]) => k));
+      const dmg = ["AD·공속·치명타", "AP"].filter((k) => used.has(k));
+      if (dmg.length !== 1) return shopCache.detail;
+      return "(아이템 효과는 이번 패치 공식 데이터야. 네 기억과 다르면 이 설명을 따라.)\n" +
+        filled.map(([k, v]) => ["AD·공속·치명타", "AP"].includes(k) && k !== dmg[0]
+          ? "[" + k + "] (이 챔피언 주력이 아니라 이름·가격만) " + v.map((i) => `${i.name}(${i.gold ?? "?"}G)`).join(", ")
+          : "[" + k + "]\n" + v.map(line).join("\n")).join("\n") + "\n" + rules;
+    },
     /** 상점에 있는 정확한 이름으로 바꿈. 없는 아이템이면 null */
     fix: (n) => byNorm.get(norm(n)) || null,
   };
   return shopCache;
 }
-const ITEM_RULE = "아이템 규칙: 아래 칼바람 상점 목록에 있는 이름만 정확히 써. 내 챔피언의 피해 유형(AD/AP)과 역할에 맞는 딜 아이템이 중심이고, 딜러에게 [방어·탱커] 아이템은 적 조합상 꼭 필요할 때 상황 아이템으로 1개까지만.";
+const ITEM_RULE = "아이템 규칙: 칼바람 상점 목록에 있는 이름만 정확히 써. 내 챔피언의 피해 유형(AD/AP)과 역할에 맞는 딜 아이템이 중심이고, 딜러에게 [방어·탱커] 아이템은 적 조합상 꼭 필요할 때 상황 아이템으로 1개까지만.";
 
 const ANVIL_RULE = "능력치 모루는 아이템 완성 전에도 획득하거나 살 수 있어. 모루가 제시됐을 때 고를 서로 다른 능력치 3개를 우선순위대로 적어. 챔피언 스킬, 현재 빌드, 증강과 적 위협을 고려하고 수치나 확률은 적지 마.";
 const MATCH_RULE = `s에는 "내 역할:", "교전 순서:", "주의할 스킬:"을 각각 줄 첫머리에 두고 개행으로 구분해. 아군과 연계할 타이밍과 상대 스킬에 대응할 방법을 구체적으로 써. 확인할 수 없는 부분은 생략해. c에는 상대 조합에 특히 효과적인 내 증강 2개 조합을 최대 ${MAX_MATCHUP_COMBOS}개 적고 상대 챔피언이나 위협을 이유에 구체적으로 써. 조합의 효과가 겹치면 하나만 남겨. 적 조합을 모르거나 유의미한 조합이 없으면 c는 빈 배열로 둬.`;
@@ -436,7 +451,10 @@ why 에는 바꾼 이유를 적 또는 아군 아이템을 들어 써 (예: "말
 ${ANVIL_RULE}
 {"build":["아이템1","아이템2","아이템3","아이템4","아이템5","아이템6"],"why":"40자 이내 이유","anvils":[{"stat":"능력치","reason":"짧은 이유"}]}`;
     const sh = await shop();
-    const r = await askAI(engine, prompt + "\n" + ITEM_RULE + " 같은 아이템을 두 번 넣지 마. 고른 증강에 퀘스트(조건: 특정 아이템 보유)가 있으면 그 조건 아이템을 최우선으로 추천하고, 증강 보상으로만 받는 아이템은 상점에 없으니 추천하지 마.\n칼바람 상점 (완성 아이템):\n" + sh.detail);
+    const buildNames = [...(plan?.build?.core || []), ...(plan?.build?.situational || []).map((s) => s.item),
+      ...me.items.filter((i) => i.completed).map((i) => i.name), ...(items.build || [])];
+    // 상점 목록(판 내내 같음)을 앞에 두고 바뀌는 상황은 뒤에 둠 → 같은 판의 다음 요청은 앞부분이 캐시로 재사용됨
+    const r = await askAI(engine, "칼바람 상점 (완성 아이템):\n" + sh.detailFor(buildNames) + "\n\n" + prompt + "\n" + ITEM_RULE + " 같은 아이템을 두 번 넣지 마. 고른 증강에 퀘스트(조건: 특정 아이템 보유)가 있으면 그 조건 아이템을 최우선으로 추천하고, 증강 보상으로만 받는 아이템은 상점에 없으니 추천하지 마.");
     const owned = me.items.filter((i) => i.completed);
     const build = (await dropLimitDupes([...new Set((r.build || r.next || []).map(sh.fix).filter(Boolean))], findItem, owned)).slice(0, 6);
     const ranked = normalizeAnvils(r.anvils);

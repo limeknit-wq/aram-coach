@@ -57,21 +57,40 @@ function matchByDescription(lines, cx, ty, found, named) {
   if (text.length < 8) return null;
   const have = grams(text.slice(0, 60));
   const seen = new Set();
-  let best = null, bestScore = 0, second = 0;
+  const scored = [];
   for (const { a } of named) {
     if (seen.has(a.apiName) || found.some((f) => f.apiName === a.apiName)) continue;
     seen.add(a.apiName);
-    const g = grams(descNorm(a.desc).slice(0, 60));
+    const d = descNorm(a.desc).slice(0, 60);
+    const g = grams(d);
     if (g.size < 6) continue;
     let hit = 0;
     for (const x of g) if (have.has(x)) hit++;
     // 양쪽 기준(다이스 계수): 짧은 설명(예: "치명타 확률이 50% 증가합니다")이 카드 글자의 일부와만 겹쳐도
     // 만점이 되던 문제 → 카드 글자와 증강 설명이 서로 비슷한 길이·내용일 때만 높게 나옴
-    const score = (2 * hit) / (g.size + have.size);
-    if (score > bestScore) { second = bestScore; bestScore = score; best = a; }
-    else if (score > second) second = score;
+    scored.push({ a, d, score: (2 * hit) / (g.size + have.size) });
   }
-  return best && bestScore >= 0.45 && bestScore - second >= 0.12 ? best : null;
+  scored.sort((x, y) => y.score - x.score);
+  const top = scored[0];
+  if (!top || top.score < 0.45) return null;
+  // 등급만 다르고 설명이 같은 증강(예: 조준경 부착 / 상급 / 최상급 — 수치가 빠진 설명은 글자가 똑같음)은
+  // 설명으로는 구분할 수 없으므로, 같은 선택지의 다른 카드 등급(대부분 같은 등급으로 나옴)으로 고릅니다
+  const family = scored.filter((s) => s.d === top.d);
+  const rest = scored.find((s) => s.d !== top.d)?.score || 0;
+  if (top.score - rest < 0.12) return null;
+  if (family.length === 1) return top.a;
+  const rarity = majorityRarity(found);
+  const same = family.filter((s) => s.a.rarity === rarity);
+  return same.length === 1 ? same[0].a : null;
+}
+
+/** 이미 읽힌 카드들의 등급 중 가장 많은 것 (보완 인식한 카드는 빼고) */
+function majorityRarity(found) {
+  const count = new Map();
+  for (const f of found) if (!f.recovered && f.rarity) count.set(f.rarity, (count.get(f.rarity) || 0) + 1);
+  let best = null, n = 0;
+  for (const [r, c] of count) if (c > n) { best = r; n = c; } else if (c === n) best = null;
+  return best;
 }
 
 /**
@@ -318,6 +337,10 @@ async function onLine(raw) {
   const found = await matchAugments(msg.lines);
   const cur = state.offer;
   observePanel(cur, found, msg);
+  // 증강 창을 접어 둔 동안에도(최대 4분) 빠르게 읽음. 느린 간격(약 1.5~2초)이면 창을 펼치자마자 바로 고를 때
+  // 펼친 화면을 한 번도 못 보고 지나가 고른 증강이 기록되지 않았음
+  if (cur && cur.collapsedAt && !cur.closedAt && msg.t - cur.collapsedAt < 240000)
+    writeFile(join(OUT, "fast.flag"), String(msg.t)).catch(() => {});
   if (found.length < 2) {
     if (cur) pendingChanges.delete(cur);
     nextOffer = null;

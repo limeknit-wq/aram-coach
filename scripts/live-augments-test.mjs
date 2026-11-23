@@ -118,6 +118,39 @@ test("인식이 흔들리는 중에 선택 화면이 닫혀도 클릭한 증강�
   assert.deepEqual((await loadPicks(coord.gameKey)).map((p) => p.name), [names[2]]);
 });
 
+test("글자를 못 읽은 카드 자리를 눌렀으면, 닫히기 전에 그 칸이 읽힐 때 그 이름으로 확정한다", async (t) => {
+  // 실제 사례(23:04): 세 번째 카드 제목이 깨져 2장만 읽힌 채 그 카드를 눌러 '카드 밖 클릭'으로 버려졌음
+  const { frame } = replay(t, "unread-slot-fixture");
+  await frame([names[0], names[1], null]);
+  const offer = await frame([names[0], names[1], null]);
+  coord.pendingPick = { name: null, x: positions[2], at: Date.now() + 1, offer, epoch: watch.captureEpoch, gameKey: coord.gameKey };
+  await frame(names); // 닫히기 직전 프레임에 세 번째 카드가 읽힘
+  await frame(names);
+  for (let i = 0; i < 6; i++) { await frame([], clearRims); await settlePick(); }
+  assert.deepEqual((await loadPicks(coord.gameKey)).map((p) => p.name), [names[2]]);
+});
+
+test("못 읽은 카드 자리를 누른 채 끝까지 못 읽으면 엉뚱한 증강을 기록하지 않는다", async (t) => {
+  const { frame } = replay(t, "unread-slot-miss-fixture");
+  await frame([names[0], names[1], null]);
+  const offer = await frame([names[0], names[1], null]);
+  coord.pendingPick = { name: null, x: positions[2], at: Date.now() + 1, offer, epoch: watch.captureEpoch, gameKey: coord.gameKey };
+  for (let i = 0; i < 6; i++) { await frame([], clearRims); await settlePick(); }
+  assert.deepEqual(await loadPicks(coord.gameKey), []);
+  assert.equal(coord.pendingPick, null);
+});
+
+test("등급만 다르고 설명이 같은 증강은 같은 선택지 카드 등급으로 보완한다", async () => {
+  // 실제 사례(23:04): '조준경 부착' 제목이 깨지고 설명은 실버·골드·프리즘 셋이 같아 못 채웠음
+  const { matchAugments } = await import("../src/watcher.js");
+  const lines = [
+    { s: "불여우", x: .308, y: .411 }, { s: "차가운 냉기", x: .5, y: .411 }, { s: "入 주", x: .692, y: .411 },
+    { s: "공격 사거리가 50 증가합니다.", x: .692, y: .475 },
+  ];
+  const found = await matchAugments(lines);
+  assert.deepEqual(found.map((f) => f.name), ["불여우", "차가운 냉기", "조준경 부착"]);
+});
+
 test("게임 창 전환 중 화면이 사라져도 증강을 저장하지 않는다", async (t) => {
   const { frame, click } = replay(t, "focus-fixture");
   await frame(names);

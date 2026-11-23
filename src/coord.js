@@ -7,7 +7,7 @@ import { addPick, loadPicks, loadPlan, resetPicks, scoreOffer } from "./plan.js"
 import { currentGameKey, liveGame } from "./live.js";
 import { champSelect, gameClientVersion, gameWindowMode, loadingGame } from "./lcu.js";
 import { buyNow, dropLimitDupes, inventory, remainingCost } from "./itembuild.js";
-import { logOffer, startWatcher, stopWatcher, state as watch } from "./watcher.js";
+import { logOffer, missingSlots, startWatcher, stopWatcher, state as watch } from "./watcher.js";
 import { APP_VERSION, IS_EXE, ensureResources, resPath } from "./paths.js";
 import { getSettings, updateSettings } from "./settings.js";
 import { adviseItems, cancelAutoSetup, detectEngines, items as itemAdvice, onGameStart, prepareChampion, rateCurrentAugments, setup, setupRunning, shop } from "./autosetup.js";
@@ -155,7 +155,7 @@ function handle(req, res) {
     // 단, 앞 클릭 뒤에도 선택 화면이 1.5초 넘게 그대로 보였으면 앞 클릭은 고른 게 아니었으므로 새 클릭으로 바꿈
     const stillShown = coord.pendingPick && o && o.lastSeenAt - coord.pendingPick.at > 1500;
     if (coord.pendingPick?.offer === o && coord.pendingPick.epoch === watch.captureEpoch && !(o.rerolledAt > coord.pendingPick.at) && !stillShown) {
-      logOffer(`추가 클릭 무시 (이미 고름: ${coord.pendingPick.name}, x=${x})`);
+      logOffer(`추가 클릭 무시 (이미 고름: ${coord.pendingPick.name || "못 읽은 카드"}, x=${x})`);
       return sendJson(res, { ok: true, pending: coord.pendingPick.name });
     }
     if (o?.names?.length && o.xs?.every((v) => v != null) && Number.isFinite(x)) {
@@ -163,8 +163,16 @@ function handle(req, res) {
       // 카드 바깥(카드 사이 빈 곳, 화면 가장자리)을 누른 건 고른 게 아님. 예전엔 이런 클릭이 가장 가까운 카드로 잡혀서
       // 진짜로 카드를 눌렀을 때 '이미 고름'으로 무시되는 일이 있었음 (첫 증강이 기록 안 되던 원인)
       if (Math.abs(o.xs[i] - x) > cardHalfW()) {
-        logOffer(`카드 밖 클릭 무시 (x=${x})`);
-        return sendJson(res, { ok: true, pending: coord.pendingPick?.name || null });
+        // 글자를 못 읽은 카드 자리를 누른 것일 수 있음 (예: 제목이 깨져 3장 중 2장만 읽힌 경우).
+        // 예전엔 '카드 밖'으로 버려 그 판 증강이 빠졌음 → 자리만 기억해 두고, 선택 화면이 닫힐 때까지 그 칸이 읽히면 그 이름으로 확정
+        const slot = missingSlots(o.xs, watch.aspect || 16 / 9).find((s) => Math.abs(s - x) <= cardHalfW());
+        if (slot == null) {
+          logOffer(`카드 밖 클릭 무시 (x=${x})`);
+          return sendJson(res, { ok: true, pending: coord.pendingPick?.name || null });
+        }
+        coord.pendingPick = { name: null, x: slot, at: Date.now(), offer: o, epoch: watch.captureEpoch, gameKey: coord.gameKey };
+        logOffer(`못 읽은 카드 자리 클릭 (x=${x}) → 닫히기 전에 읽히면 기록`);
+        return sendJson(res, { ok: true, pending: null });
       }
       const again = coord.pendingPick && coord.pendingPick.offer === o;
       coord.pendingPick = { name: o.names[i], at: Date.now(), offer: o, epoch: watch.captureEpoch, gameKey: coord.gameKey };
@@ -225,7 +233,7 @@ export async function settlePick() {
   const interrupted = p.epoch !== watch.captureEpoch || p.gameKey !== coord.gameKey;
   if (!o || o.closedAt || o !== p.offer || rerolled || interrupted || age > 60000) {
     coord.pendingPick = null;
-    logOffer(`클릭 취소 (${!o || o.closedAt ? "선택지 닫힘" : o !== p.offer ? "선택지 바뀜" : rerolled ? "새로고침" : interrupted ? "캡처 또는 경기 전환" : "시간 초과"}): ${p.name}`);
+    logOffer(`클릭 취소 (${!o || o.closedAt ? "선택지 닫힘" : o !== p.offer ? "선택지 바뀜" : rerolled ? "새로고침" : interrupted ? "캡처 또는 경기 전환" : "시간 초과"}): ${p.name || "못 읽은 카드"}`);
     return;
   }
   // 정상 캡처에서 카드 테두리가 연속으로 사라지면 확정합니다.
@@ -236,6 +244,12 @@ export async function settlePick() {
     absentFor >= (o.unstable ? 1500 : 750)) {
     o.closedAt = watch.lastLeagueFrameAt;
     coord.pendingPick = null;
+    if (!p.name) {
+      // 못 읽은 카드 자리를 눌렀던 경우: 그 사이 그 칸이 읽혔으면 그 이름으로 확정
+      const i = (o.xs || []).findIndex((v) => v != null && Math.abs(v - p.x) <= cardHalfW());
+      if (i < 0) { logOffer(`선택 확정 실패: 고른 카드 글자를 끝내 못 읽음 (x=${p.x.toFixed(3)})`); return; }
+      p.name = o.names[i];
+    }
     logOffer(`선택 확정: ${p.name}`);
     await addPick(p.name, p.gameKey, "오버레이 클릭 자동 기록", { offerId: o.at });
     if (coord.gameKey === p.gameKey) coord.lastPick = { name: p.name, at: Date.now() };
@@ -307,7 +321,7 @@ async function onNewGame(key) {
   watch.event = null; watch.offer = null; watch.history = [];
   coord.pendingPick = null; coord.lastPick = null; coord.itemsView = null; coord.matchup = null; coord.affordUntil = 0;
   coord.gameVersion = null; coord.championId = null; patchCheckedAt = 0;
-  Object.assign(itemAdvice, { next: [], now: "", why: "", at: 0, state: "대기", anvilAdvice: null, midAnvilAdvice: null });
+  Object.assign(itemAdvice, { build: [], next: [], now: "", why: "", at: 0, state: "대기", anvilAdvice: null, midAnvilAdvice: null });
   await resetPicks(key);
   const live = await liveGame(EMPTY_MEMORY).catch(() => null);
   coord.champion = live?.me?.champion || null;
@@ -353,10 +367,13 @@ async function pollGameOnce() {
 
 // ---------- 템 추천: 3초마다 내 상태 확인 → 죽으면 AI에게 다시 묻고, 다음 템 골드가 모이면 잠깐 알림 ----------
 coord.affordUntil = 0;
-let wasDead = false, lastAdviceAt = 0, lastPickKey = "", lastAffordName = null, lastAnvilKey = null, itemTicking = false;
+let lastAdviceAt = 0, lastPickKey = "", lastAffordName = null, lastAnvilKey = null, itemTicking = false;
 // 아군·적이 완성한 아이템 기록 (새 완성템이 생기면 빌드를 다시 물어봄)
 let teamItems = { gameKey: null, seen: new Map(), changes: [] };
-const TEAM_ADVICE_GAP = 60000; // 팀 아이템 변화로 다시 묻는 최소 간격
+const TEAM_ADVICE_GAP = 45000; // 죽었을 때 팀 아이템 변화로 다시 묻는 최소 간격
+const TEAM_ALLY_MIN = 3; // 아군 아이템만 바뀌었으면 이만큼 모였을 때만 다시 물음 (내 빌드에 주는 영향이 작음)
+const STALE_ADVICE_MS = 5 * 60000; // 앞 추천이 이보다 오래됐으면 작은 변화라도 다시 물음
+const BOOTS = /(신발|장화|군화|발걸음)$/; // 신발 완성은 빌드 판단에 거의 영향이 없어 변화로 치지 않음
 
 /** 다른 9명의 완성 아이템을 이전과 비교해 새로 완성한 것만 changes 에 쌓습니다. 첫 확인은 기준만 잡음. */
 function trackTeamItems(live, gameKey) {
@@ -366,7 +383,7 @@ function trackTeamItems(live, gameKey) {
     const key = `${side}:${p.champion}`;
     const now = new Set(p.items.filter((i) => i.completed).map((i) => i.name));
     const before = teamItems.seen.get(key);
-    if (teamItems.ready && before) for (const n of now) if (!before.has(n)) teamItems.changes.push(`${side} ${p.champion}: ${n}`);
+    if (teamItems.ready && before) for (const n of now) if (!before.has(n) && !BOOTS.test(n)) teamItems.changes.push(`${side} ${p.champion}: ${n}`);
     teamItems.seen.set(key, now);
   }
   teamItems.ready = true;
@@ -401,22 +418,27 @@ async function itemTick() {
     trackTeamItems(live, coord.gameKey);
     const pickKey = `${coord.gameKey}:${picks.length}`;
     const newPick = picks.length > 0 && pickKey !== lastPickKey;
-    const teamChanged = teamItems.changes.length > 0 && Date.now() - lastAdviceAt > TEAM_ADVICE_GAP;
+    // 칼바람은 죽었을 때만 템을 살 수 있으므로, 팀 아이템 변화는 살아 있는 동안 모아 두었다가 죽었을 때 한 번에 반영합니다.
+    // 예전엔 변화가 생길 때마다(거의 1분마다) AI를 불러 5판에 70번 호출했고, 대부분 같은 빌드가 나왔음.
+    // 또 아무 변화 없이 죽었을 때는 앞 추천을 그대로 씀.
+    const enemyChanged = teamItems.changes.some((c) => c.startsWith("적 "));
+    const teamWorth = enemyChanged || teamItems.changes.length >= TEAM_ALLY_MIN ||
+      (teamItems.changes.length > 0 && Date.now() - lastAdviceAt > STALE_ADVICE_MS);
     const needAdvice = coord.isApp && !full && !itemAdvice.busy && (
-      (Date.now() - lastAdviceAt > 45000 && ((dead && !wasDead) || (!itemAdvice.at && setup.state === "완료"))) ||
-      (newPick && Date.now() - lastAdviceAt > 15000) || teamChanged);
+      (!itemAdvice.at && setup.state === "완료" && Date.now() - lastAdviceAt > 45000) ||
+      (newPick && Date.now() - lastAdviceAt > 15000) ||
+      (dead && teamWorth && Date.now() - lastAdviceAt > TEAM_ADVICE_GAP)); // 죽어 있는 동안이면 언제든 (상점 이용 가능)
     if (needAdvice) lastPickKey = pickKey;
-    const wasDeadBefore = wasDead;
-    wasDead = dead;
     if (needAdvice) {
-      const because = dead && !wasDeadBefore ? "죽음" : newPick ? "증강 선택" : teamChanged ? "팀 아이템 변화" : "세팅 완료";
+      const because = newPick ? "증강 선택" : dead && teamWorth ? "죽음 + 팀 아이템 변화" : "세팅 완료";
       logOffer(`[아이템] 추천 요청 (${because})`);
       lastAdviceAt = Date.now();
       const changes = teamItems.changes.splice(0);
       adviseItems(live, { plan: matchPlan, picks, gameKey: coord.gameKey, changes });
     }
     // 보여줄 목록: AI 추천(최근 것) → 없으면 이번 판 계획 빌드
-    const useAI = itemAdvice.at && Date.now() - itemAdvice.at < 10 * 60000;
+    // 이번 판 AI 추천이 있으면 계속 씀 (새 판이 되면 at 이 0으로 초기화됨). 추천을 꼭 필요할 때만 받으므로 시간으로 버리지 않음
+    const useAI = Boolean(itemAdvice.at);
     const planned = useAI ? (itemAdvice.build || itemAdvice.next) : (matchPlan?.build?.core || []);
     // 하나만 살 수 있는 계열(방관템·신발 등)은 이미 가진 것/앞 순서 것만 남김 (예: 도미닉을 샀으면 필멸자·세릴다 제외)
     const names = await dropLimitDupes(planned || [], findItem, doneItems);
