@@ -9,6 +9,9 @@ import { fileURLToPath } from "node:url";
 import { augments, events, norm } from "./data.js";
 import { ensureResources, resPath } from "./paths.js";
 
+import { recordCards } from "./seendesc.js";
+import { test } from "./testmode.js";
+
 const SCRIPT = () => resPath("src/watcher.ps1");
 const OUT = join(tmpdir(), "lol-aram-mcp");
 const SLOT_TOL = 0.08; // 같은 카드 칸으로 볼 가로 위치 차이 (화면 너비 비율)
@@ -223,6 +226,9 @@ async function onLine(raw) {
   if (ev && state.event?.id !== ev.id) state.event = { id: ev.id, name: ev.name, at: msg.t, source: "화면 자동 인식" };
   const found = await matchAugments(msg.lines);
   if (found.length < 2) return; // 증강 선택 화면이 아님
+  if (!test.active && msg.method && msg.source !== "file") {
+    recordCards(found, msg.lines, (await augments()).builtAt)?.catch(() => {});
+  }
   // 선택지가 떠 있는 동안 화면 감시를 빠르게(0.2초 간격) 돌리라는 신호
   writeFile(join(OUT, "fast.flag"), String(msg.t)).catch(() => {});
   const stickersNow = await officialStickers(matchStickers(msg.lines, found));

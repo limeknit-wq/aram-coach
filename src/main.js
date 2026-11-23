@@ -8,9 +8,12 @@ import { ensureResources } from "./paths.js";
 import { maybeInstall, messageBox } from "./install.js";
 import { checkUpdate } from "./update.js";
 
+import { refreshData } from "./gamecache.js";
+
 async function runApp(args) {
   if (await maybeInstall(args)) process.exit(0);
   await ensureResources();
+  await refreshData().catch(e => console.error("게임 데이터 갱신 보류:", e.message));
   const r = await startCoordinator({ app: true });
   if (r.alreadyRunning) {
     await messageBox("아수라장 코치가 이미 실행 중이에요.\n작업 표시줄 오른쪽 트레이 아이콘을 확인하세요.");

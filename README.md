@@ -5,7 +5,13 @@
 - **판단은 각자 PC에 로그인된 AI(Claude Code / Codex / Claude·ChatGPT 채팅)가 합니다.** 이 프로그램은 AI API를 직접 호출하지 않으므로 배포자에게 비용이 들지 않고, 각자 본인 구독을 씁니다.
 - 증강 점수는 **AI만 정합니다.** AI 세팅이 끝나기 전에는 오버레이에 "AI 분석 중"만 표시해요.
 
-## 프로그램 (AramCoach.exe) — 추천
+## Windows에서 시작하기
+
+[Windows 실행 파일 다운로드](https://github.com/limeknit-wq/aram-coach-public/releases/latest/download/AramCoach.exe)
+
+Windows x64용입니다. 자동 추천을 사용하려면 본인 PC에 Claude Code 또는 Codex CLI를 설치하고 로그인하세요. 실행 파일에는 공통 게임 데이터와 화면 구성 리소스가 들어 있습니다. 선택 기록과 설정은 실행한 사람의 PC에서 생성됩니다.
+
+## 설치 및 사용
 
 1. `AramCoach.exe`를 실행하면 설치를 물어봐요. 설치 위치는 `%LOCALAPPDATA%\Programs\AramCoach`이고, 시작 메뉴에 "아수라장 코치"가 생겨요. 관리자 권한은 필요 없어요.
    - 서명이 없어서 처음에 Windows SmartScreen 경고가 뜰 수 있어요. **추가 정보 → 실행**을 누르세요.

@@ -81,14 +81,16 @@ async function askAI(engine, prompt) {
 }
 
 // ---------- 프롬프트 재료 ----------
+import { seenFor } from "./seendesc.js";
 let catalogCache = null;
 async function catalog() {
-  if (catalogCache) return catalogCache;
   const data = await augments();
-  const list = data.augments.filter((a) => a.desc && !/^[?\s]+$/.test(a.name));
+  const seen = await seenFor(data.builtAt);
+  if (catalogCache?.seen === seen && catalogCache.builtAt === data.builtAt) return catalogCache;
+  const list = data.augments.filter((a) => !/^[?\s]+$/.test(a.name));
   const short = { 실버: "실", 골드: "골", 프리즘: "프" };
-  const lines = list.map((a, i) => `${i + 1}|${a.name}|${short[a.rarity] || "?"}|${a.tags.join(",")}|${a.desc.replace(/\s+/g, " ").replace(/\?/g, "").slice(0, 70)}`);
-  catalogCache = { version: data.builtAt, list, text: lines.join("\n") };
+  const lines = list.map((a, i) => `${i + 1}|${a.name}|${short[a.rarity] || "?"}|${a.tags.join(",")}|${(((!a.desc || a.desc.includes("?")) && (seen[a.apiName] || a.wikiDesc)) || a.desc || "설명 미확인").replace(/\s+/g, " ").replace(/\?/g, "").slice(0, 70)}`);
+  catalogCache = { seen, builtAt: data.builtAt, version: data.builtAt + ":2:" + JSON.stringify(seen), list, text: lines.join("\n") };
   return catalogCache;
 }
 

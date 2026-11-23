@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 const LANG = process.env.LOL_DDRAGON_LANG || "ko_KR";
 const DD = "https://ddragon.leagueoflegends.com";
 import { ensureResources, resPath } from "./paths.js";
+import { savedData } from "./gamecache.js";
+const gameData = () => cached("game-data", savedData);
 const HOWLING_ABYSS = "12";
 
 const cache = new Map();
@@ -166,7 +168,7 @@ export async function findItem(query) {
 
 // ---------- 증강 ----------
 export const augments = () =>
-  cached("augs", async () => (await ensureResources(), JSON.parse(await readFile(resPath("data/augments.json"), "utf8"))));
+  cached("augs", async () => (await gameData()) || (await ensureResources(), JSON.parse(await readFile(resPath("data/augments.json"), "utf8"))));
 
 export async function findAugments(names) {
   const { augments: list } = await augments();
@@ -184,6 +186,8 @@ export async function findAugments(names) {
 // ---------- 귀빈(Guest of Honor) 이벤트 ----------
 export const events = () =>
   cached("events", async () => {
+    const saved = await gameData();
+    if (saved) return saved.events;
     try { await ensureResources(); return JSON.parse(await readFile(resPath("data/events.json"), "utf8")).events; } catch { return []; }
   });
 
