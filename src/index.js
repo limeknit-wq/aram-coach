@@ -13,8 +13,8 @@ import {
 import { liveGame } from "./live.js";
 import { registerUi } from "./ui.js";
 import { latestFrame, offerImage, state as watch } from "./watcher.js";
-import { coord, shareEvent, startCoordinator } from "./coord.js";
-import { addPick, loadPicks, loadPlan, resetPicks, savePlan, scoreOffer } from "./plan.js";
+import { coord, offerContext, shareEvent, startCoordinator } from "./coord.js";
+import { MAX_MATCHUP_COMBOS, addPick, loadPicks, loadPlan, resetPicks, savePlan, scoreOffer } from "./plan.js";
 
 function offerSummary() {
   const o = watch.offer;
@@ -114,7 +114,7 @@ function createServer() {
         type: "text",
         text: JSON.stringify({
           found: true, ...offerSummary(),
-          scored: await scoreOffer(o, { event: watch.event, gameKey: coord.gameKey }),
+          scored: await scoreOffer(o, offerContext()),
           options: await findAugments(o.names),
           alreadyPicked: (await loadPicks(coord.gameKey)).map((p) => p.name),
           previousOffers: watch.history.slice(1, 4).map((h) => h.names),
@@ -220,7 +220,13 @@ function createServer() {
         "이번 판 점수표를 저장합니다. 저장하면 게임 위 오버레이가 선택지마다 AI 호출 없이 즉시 등급·점수·이유를 띄우고, 이미 고른 증강과의 시너지(synergies)도 자동 반영합니다. 상황이 바뀌면 다시 저장하면 됩니다(덮어씀).",
       inputSchema: {
         champion: z.string().describe("내 챔피언"),
-        strategy: z.string().describe("이번 판 핵심 전략 2~3문장 (적 조합·이벤트 반영)"),
+        strategy: z.string().describe("아군·상대 조합에 따른 내 역할, 진입이나 보호 타이밍, 주의할 상대를 3~4줄로 설명"),
+        role: z.string().max(140).optional().describe("아군과 상대 조합에 맞춘 내 역할과 먼저 할 행동"),
+        matchupCombos: z.array(z.object({
+          augments: z.tuple([z.string(), z.string()]), reason: z.string().max(110),
+        })).max(MAX_MATCHUP_COMBOS).optional().describe("상대 조합에 대응할 내 증강 2개 조합과 조합별 이유"),
+        anvils: z.array(z.object({ stat: z.string().max(24), reason: z.string().max(60) })).max(3).optional()
+          .describe("경기 중 모루를 획득하거나 구매했을 때 고를 능력치 우선순위"),
         tiers: z.object({
           "S+": z.array(z.string()).optional(), S: z.array(z.string()).optional(), A: z.array(z.string()).optional(),
           B: z.array(z.string()).optional(), C: z.array(z.string()).optional(), D: z.array(z.string()).optional(),
@@ -270,7 +276,7 @@ function createServer() {
         stale: Boolean(coord.gameKey && plan.gameKey && plan.gameKey !== coord.gameKey),
         topAugments: top, synergyCount: plan.synergies.length,
         picked: (await loadPicks(coord.gameKey)).map((p) => `${p.name} (${p.source})`),
-        currentOffer: watch.offer ? await scoreOffer(watch.offer, { event: watch.event, gameKey: coord.gameKey }) : null,
+        currentOffer: watch.offer ? await scoreOffer(watch.offer, offerContext()) : null,
         coordinator: coord.role,
       });
     }

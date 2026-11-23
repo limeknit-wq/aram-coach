@@ -3,6 +3,8 @@
 // 읽기(GET)만 하며, 챔피언 선택·수락 같은 조작은 하지 않습니다.
 import https from "node:https";
 import { execFile } from "node:child_process";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { promisify } from "node:util";
 import { champions } from "./data.js";
 
@@ -54,6 +56,21 @@ export async function gameWindowMode() {
     winMode.v = m ? Number(m[1]) : null;
   } catch {}
   return winMode.v;
+}
+
+export async function gameClientVersion() {
+  const version = await lcuGet("/lol-patch/v1/game-version").catch(() => null);
+  if (typeof version === "string" && /^\d{2}\.\d{1,2}(?:\.|$)/.test(version)) return version;
+
+  try {
+    const installs = JSON.parse(await readFile(join(process.env.ProgramData || "C:/ProgramData", "Riot Games", "RiotClientInstalls.json"), "utf8"));
+    const roots = Object.keys(installs.associated_client || {});
+    if (roots.length !== 1) return null;
+    const exe = join(roots[0], "Game", "League of Legends.exe").replace(/'/g, "''");
+    const { stdout } = await run("powershell.exe", ["-NoProfile", "-Command",
+      `(Get-Item -LiteralPath '${exe}').VersionInfo.ProductVersion`], { windowsHide: true, timeout: 5000 });
+    return stdout.trim() || null;
+  } catch { return null; }
 }
 
 /** 게임 구별 키: 10명 챔피언 id(영문) 조합. 로딩 화면(LCU)과 게임 중(Live API) 모두 같은 값이 나옵니다. */

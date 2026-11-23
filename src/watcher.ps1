@@ -109,8 +109,10 @@ function ReadFrame($bmp, [string]$dir, [double]$fullW) {
 
 if ($ImagePath) {
   $src = [System.Drawing.Image]::FromFile((Resolve-Path $ImagePath).Path)
-  $lines = ReadFrame $src $OutDir 3200; $src.Dispose()
-  Emit @{ t = [DateTimeOffset]::Now.ToUnixTimeMilliseconds(); lines = $lines; source = "file" }
+  $lines = ReadFrame $src $OutDir 3200
+  $rims = [DesktopDup]::CardRims($src)
+  Emit @{ t = [DateTimeOffset]::Now.ToUnixTimeMilliseconds(); lines = $lines; source = "file"; w = $src.Width; h = $src.Height; rims = $rims }
+  $src.Dispose()
   exit 0
 }
 
@@ -141,8 +143,10 @@ while ($true) {
     $bmp = [DesktopDup]::CaptureRect([Drawing.Rectangle]::FromLTRB($r.L, $r.T, $r.R, $r.B), [ref]$method)
     $w = $bmp.Width; $hgt = $bmp.Height
     $t = [DateTimeOffset]::Now.ToUnixTimeMilliseconds()
+    $rims = [DesktopDup]::CardRims($bmp)
     $frameNo++
     $lines = ReadFrame $bmp $OutDir $(if ($frameNo % 2) { 2600 } else { 3200 })
+    if ([W]::GetForegroundWindow() -ne $h) { $bmp.Dispose(); Emit @{ idle = $true }; continue }
     # AI에게 보낼 미리보기(가로 1600px 이하)는 2초에 한 번만 저장
     if (([DateTime]::Now - $lastJpg).TotalSeconds -ge 2) {
       $scale = [Math]::Min(1.0, 1600.0 / $w)
@@ -153,7 +157,7 @@ while ($true) {
       $lastJpg = [DateTime]::Now
     }
     $bmp.Dispose()
-    Emit @{ t = $t; lines = $lines; w = $w; h = $hgt; method = $method }
+    Emit @{ t = $t; lines = $lines; w = $w; h = $hgt; method = $method; rims = $rims }
   } catch {
     Emit @{ error = $_.Exception.Message }
   }

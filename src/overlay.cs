@@ -14,6 +14,7 @@ using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
 
@@ -23,6 +24,12 @@ public static class Ui
     static PrivateFontCollection pfc = new PrivateFontCollection();
     static Dictionary<string, FontFamily> fams = new Dictionary<string, FontFamily>();
     public static string BaseUrl = "http://127.0.0.1:47321";
+    public static string StatisticsLabel(Dictionary<string, object> state)
+    {
+        Dictionary<string, object> stats = D(state, "statistics");
+        if (stats == null) return null;
+        return "ARAM Mayhem " + S(stats, "patch") + " · " + S(stats, "statsDate") + " 집계";
+    }
     /// <summary>'게임 없이 테스트'의 가짜 게임 창 제목. 화면 감시(watcher.ps1)도 같은 제목을 게임으로 봅니다.</summary>
     public const string TestTitle = "아수라장 코치 테스트 게임";
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetWindowText(IntPtr h, StringBuilder s, int n);
@@ -57,13 +64,21 @@ public static class Ui
     public static readonly Color Green = Color.FromArgb(94, 214, 140);
     public static readonly Color Amber = Color.FromArgb(240, 180, 80);
     public static readonly Color Pink = Color.FromArgb(240, 120, 170);
+    public static readonly Color GoldText = Color.FromArgb(24, 22, 16);
+
+    [DllImport("gdi32.dll", CharSet = CharSet.Unicode)]
+    static extern int AddFontResourceEx(string file, uint flags, IntPtr reserved);
 
     public static void LoadFonts(string dir)
     {
         try
         {
             if (Directory.Exists(dir))
-                foreach (string f in Directory.GetFiles(dir, "*.ttf")) pfc.AddFontFile(f);
+                foreach (string f in Directory.GetFiles(dir, "*.ttf"))
+                {
+                    pfc.AddFontFile(f);
+                    AddFontResourceEx(f, 0x10, IntPtr.Zero); // 같은 프로세스의 Windows 입력 컨트롤에서도 사용합니다.
+                }
             foreach (FontFamily ff in pfc.Families) fams[ff.Name] = ff;
         }
         catch { }
@@ -207,6 +222,16 @@ public static class Ui
     }
     /// <summary>화면 배율 (200% 모니터면 2). 설정창·트레이 메뉴 크기에 곱합니다.</summary>
     public static float K = 1f;
+    public const int PanelInset = 18;
+    public static int FrameContentWidth(int clientWidth)
+    {
+        return clientWidth - SystemInformation.VerticalScrollBarWidth - 2 * (int)(PanelInset * K);
+    }
+    public static int PanelWidth(ScrollableControl panel)
+    {
+        int scroll = panel.VerticalScroll.Visible ? 0 : SystemInformation.VerticalScrollBarWidth;
+        return panel.ClientSize.Width - scroll - 2 * (int)(PanelInset * K);
+    }
     public static void InitDpi()
     {
         try { using (Graphics g = Graphics.FromHwnd(IntPtr.Zero)) K = Math.Max(1f, g.DpiX / 96f); } catch { K = 1f; }
@@ -367,7 +392,7 @@ public class AramOverlay : Form
                 bool down = (GetAsyncKeyState(0x01) & 0x8000) != 0;
                 Dictionary<string, object> d = data; // 화면 쪽에서 통째로 바꿔 끼우므로 참조만 복사해 읽음
                 // 클릭 기록은 창이 안 보여도(전체 화면) 게임이 앞에 있고 선택지가 떠 있으면 동작
-                if (down && !was && d != null && (Ui.B(d, "show") || Ui.B(d, "clickable")))
+                if (down && !was && d != null && Ui.B(d, "clickable"))
                 {
                     IntPtr h = GetForegroundWindow();
                     bool isGame = Ui.IsGameWindow(h, processName);
@@ -379,7 +404,13 @@ public class AramOverlay : Form
                         {
                             double rx = (p.X - g.Left) / (double)g.Width, ry = (p.Y - g.Top) / (double)g.Height;
                             if (ry > 0.17 && ry < 0.66)
-                                using (WebClient wc = new WebClient()) wc.UploadString(Ui.BaseUrl + "/click?x=" + rx.ToString("0.000", System.Globalization.CultureInfo.InvariantCulture), "{}");
+                            {
+                                var format = System.Globalization.CultureInfo.InvariantCulture;
+                                string click = "/click?x=" + rx.ToString("0.000", format) +
+                                    "&offer=" + Ui.N(d, "offerId", 0).ToString("0", format) +
+                                    "&revision=" + Ui.N(d, "offerRevision", 0).ToString("0", format);
+                                using (WebClient wc = new WebClient()) wc.UploadString(Ui.BaseUrl + click, "{}");
+                            }
                         }
                     }
                 }
@@ -440,11 +471,13 @@ public class AramOverlay : Form
 
         bool hasPlan = Ui.B(data, "hasPlan");
         string setupState = Ui.S(data, "setupState") ?? "";
+        bool analyzing = Ui.S(data, "analysisState") == "pending";
         string engine = Ui.S(data, "setupEngine");
         string ev = Ui.S(data, "event");
         string top;
         Color topColor = Ui.Gold;
-        if (!hasPlan)
+        if (analyzing) top = Ui.N(data, "ratedCount", 0) > 0 ? "1차 추천 · 세부 분석 중" : "현재 증강 분석 중";
+        else if (!hasPlan)
         {
             if (setupState == "진행 중") top = "AI가 이번 판을 분석 중이에요" + (engine != null ? " · " + engine : "");
             else { top = "AI 세팅이 없어요 · 트레이 > 설정에서 AI 연결 확인 또는 채팅에 '세팅'"; topColor = Ui.Amber; }
@@ -454,6 +487,8 @@ public class AramOverlay : Form
             string src = (Ui.S(data, "planSource") ?? "").Replace("AI(", "").Replace(")", "").Replace("AI", "");
             top = "AI 추천" + (src.Length > 0 ? " · " + src : "") + (ev != null ? " · 이벤트: " + ev : "");
         }
+        string statistics = Ui.StatisticsLabel(data);
+        if (statistics != null) top += " · " + statistics;
         Pill(g, top, W / 2, H * 0.012f + offY, s, topColor, Color.FromArgb(140, topColor));
 
         // 카드 중심 x들 → 패널 폭
@@ -471,7 +506,11 @@ public class AramOverlay : Form
         for (int i = 0; i < cards.Count; i++)
         {
             Dictionary<string, object> c = cards[i] as Dictionary<string, object>;
-            if (!hasPlan) { DrawWaiting(g, xs[i] * W - pw / 2, bottomY, pw, s, setupState == "진행 중"); continue; }
+            if (!hasPlan && string.IsNullOrEmpty(Ui.S(c, "reason")))
+            {
+                DrawWaiting(g, xs[i] * W - pw / 2, bottomY, pw, s, analyzing || setupState == "진행 중");
+                continue;
+            }
             DrawCard(g, c, xs[i] * W - pw / 2, bottomY, pw, s);
         }
     }
@@ -564,6 +603,7 @@ public class AramOverlay : Form
     {
         string grade = Ui.S(c, "grade") ?? "?";
         bool pick = Ui.B(c, "isPick");
+        bool provisional = Ui.B(c, "isProvisionalPick");
         double score = Ui.N(c, "score", -1);
         string reason = Ui.S(c, "reason");
         string style = Ui.S(c, "style");
@@ -585,7 +625,7 @@ public class AramOverlay : Form
             for (int k = 3; k >= 1; k--)
                 Ui.Stroke(g, new RectangleF(r.X - k * 2 * s, r.Y - k * 2 * s, r.Width + k * 4 * s, r.Height + k * 4 * s), (12 + k * 2) * s, Color.FromArgb(28 * (4 - k), Ui.Gold), 2 * s);
         Ui.Fill(g, r, 12 * s, Color.FromArgb(242, 22, 32, 42), Color.FromArgb(242, 11, 17, 23));
-        Ui.Stroke(g, r, 12 * s, pick ? Ui.Gold : Color.FromArgb(48, 60, 72), pick ? 2.2f * s : 1.2f * s);
+        Ui.Stroke(g, r, 12 * s, pick || provisional ? Ui.Gold : Color.FromArgb(48, 60, 72), pick ? 2.2f * s : 1.2f * s);
 
         // 등급 배지
         RectangleF badge = new RectangleF(r.X + pad, r.Y + pad, 44 * s, 44 * s);
@@ -606,11 +646,11 @@ public class AramOverlay : Form
         }
 
         // 빌드 방향 태그 (오른쪽 위) / 1순위 리본
-        if (pick)
+        if (pick || provisional)
         {
             using (Font rf = Ui.F("ExtraBold", 11.5f * s))
             {
-                string t = "1순위 추천";
+                string t = provisional ? "평가된 카드 중 1순위" : "1순위 추천";
                 SizeF sz = g.MeasureString(t, rf);
                 RectangleF rb = new RectangleF(r.X + r.Width / 2 - sz.Width / 2 - 10 * s, r.Y - sz.Height / 2 - 4 * s, sz.Width + 20 * s, sz.Height + 6 * s);
                 Ui.Fill(g, rb, rb.Height, Ui.GoldLight, Ui.Gold);
@@ -714,23 +754,27 @@ public class SettingsForm : Form
         {
             Graphics g = e.Graphics; g.SmoothingMode = SmoothingMode.AntiAlias; g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
             g.ScaleTransform(Ui.K, Ui.K);
-            using (Icon ic = Ui.MakeIcon(Ui.K >= 1.5f ? 128 : 48)) using (Bitmap ib = ic.ToBitmap()) { g.InterpolationMode = InterpolationMode.HighQualityBicubic; g.DrawImage(ib, new Rectangle(20, 16, 44, 44)); }
-            using (Font f = Ui.F("ExtraBold", 22)) using (SolidBrush b = new SolidBrush(Ui.GoldLight)) g.DrawString("아수라장 코치", f, b, 70, 16);
-            using (Font f = Ui.F("Medium", 12)) using (SolidBrush b = new SolidBrush(Ui.Sub)) g.DrawString("증강·아이템 AI 도우미  v" + version, f, b, 72, 44);
+            using (Icon ic = Ui.MakeIcon(Ui.K >= 1.5f ? 128 : 48)) using (Bitmap ib = ic.ToBitmap()) { g.InterpolationMode = InterpolationMode.HighQualityBicubic; g.DrawImage(ib, new Rectangle(Ui.PanelInset, 16, 44, 44)); }
+            using (Font f = Ui.F("ExtraBold", 22)) using (SolidBrush b = new SolidBrush(Ui.GoldLight)) g.DrawString("아수라장 코치", f, b, Ui.PanelInset + 52, 16);
+            using (Font f = Ui.F("Medium", 12)) using (SolidBrush b = new SolidBrush(Ui.Sub)) g.DrawString("증강·아이템 AI 도우미  v" + version, f, b, Ui.PanelInset + 54, 44);
         };
         string[,] t = { { "game", "이번 판" }, { "settings", "설정" }, { "connect", "연결" } };
         for (int i = 0; i < 3; i++)
         {
-            Button b = new Button { Text = t[i, 1], Tag = t[i, 0], Left = 20 + i * 136, Top = 70, Width = 128, Height = 36, FlatStyle = FlatStyle.Flat, Font = Ui.F("SemiBold", 14), Cursor = Cursors.Hand };
+            Button b = new Button { Text = t[i, 1], Tag = t[i, 0], Top = (int)(70 * K), Height = (int)(36 * K), FlatStyle = FlatStyle.Flat, Font = Ui.F("SemiBold", 14 * K), Cursor = Cursors.Hand };
             b.FlatAppearance.BorderSize = 0;
             b.Click += delegate (object o, EventArgs e) { tab = (string)((Button)o).Tag; Rebuild(); };
-            tabs.Add(b); head.Controls.Add(b); Ui.ScaleTree(b, K);
+            tabs.Add(b); head.Controls.Add(b);
         }
+        head.ClientSizeChanged += delegate { FitTabs(head); };
         body.Dock = DockStyle.Fill; body.AutoScroll = true; body.Padding = new Padding(0); body.HorizontalScroll.Enabled = false; body.HorizontalScroll.Visible = false; body.BackColor = Ui.Bg;
+        body.ClientSizeChanged += delegate { FitBodyCards(); };
         live.Dock = DockStyle.Fill;
+        live.AccessibleName = "이번 판 실시간 정보";
         live.StatusChanged = delegate (Dictionary<string, object> s2) { bool top = Ui.B(Ui.D(s2, "settings"), "companionTopmost"); if (TopMost != top) TopMost = top; };
         BuildNoteBar(K);
         Controls.Add(body); Controls.Add(live); Controls.Add(noteBar); Controls.Add(head);
+        FitTabs(head);
         Ui.DarkScroll(body);
         Ui.DarkScroll(live);
         // 위치·크기는 바꾼 뒤 1초 지나면 저장 (다음에 열 때 그 자리에)
@@ -742,40 +786,125 @@ public class SettingsForm : Form
             try { int on = 1; DwmSetWindowAttribute(Handle, 20, ref on, 4); } catch { }
             MinimumSize = new Size(Width, (int)(320 * Ui.K));
             Rebuild();
+            ActiveControl = tabs[0];
             loading = false;
         };
         FormClosing += delegate (object o, FormClosingEventArgs e) { if (e.CloseReason == CloseReason.UserClosing) { e.Cancel = true; UserClosed = true; Hide(); } };
     }
 
-    /// <summary>'이번 판' 아래 '다시 세팅' 입력줄 (Enter = 보내기)</summary>
+    void FitTabs(Panel head)
+    {
+        int gap = (int)(8 * Ui.K), start = (int)(Ui.PanelInset * Ui.K);
+        int available = Math.Max(tabs.Count, Ui.FrameContentWidth(head.ClientSize.Width) - gap * (tabs.Count - 1));
+        for (int i = 0; i < tabs.Count; i++)
+        {
+            tabs[i].Left = start + available * i / tabs.Count + gap * i;
+            tabs[i].Width = available * (i + 1) / tabs.Count - available * i / tabs.Count;
+        }
+    }
+
+    /// <summary>요청 입력, 줄바꿈, 전송을 같은 영역에 둡니다.</summary>
     void BuildNoteBar(float K)
     {
-        noteBar.Dock = DockStyle.Bottom; noteBar.Height = (int)(64 * K); noteBar.BackColor = Color.FromArgb(14, 21, 28);
-        noteBar.Paint += delegate (object o, PaintEventArgs e) { using (Pen p = new Pen(Ui.PanelLine, 1)) e.Graphics.DrawLine(p, 0, 0, noteBar.Width, 0); };
+        noteBar.Dock = DockStyle.Bottom; noteBar.Height = (int)(84 * K); noteBar.BackColor = Ui.Bg;
+        Panel composer = new Panel { Left = (int)(Ui.PanelInset * K), Top = (int)(6 * K), Height = (int)(54 * K), BackColor = Ui.Bg };
+        composer.Paint += delegate (object o, PaintEventArgs e)
+        {
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            RectangleF surface = new RectangleF(0.5f * K, 0.5f * K, composer.ClientSize.Width - K, composer.ClientSize.Height - K);
+            if (surface.Width <= 0) return;
+            Ui.Fill(e.Graphics, surface, 16 * K, Ui.Panel, Ui.Panel);
+            Ui.Stroke(e.Graphics, surface, 16 * K, noteBox.Focused ? Ui.Gold : Ui.PanelLine, K);
+        };
         noteBox = new TextBox
         {
-            Left = (int)(16 * K), Top = (int)(16 * K), Width = (int)(260 * K), MaxLength = 500,
-            BackColor = Color.FromArgb(24, 34, 44), ForeColor = Ui.Text, BorderStyle = BorderStyle.FixedSingle, Font = Ui.F("Medium", 14 * K),
+            AccessibleName = "다시 세팅 요청", Left = (int)(12 * K), Top = (int)(9 * K), Height = (int)(22 * K), MaxLength = 500,
+            Multiline = true, WordWrap = true, AcceptsReturn = true, BackColor = Ui.Panel, ForeColor = Ui.Text,
+            BorderStyle = BorderStyle.None, Font = Ui.F("Regular", 13 * K),
         };
-        Button go = new Button { Text = "다시 세팅", Width = (int)(110 * K), Height = (int)(32 * K), Top = (int)(15 * K), FlatStyle = FlatStyle.Flat, Font = Ui.F("SemiBold", 13 * K), Cursor = Cursors.Hand, UseCompatibleTextRendering = true };
-        go.BackColor = Ui.Gold; go.ForeColor = Color.FromArgb(24, 22, 16); go.FlatAppearance.BorderColor = Ui.Gold;
+        Label hint = new Label
+        {
+            Text = "아이템이나 전략을 어떻게 바꿀까요?", AutoEllipsis = true, AutoSize = false,
+            Left = noteBox.Left, Top = noteBox.Top, Height = (int)(20 * K),
+            BackColor = Ui.Panel, ForeColor = Ui.Sub, Font = Ui.F("Regular", 13 * K), Cursor = Cursors.IBeam,
+        };
+        Label keys = new Label
+        {
+            Text = "Enter로 보내기  ·  Shift+Enter로 줄바꿈", AutoSize = true,
+            Left = composer.Left + (int)(4 * K), Top = (int)(64 * K),
+            ForeColor = Ui.Sub, Font = Ui.F("Regular", 10 * K),
+        };
+        int sendSize = (int)(32 * K);
+        Button go = new Button
+        {
+            AccessibleName = "다시 세팅", Text = "↑", Width = sendSize, Height = sendSize, Top = (int)(11 * K),
+            FlatStyle = FlatStyle.Flat, Font = Ui.F("Bold", 20 * K), Cursor = Cursors.Hand, UseCompatibleTextRendering = true,
+            BackColor = Ui.Gold, ForeColor = Ui.GoldText,
+        };
+        go.FlatAppearance.BorderSize = 0;
+        using (GraphicsPath circle = new GraphicsPath())
+        {
+            circle.AddEllipse(0, 0, sendSize, sendSize);
+            go.Region = new Region(circle);
+        }
         EventHandler send = delegate
         {
-            Dictionary<string, object> body2 = new Dictionary<string, object>();
-            body2["note"] = noteBox.Text.Trim();
-            Dictionary<string, object> r = Ui.Post("/resetup", body2);
-            if (r != null && !Ui.B(r, "ok")) MessageBox.Show(Ui.S(r, "message") ?? "다시 세팅하지 못했어요.", "아수라장 코치");
-            else noteBox.Text = "";
+            var request = new Dictionary<string, object> { { "note", noteBox.Text.Trim() } };
+            Dictionary<string, object> result = Ui.Post("/resetup", request);
+            if (Ui.B(result, "ok")) noteBox.Clear();
+            else MessageBox.Show(Ui.S(result, "message") ?? "다시 세팅하지 못했어요.", "아수라장 코치");
         };
         go.Click += send;
-        noteBox.KeyDown += delegate (object o, KeyEventArgs e) { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; send(o, EventArgs.Empty); } };
-        new ToolTip().SetToolTip(noteBox, "AI에게 바랄 점을 적고 Enter (예: 방관템은 하나만, 탱템 위주로). 비워 두면 그냥 다시 분석해요.");
-        noteBar.Controls.Add(noteBox); noteBar.Controls.Add(go);
-        noteBar.Resize += delegate
+        noteBox.KeyDown += delegate (object o, KeyEventArgs e)
         {
-            go.Left = noteBar.ClientSize.Width - go.Width - (int)(16 * K);
-            noteBox.Width = Math.Max((int)(80 * K), go.Left - noteBox.Left - (int)(8 * K));
+            if (e.KeyCode != Keys.Enter || e.Modifiers != Keys.None) return;
+            e.SuppressKeyPress = true;
+            send(o, EventArgs.Empty);
         };
+        Action showHint = delegate { hint.Visible = !noteBox.Focused && noteBox.TextLength == 0; composer.Invalidate(); };
+        hint.Click += delegate { noteBox.Focus(); };
+        noteBox.GotFocus += delegate { showHint(); };
+        noteBox.LostFocus += delegate { showHint(); };
+        new ToolTip().SetToolTip(go, "다시 세팅");
+        composer.Controls.Add(noteBox); composer.Controls.Add(hint); composer.Controls.Add(go);
+        hint.BringToFront();
+        noteBar.Controls.Add(composer); noteBar.Controls.Add(keys);
+        int baseHeight = (int)(54 * K);
+        bool fitting = false;
+        Action fit = delegate
+        {
+            if (fitting) return;
+            fitting = true;
+            try
+            {
+                composer.Width = Math.Max(sendSize + 1, Ui.FrameContentWidth(noteBar.ClientSize.Width));
+                go.Left = composer.ClientSize.Width - go.Width - (int)(9 * K);
+                noteBox.Width = Math.Max(1, go.Left - noteBox.Left - (int)(8 * K));
+                hint.Width = noteBox.Width;
+
+                int lineHeight = noteBox.Font.Height;
+                int limit = 1 + Math.Min(5, Math.Max(0, ClientSize.Height / 3 - baseHeight) / lineHeight);
+                int lines = noteBox.TextLength == 0 ? 1 : noteBox.GetLineFromCharIndex(noteBox.TextLength) + 1;
+                ScrollBars bars = lines > limit ? ScrollBars.Vertical : ScrollBars.None;
+                if (noteBox.ScrollBars != bars)
+                {
+                    noteBox.ScrollBars = bars;
+                    if (bars == ScrollBars.Vertical) Ui.DarkScroll(noteBox);
+                    else lines = noteBox.TextLength == 0 ? 1 : noteBox.GetLineFromCharIndex(noteBox.TextLength) + 1;
+                }
+                int extra = (Math.Min(lines, limit) - 1) * lineHeight;
+                noteBox.Height = (int)(22 * K) + extra;
+                composer.Height = baseHeight + extra;
+                go.Top = composer.Height - go.Height - (int)(11 * K);
+                keys.Top = composer.Bottom + (int)(4 * K);
+                noteBar.Height = (int)(84 * K) + extra;
+            }
+            finally { fitting = false; }
+        };
+        noteBox.TextChanged += delegate { fit(); showHint(); };
+        noteBar.ClientSizeChanged += delegate { fit(); };
+        ClientSizeChanged += delegate { fit(); };
+        fit();
     }
 
     /// <summary>
@@ -894,7 +1023,6 @@ public class SettingsForm : Form
         parent.Controls.Add(b); return b;
     }
 
-    [DllImport("user32.dll")] static extern IntPtr SendMessage(IntPtr h, int msg, IntPtr w, IntPtr l);
     string lastStatus;
 
     string builtTab;
@@ -909,36 +1037,48 @@ public class SettingsForm : Form
         builtTab = tab;
         lastStatus = Ui.GetRaw("/status");
         st = Ui.Parse(lastStatus);
-        if (body.IsHandleCreated) SendMessage(body.Handle, 0x000B, IntPtr.Zero, IntPtr.Zero); // WM_SETREDRAW 끔 → 깜빡임 방지
         foreach (Button b in tabs)
         {
             bool on = (string)b.Tag == tab;
             b.BackColor = on ? Ui.Gold : Color.FromArgb(22, 32, 42);
-            b.ForeColor = on ? Color.FromArgb(24, 22, 16) : Ui.Sub;
+            b.ForeColor = on ? Ui.GoldText : Ui.Sub;
         }
         bool game = tab == "game" && st != null;
-        live.Visible = game; noteBar.Visible = game; body.Visible = !game;
+        body.Visible = !game;
+        live.Visible = game;
+        noteBar.Visible = game;
         if (game)
         {
             live.Invalidate();
-            if (body.IsHandleCreated) SendMessage(body.Handle, 0x000B, (IntPtr)1, IntPtr.Zero);
             building = false;
             return;
         }
         body.SuspendLayout();
         body.AutoScrollPosition = Point.Empty; // 새 내용은 맨 위 기준으로 놓고, 아래에서 스크롤 위치를 되돌림
         body.Controls.Clear();
-        FlowLayoutPanel flow = new FlowLayoutPanel { FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoSize = true, BackColor = Ui.Bg, Left = 18, Top = 8, Margin = new Padding(0) };
+        FlowLayoutPanel flow = new FlowLayoutPanel { FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoSize = true, BackColor = Ui.Bg, Left = Ui.PanelInset, Top = 8, Margin = new Padding(0) };
         if (st == null) { Panel c = Card("연결 안 됨", 80); Lbl(c, "프로그램 서버에 연결하지 못했어요.", 16, 42, 360, 24, "Medium", 13, Ui.Sub); flow.Controls.Add(c); }
         else if (tab == "settings") BuildSettings(flow);
         else BuildConnect(flow);
         Ui.ScaleTree(flow, Ui.K);
+        foreach (Control card in flow.Controls)
+            foreach (Control field in card.Controls)
+                if (field.Width >= 200 * Ui.K) field.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         body.Controls.Add(flow);
+        FitBodyCards();
         body.ResumeLayout();
         body.PerformLayout();
         if (keepY > 0) body.AutoScrollPosition = new Point(0, keepY);
-        if (body.IsHandleCreated) { SendMessage(body.Handle, 0x000B, (IntPtr)1, IntPtr.Zero); body.Invalidate(true); }
+        body.Invalidate(true);
         building = false;
+    }
+
+    void FitBodyCards()
+    {
+        int width = Ui.PanelWidth(body);
+        if (width <= 0 || body.Controls.Count == 0) return;
+        foreach (Control card in body.Controls[0].Controls)
+            card.Width = width;
     }
 
     void BuildSettings(FlowLayoutPanel flow)
@@ -1037,10 +1177,14 @@ public class SettingsForm : Form
         flow.Controls.Add(c1);
 
         Dictionary<string, object> up = Ui.D(st, "update");
-        Panel c2 = Card("버전", 96);
+        Panel c2 = Card("버전", 122);
         string upText = up != null && Ui.B(up, "newer") ? "새 버전 " + Ui.S(up, "latest") + " 이 있어요" : "최신 버전이에요";
         Lbl(c2, "v" + version + " · " + upText, 16, 42, 370, 22, "Medium", 13, up != null && Ui.B(up, "newer") ? Ui.Amber : Ui.Text);
         Lbl(c2, "글꼴: Pretendard (OFL)", 16, 66, 370, 20, "Regular", 11, Ui.Sub);
+        LinkLabel source = new LinkLabel { Text = "증강 통계 출처 · ARAM Mayhem (CC BY 4.0)",
+            AutoSize = true, Left = 16, Top = 90, Font = Ui.F("Medium", 12), LinkColor = Ui.GoldLight, ActiveLinkColor = Ui.Text };
+        source.LinkClicked += delegate { try { Process.Start("https://arammayhem.com/data/"); } catch { } };
+        c2.Controls.Add(source);
         flow.Controls.Add(c2);
     }
 }
@@ -1079,7 +1223,13 @@ public class LiveView : Panel
         if (!Visible || frozen) return;
         bool changed = false;
         string r1 = Ui.GetRaw("/overlay");
-        if (r1 != ovRaw) { ovRaw = r1; ov = Ui.Parse(r1); changed = true; Ui.Prefetch(ov); }
+        if (r1 != ovRaw)
+        {
+            var next = Ui.Parse(r1);
+            if (Ui.B(next, "show") && (!Ui.B(ov, "show") || Ui.S(next, "offerRevision") != Ui.S(ov, "offerRevision")))
+                AutoScrollPosition = Point.Empty;
+            ovRaw = r1; ov = next; changed = true; Ui.Prefetch(ov);
+        }
         if (ticks++ % 6 == 0 || st == null)
         {
             string r2 = Ui.GetRaw("/status");
@@ -1114,312 +1264,369 @@ public class LiveView : Panel
     /// <summary>제목 줄: 금색 글씨 + 오른쪽에 작은 설명</summary>
     static float Heading(Graphics g, string title, string note, float x, float y, float w, float s)
     {
-        Text1(g, title, "Bold", 16 * s, Ui.Gold, x, y, w);
+        Text1(g, title, "Bold", 14 * s, Ui.Text, x, y, w);
         if (!string.IsNullOrEmpty(note))
         {
-            float tw = TextW(g, title, "Bold", 16 * s);
-            Text1(g, note, "Medium", 12.5f * s, Ui.Sub, x + tw + 6 * s, y + 3 * s, w - tw - 6 * s);
+            float tw = TextW(g, title, "Bold", 14 * s);
+            Text1(g, note, "Medium", 11.5f * s, Ui.Sub, x + tw + 6 * s, y + 2 * s, w - tw - 6 * s);
         }
-        return y + 28 * s;
+        return y + 22 * s;
     }
-    /// <summary>둥근 상자 배경 (카드)</summary>
-    static void CardBg(Graphics g, RectangleF r, float s, Color line)
+    static void Rule(Graphics g, float x, float y, float w, float s)
     {
-        Ui.Fill(g, r, 12 * s, Color.FromArgb(22, 32, 42), Color.FromArgb(14, 21, 28));
-        Ui.Stroke(g, r, 12 * s, line, 1.2f * s);
+        using (Pen line = new Pen(Ui.PanelLine, Math.Max(1f, 0.6f * s)))
+            g.DrawLine(line, x, y, x + w, y);
     }
-    /// <summary>알약 모양 칩. 너비를 돌려줌</summary>
-    static float Pill(Graphics g, string t, float x, float y, float s, Color c, bool solid)
+    static float Highlight(Graphics g, string t, float x, float y, float w, float s, Color c)
     {
-        float w = TextW(g, t, "SemiBold", 13 * s) + 18 * s, h = 26 * s;
-        RectangleF r = new RectangleF(x, y, w, h);
-        if (solid) Ui.Fill(g, r, h, Color.FromArgb(60, c), Color.FromArgb(40, c));
-        Ui.Stroke(g, r, h, Color.FromArgb(170, c), 1.2f * s);
-        Text1(g, t, "SemiBold", 13 * s, c, x + 9 * s, y + 4 * s, w);
-        return w;
+        return Wrap(g, t, "SemiBold", 12 * s, c, x, y, w, 2) + 5 * s;
     }
-    /// <summary>한 줄 강조 상자 (지금 살 것, 경고 등)</summary>
-    static float Box(Graphics g, string t, float x, float y, float w, float s, Color c)
+    /// <summary>번호와 이름을 담은 칩을 줄바꿈하며 놓습니다. 끝난 y를 돌려줍니다.</summary>
+    static float ChipFlow(Graphics g, ArrayList names, float x, float y, float w, float s)
     {
-        RectangleF r = new RectangleF(x, y, w, 32 * s);
-        Ui.Fill(g, r, 9 * s, Color.FromArgb(46, c), Color.FromArgb(28, c));
-        Ui.Stroke(g, r, 9 * s, Color.FromArgb(170, c), 1.2f * s);
-        Text1(g, t, "Bold", 14 * s, c, x + 12 * s, y + 7 * s, w - 20 * s);
-        return y + 38 * s;
-    }
-    /// <summary>점수 → 등급 글자 (추천 목록 색칠용, 점수표 등급과 같은 기준이 아님)</summary>
-    static string ScoreGrade(int score) { return score >= 95 ? "S+" : score >= 85 ? "S" : score >= 70 ? "A" : score >= 50 ? "B" : "C"; }
-
-    /// <summary>등급(또는 점수) 상자 + 이름 칩을 줄바꿈하며 놓습니다. 끝난 y를 돌려줌</summary>
-    static float ChipFlow(Graphics g, List<string[]> chips, float x, float y, float w, float s, bool numbered)
-    {
-        float cx = x, rowH = 36 * s, gap = 8 * s;
+        float cx = x, rowH = 26 * s, gap = 5 * s;
         int n = 0;
-        foreach (string[] c in chips)
+        foreach (object value in names)
         {
             n++;
-            string name = c[0], badge = numbered ? n.ToString() : c[1];
-            Color[] gc = numbered ? new Color[] { Ui.GoldLight, Ui.Gold } : Ui.GradeColors(c.Length > 2 ? c[2] : "?");
-            float bw = Math.Max(30 * s, TextW(g, badge, "ExtraBold", 13 * s) + 12 * s);
-            float nw = Math.Min(w - bw - 18 * s, TextW(g, name, "SemiBold", 14 * s) + 4 * s);
-            float cw = bw + nw + 18 * s;
+            string prefix = n.ToString();
+            float mark = 16 * s;
+            float cw = Math.Min(w, mark + TextW(g, value.ToString(), "SemiBold", 12 * s) + 9 * s);
             if (cx > x && cx + cw > x + w) { cx = x; y += rowH + gap; }
-            RectangleF r = new RectangleF(cx, y, cw, rowH);
-            CardBg(g, r, s, Color.FromArgb(70, gc[0]));
-            RectangleF br = new RectangleF(cx + 4 * s, y + 4 * s, bw, rowH - 8 * s);
-            Ui.Fill(g, br, 8 * s, gc[0], gc[1]);
-            using (Font bf = Ui.F("ExtraBold", 13 * s)) using (SolidBrush wb = new SolidBrush(numbered ? Color.FromArgb(30, 26, 18) : Color.White))
-            using (StringFormat sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
-                g.DrawString(badge, bf, wb, br, sf);
-            Text1(g, name, "SemiBold", 14 * s, Ui.Text, br.Right + 8 * s, y + 8 * s, nw + 4 * s);
+            Text1(g, prefix, "Bold", 12 * s, Ui.GoldLight, cx, y + 4 * s, mark);
+            Text1(g, value.ToString(), "SemiBold", 12 * s, Ui.Text, cx + mark, y + 4 * s, cw - mark);
             cx += cw + gap;
         }
-        return chips.Count > 0 ? y + rowH : y;
+        return names.Count > 0 ? y + rowH : y;
+    }
+
+    static float DrawStrategy(Graphics g, Dictionary<string, object> plan, float x, float y, float w, float s)
+    {
+        string role = Ui.S(plan, "role") ?? "";
+        string strategy = Ui.S(plan, "strategy") ?? "";
+        if (string.IsNullOrWhiteSpace(role) && string.IsNullOrWhiteSpace(strategy)) return y;
+        string[] titles = { "내 역할", "교전 순서", "주의할 스킬" };
+        List<string>[] sections = { new List<string>(), new List<string>(), new List<string>() };
+        if (!string.IsNullOrWhiteSpace(role) && !strategy.Contains(role)) sections[0].Add(role.Trim());
+        bool labelled = Regex.IsMatch(strategy, @"(?m)^\s*(내 역할|교전 순서|주의할 스킬)\s*[:：]");
+        string[] snippets = labelled ? strategy.Split('\n') : Regex.Split(strategy, @"\r?\n+|(?<=[.!?])\s+");
+        int section = sections[0].Count == 0 ? 0 : 1;
+        foreach (string raw in snippets)
+        {
+            string line = raw.Trim();
+            if (line.Length == 0) continue;
+            Match label = Regex.Match(line, @"^(내 역할|교전 순서|주의할 스킬)\s*[:：]\s*");
+            if (label.Success)
+            {
+                section = Array.IndexOf(titles, label.Groups[1].Value);
+                line = line.Substring(label.Length);
+            }
+            if (line.Length == 0) continue;
+            if (!labelled)
+            {
+                if (Regex.IsMatch(line, "조심|주의|경계|피해야|가장 위협") ||
+                    (section == 2 && Regex.IsMatch(line, "(이|그) (공격|스킬|기술)")))
+                    section = 2;
+                else
+                    section = sections[0].Count == 0 ? 0 : 1;
+            }
+            sections[section].Add(line);
+        }
+
+        y = Heading(g, "내 역할과 전략", null, x, y, w, s);
+        bool sideBySide = w >= 260 * s;
+        float labelWidth = sideBySide ? 74 * s : 0;
+        for (int i = 0; i < titles.Length; i++)
+        {
+            if (sections[i].Count == 0) continue;
+            Text1(g, titles[i], "SemiBold", 11.5f * s, Ui.Gold, x, y + 1 * s, sideBySide ? labelWidth : w);
+            if (!sideBySide) y += 17 * s;
+            y = Wrap(g, string.Join(" ", sections[i]), "Regular", 12 * s, Color.FromArgb(212, 216, 220),
+                x + labelWidth, y, w - labelWidth, int.MaxValue) + 6 * s;
+        }
+        return y + 6 * s;
     }
 
     void PaintAll(Graphics g)
     {
         g.SmoothingMode = SmoothingMode.AntiAlias; g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
         g.TranslateTransform(AutoScrollPosition.X, AutoScrollPosition.Y);
-        // 스크롤바가 생겨도 글씨 크기가 바뀌지 않게 스크롤바 폭을 뺀 너비 기준
-        float W = ClientSize.Width - (VerticalScroll.Visible ? 0 : SystemInformation.VerticalScrollBarWidth);
-        float s = Math.Max(0.8f * Ui.K, Math.Min(1.7f * Ui.K, W / 420f));
-        float pad = 16 * s, x = pad, w = W - pad * 2, y = 12 * s;
+        // 설정·연결 탭과 같은 배율과 왼쪽 여백을 사용합니다.
+        float s = Ui.K;
+        float pad = (int)(Ui.PanelInset * s), x = pad, w = Ui.PanelWidth(this), y = 8 * s;
+        if (w < 75 * s) return;
 
         Dictionary<string, object> setup = Ui.D(st, "setup");
         Dictionary<string, object> plan = Ui.D(st, "plan");
         bool inGame = Ui.B(st, "inGame");
 
-        // 1) 상태 칩: 게임 · AI 세팅 · 이벤트
-        string champ = Ui.S(st, "champion") ?? Ui.S(plan, "champion");
-        string sState = Ui.S(setup, "state") ?? (st == null ? "연결 안 됨" : "대기");
-        string step = Ui.S(setup, "step");
-        float px0 = x;
-        px0 += Pill(g, inGame ? "게임 중" + (champ != null ? " · " + champ : "") : "대기 중", px0, y, s, inGame ? Ui.Green : Ui.Sub, inGame) + 6 * s;
-        Color sc = sState == "완료" ? Ui.Green : sState == "실패" || st == null ? Ui.Amber : sState == "진행 중" ? Ui.Gold : Ui.Sub;
-        string engine = Ui.S(setup, "engine");
-        string aiT = "AI " + sState + (string.IsNullOrEmpty(step) ? "" : " · " + step) + (engine != null ? " · " + engine : "");
-        if (px0 + TextW(g, aiT, "SemiBold", 13 * s) + 18 * s > x + w) { px0 = x; y += 32 * s; }
-        px0 += Pill(g, aiT, px0, y, s, sc, false) + 6 * s;
-        string ev = Ui.S(st, "event");
-        if (ev != null) { if (px0 + TextW(g, "이벤트 " + ev, "SemiBold", 13 * s) + 18 * s > x + w) { px0 = x; y += 32 * s; } Pill(g, "이벤트 " + ev, px0, y, s, Ui.Pink, false); }
-        y += 32 * s;
-        if (!inGame) { Text1(g, "게임이 시작되면 자동으로 분석해요", "Medium", 12.5f * s, Ui.Sub, x, y, w); y += 22 * s; }
-        y += 8 * s;
+        string matchState = Ui.S(st, "matchState");
+        bool previous = matchState == "previous", preview = matchState == "preview";
+        string champ = Ui.S(plan, "champion") ?? Ui.S(st, "champion");
+        string sState = Ui.S(setup, "state") ?? "대기";
+        string game = inGame ? (Ui.S(st, "champion") ?? champ ?? "게임 중") :
+            st == null ? "연결 안 됨" : previous ? "지난 경기" : preview ? "미리보기" : "대기 중";
+        if ((previous || preview) && !string.IsNullOrEmpty(champ) && champ != "?") game += " · " + champ;
+        Text1(g, game, "Bold", 17 * s, Ui.Text, x, y, w);
+        if (inGame)
+        {
+            float offset = Math.Min(w, TextW(g, game, "Bold", 17 * s) + 12 * s);
+            Color sc = sState == "완료" ? Ui.Green : sState == "실패" ? Ui.Amber : sState == "진행 중" ? Ui.Gold : Ui.Sub;
+            string engine = Ui.S(setup, "engine");
+            string aiT = "AI " + sState + (engine != null ? " · " + engine : "");
+            string ev = Ui.S(st, "event");
+            if (!string.IsNullOrEmpty(ev)) aiT += " · " + ev;
+            if (offset + TextW(g, aiT, "Medium", 12 * s) > w) { offset = 0; y += 23 * s; }
+            Text1(g, aiT, "Medium", 12 * s, sc, x + offset, y + 4 * s, w - offset);
+        }
+        y += 29 * s;
+        if (st != null && matchState == "idle")
+            y = Wrap(g, "게임이 시작되면 자동으로 분석해요", "Medium", 12.5f * s, Ui.Sub, x, y, w, 2) + 6 * s;
 
         // 2) 증강 선택지 (뜰 때만, 맨 위에 크게)
-        ArrayList cards = Ui.B(ov, "show") ? Ui.A(ov, "cards") : null;
+        ArrayList cards = inGame && Ui.B(ov, "show") ? Ui.A(ov, "cards") : null;
         if (cards != null && cards.Count > 0)
         {
-            y = Heading(g, "지금 증강 선택", "점수 높은 순 · 금테 = 1순위", x, y, w, s);
+            y = Heading(g, "지금 증강 선택", Ui.StatisticsLabel(ov), x, y, w, s);
             bool hasPlan = Ui.B(ov, "hasPlan");
-            if (!hasPlan) y = Box(g, Ui.S(ov, "setupState") == "진행 중" ? "AI가 분석 중이에요 · 잠시 후 점수가 떠요" : "점수표가 없어요 · 아래 '다시 세팅'", x, y, w, s, Ui.Amber);
-            foreach (object o in cards) y = DrawCardRow(g, o as Dictionary<string, object>, x, y, w, s, hasPlan) + 8 * s;
-            y += 8 * s;
+            string analysis = Ui.S(ov, "analysisState");
+            if (analysis == "pending") y = Highlight(g, Ui.N(ov, "ratedCount", 0) > 0 ? "1차 추천 · 세부 분석 중" : "현재 선택지 분석 중", x, y, w, s, Ui.GoldLight);
+            else if (!hasPlan) y = Highlight(g, Ui.S(ov, "setupState") == "진행 중" ? "AI가 증강을 분석 중이에요" : "점수표를 만들려면 ‘다시 세팅’을 누르세요", x, y, w, s, Ui.Amber);
+            foreach (object o in cards) y = DrawCardRow(g, o as Dictionary<string, object>, x, y, w, s, hasPlan) + 4 * s;
+            y += 6 * s;
+        }
+
+        Dictionary<string, object> matchup = Ui.D(st, "matchup");
+        y = DrawStrategy(g, plan, x, y, w, s);
+
+        ArrayList picks = Ui.A(st, "picks");
+        if (inGame || (picks != null && picks.Count > 0))
+        {
+            int count = picks == null ? 0 : picks.Count;
+            y = Heading(g, "내가 고른 증강", count + "개", x, y, w, s);
+            if (count > 0) y = DrawAdviceGrid(g, picks, AdviceKind.Picked, x, y, w, s) + 8 * s;
+            else y = Wrap(g, "아직 고른 증강이 없어요", "Medium", 12 * s, Ui.Sub, x, y, w, 1) + 8 * s;
+        }
+
+        ArrayList top = Ui.A(plan, "recommendations");
+        if (top != null && top.Count > 0)
+        {
+            y = Heading(g, "추천 증강", previous ? "당시 추천" : "아직 고르지 않은 증강", x, y, w, s);
+            y = DrawAdviceGrid(g, top, AdviceKind.Recommended, x, y, w, s) + 8 * s;
         }
 
         // 3) 아이템
         Dictionary<string, object> it = Ui.D(ov, "items") ?? Ui.D(st, "items");
         ArrayList next = Ui.A(it, "build") ?? Ui.A(it, "next");
-        if (next != null && next.Count > 0) y = DrawItems(g, it, next, x, y, w, s) + 14 * s;
-        else if (plan != null) y = DrawPlannedBuild(g, Ui.D(plan, "build"), x, y, w, s, inGame) + 14 * s;
+        if (next != null && next.Count > 0) y = DrawItems(g, it, next, x, y, w, s) + 8 * s;
+        else if (plan != null) y = DrawPlannedBuild(g, Ui.D(plan, "build"), Ui.A(plan, "plannedItems"), x, y, w, s) + 8 * s;
 
-        // 4) 고른 증강
-        ArrayList picks = Ui.A(st, "picks");
-        y = Heading(g, "고른 증강", picks != null && picks.Count > 0 ? picks.Count + "개" : null, x, y, w, s);
-        if (picks != null && picks.Count > 0)
+        if (inGame)
         {
-            List<string[]> pc = new List<string[]>();
-            foreach (object p in picks) pc.Add(new string[] { p.ToString(), "" });
-            y = ChipFlow(g, pc, x, y, w, s, true) + 14 * s;
-        }
-        else { Text1(g, "아직 없어요 · 카드를 누르면 자동으로 기록돼요", "Medium", 13 * s, Ui.Sub, x, y, w); y += 30 * s; }
-
-        // 5) 추천 증강 TOP (점수표 상위)
-        ArrayList top = Ui.A(plan, "top");
-        if (top != null && top.Count > 0)
-        {
-            y = Heading(g, "추천 증강", "이번 판 점수표 상위", x, y, w, s);
-            List<string[]> tc = new List<string[]>();
-            foreach (object o in top)
-            {
-                string t = o.ToString();
-                int score = -1, at = t.LastIndexOf(" (");
-                if (at > 0 && t.EndsWith(")") && int.TryParse(t.Substring(at + 2, t.Length - at - 3), out score)) t = t.Substring(0, at);
-                tc.Add(new string[] { t, score >= 0 ? score.ToString() : "?", score >= 0 ? ScoreGrade(score) : "?" });
-            }
-            y = ChipFlow(g, tc, x, y, w, s, false) + 14 * s;
+            ArrayList anvils = Ui.A(it, "anvils") ?? Ui.A(plan, "anvils");
+            y = Heading(g, "능력치 모루", "획득·구매 시 선택", x, y, w, s);
+            if (anvils != null && anvils.Count > 0)
+                y = DrawAdviceGrid(g, anvils, AdviceKind.Anvil, x, y, w, s) + 8 * s;
+            else
+                y = Wrap(g, "추천 대기 중", "Medium", 12 * s, Ui.Sub, x, y, w, 1) + 8 * s;
         }
 
-        // 6) 이번 판 전략
-        if (plan != null && !string.IsNullOrEmpty(Ui.S(plan, "strategy")))
+        ArrayList combos = Ui.A(plan, "matchupCombos");
+        if (matchup != null && combos != null && combos.Count > 0)
         {
-            y = Heading(g, "이번 판 전략", Ui.S(plan, "source"), x, y, w, s);
-            using (Font f = Ui.F("Medium", 14 * s))
-            using (StringFormat sf = new StringFormat())
+            y = Heading(g, "상대 조합에 맞는 증강 조합", null, x, y, w, s);
+            foreach (object entry in combos)
             {
-                float th = g.MeasureString(Ui.S(plan, "strategy"), f, (int)(w - 28 * s), sf).Height;
-                RectangleF r = new RectangleF(x, y, w, th + 26 * s);
-                CardBg(g, r, s, Ui.PanelLine);
-                using (SolidBrush b = new SolidBrush(Color.FromArgb(214, 218, 224))) g.DrawString(Ui.S(plan, "strategy"), f, b, new RectangleF(x + 14 * s, y + 12 * s, w - 28 * s, th + 4), sf);
-                y = r.Bottom + 10 * s;
+                Dictionary<string, object> combo = entry as Dictionary<string, object>;
+                ArrayList names = Ui.A(combo, "augments");
+                if (names == null || names.Count != 2) continue;
+                y = Wrap(g, string.Join(" + ", names.ToArray()), "SemiBold", 12 * s, Ui.GoldLight, x, y, w, 2) + 2 * s;
+                y = Wrap(g, Ui.S(combo, "reason"), "Medium", 11.5f * s, Ui.Sub, x, y, w, 3) + 8 * s;
             }
         }
         string msg = Ui.S(setup, "message");
-        if (!string.IsNullOrEmpty(msg)) y = Wrap(g, msg, "Regular", 12 * s, Ui.Sub, x, y, w, 2) + 6 * s;
+        if (inGame && sState == "실패" && !string.IsNullOrEmpty(msg)) y = Wrap(g, msg, "Regular", 12 * s, Ui.Sub, x, y, w, 2) + 6 * s;
 
         y += pad;
         int total = (int)(y - AutoScrollPosition.Y);
         if (Math.Abs(AutoScrollMinSize.Height - total) > 4) AutoScrollMinSize = new Size(0, total);
     }
 
-    /// <summary>게임 중 아이템: 지금 살 것 상자, 보유 아이콘 칸, 다음 아이템 상자들</summary>
-    float DrawItems(Graphics g, Dictionary<string, object> it, ArrayList next, float x, float y, float w, float s)
+    static RectangleF Cell(int index, int columns, float height, float x, float y, float w, float s)
     {
-        int haveN = 0; foreach (object o in next) if (Ui.B(o as Dictionary<string, object>, "have")) haveN++;
-        double gold = Ui.N(it, "gold", 0);
-        y = Heading(g, "아이템 " + haveN + "/6", "보유 " + ((int)gold).ToString("N0") + " G" + (Ui.B(it, "busy") ? " · AI 다시 고르는 중…" : Ui.S(it, "source") != null ? " · " + Ui.S(it, "source") : ""), x, y, w, s);
-        if (Ui.B(it, "dead"))
-        {
-            double rs = Ui.N(it, "respawnIn", 0);
-            y = Box(g, "지금 상점에서 사세요" + (rs > 0 ? " · 부활 " + ((int)rs) + "초" : ""), x, y, w, s, Ui.Amber);
-        }
-        bool full = Ui.B(it, "full");
-        string buyT = full ? "6칸 완성 · 더 살 아이템 없어요" : Ui.BuyText(it);
-        if (!string.IsNullOrEmpty(buyT)) y = Box(g, buyT, x, y, w, s, full || Ui.B(Ui.D(it, "buy"), "affordable") ? Ui.Green : Ui.Amber);
-
-        // 빌드 6칸: 아이콘 칸을 한 줄로 (산 것은 초록 테두리·체크, 다음 것은 금테)
-        int slots = Math.Min(6, next.Count);
-        float gap = 8 * s, tile = Math.Min(64 * s, (w - gap * (slots - 1)) / Math.Max(1, slots));
-        int firstBuy = -1;
-        for (int j = 0; j < next.Count; j++) if (!Ui.B(next[j] as Dictionary<string, object>, "have")) { firstBuy = j; break; }
-        for (int j = 0; j < slots; j++)
-        {
-            Dictionary<string, object> o = next[j] as Dictionary<string, object>;
-            RectangleF r = new RectangleF(x + j * (tile + gap), y, tile, tile);
-            Image im = Ui.IconFor(Ui.S(o, "icon"));
-            bool have = Ui.B(o, "have");
-            Ui.Fill(g, r, 8 * s, Color.FromArgb(34, 46, 58), Color.FromArgb(24, 32, 40));
-            if (im != null) { g.InterpolationMode = InterpolationMode.HighQualityBicubic; using (GraphicsPath p = Ui.Round(r, 8 * s)) { g.SetClip(p, CombineMode.Intersect); g.DrawImage(im, r); g.ResetClip(); } }
-            if (have)
-            {
-                using (SolidBrush dim = new SolidBrush(Color.FromArgb(110, 0, 0, 0))) using (GraphicsPath p = Ui.Round(r, 8 * s)) g.FillPath(dim, p);
-                Text1(g, "✓", "ExtraBold", 18 * s, Ui.Green, r.X + r.Width / 2 - 7 * s, r.Y + r.Height / 2 - 13 * s, 30 * s);
-            }
-            Ui.Stroke(g, r, 8 * s, have ? Color.FromArgb(160, Ui.Green) : j == firstBuy ? Ui.Gold : Color.FromArgb(70, 84, 98), (j == firstBuy ? 2.4f : 1.2f) * s);
-            RectangleF nb = new RectangleF(r.X + 3 * s, r.Y + 3 * s, 18 * s, 18 * s);
-            Ui.Fill(g, nb, 9 * s, Color.FromArgb(220, 10, 14, 18), Color.FromArgb(220, 10, 14, 18));
-            using (Font nf = Ui.F("Bold", 11 * s)) using (SolidBrush tb = new SolidBrush(Ui.GoldLight))
-            using (StringFormat sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
-                g.DrawString((j + 1).ToString(), nf, tb, nb, sf);
-        }
-        y += tile + 10 * s;
-
-        // 앞으로 살 아이템: 상자 한 줄씩 (아이콘 · 이름 · 남은 골드)
-        int k = 0;
-        foreach (object oo in next)
-        {
-            Dictionary<string, object> o = oo as Dictionary<string, object>;
-            if (Ui.B(o, "have")) continue;
-            bool first = k == 0;
-            float h = (first ? 64 : 54) * s;
-            RectangleF r = new RectangleF(x, y, w, h);
-            CardBg(g, r, s, first ? Ui.Gold : Color.FromArgb(44, 56, 68));
-            if (first) Ui.Stroke(g, r, 12 * s, Ui.Gold, 2f * s);
-            float isz = h - 16 * s;
-            RectangleF ic = new RectangleF(x + 8 * s, y + 8 * s, isz, isz);
-            Image im = Ui.IconFor(Ui.S(o, "icon"));
-            if (im != null) { g.InterpolationMode = InterpolationMode.HighQualityBicubic; g.DrawImage(im, ic); }
-            else Ui.Fill(g, ic, 6 * s, Color.FromArgb(40, 52, 64), Color.FromArgb(30, 40, 50));
-            float tx = ic.Right + 12 * s;
-            string label = (first ? "다음  " : (k + 1) + ".  ") + Ui.S(o, "name");
-            Text1(g, label, first ? "Bold" : "SemiBold", (first ? 17 : 15) * s, first ? Ui.GoldLight : Ui.Text, tx, y + (first ? 9 : 7) * s, x + w - tx - 10 * s);
-            string rt = Ui.RemainText(o, gold, first);
-            if (!string.IsNullOrEmpty(rt)) Text1(g, rt, "Medium", 13 * s, Ui.RemainColor(o, gold, first), tx, y + (first ? 35 : 30) * s, x + w - tx - 10 * s);
-            y = r.Bottom + 6 * s;
-            k++;
-            if (k >= 4) break;
-        }
-        string why = Ui.S(it, "why");
-        if (!string.IsNullOrEmpty(why)) y = Wrap(g, why, "Regular", 12.5f * s, Ui.Sub, x, y + 2 * s, w, 2);
-        return y;
+        float gap = 5 * s;
+        float width = (w - gap * (columns - 1)) / columns;
+        return new RectangleF(x + (index % columns) * (width + gap), y + (index / columns) * (height + gap), width, height);
     }
 
-    /// <summary>게임 전·아이템 정보가 오기 전: AI가 짠 핵심 빌드를 번호 칩으로</summary>
-    float DrawPlannedBuild(Graphics g, Dictionary<string, object> build, float x, float y, float w, float s, bool inGame)
+    enum AdviceKind { Picked, Recommended, Anvil }
+
+    static float DrawAdviceGrid(Graphics g, ArrayList entries, AdviceKind kind, float x, float y, float w, float s)
+    {
+        bool anvil = kind == AdviceKind.Anvil;
+        bool picked = kind == AdviceKind.Picked;
+        int columns = Math.Min(3, Math.Max(1, (int)((w + 5 * s) / ((anvil ? 115 : 126) * s))));
+        int count = anvil ? Math.Min(3, entries.Count) : entries.Count;
+        if (count == 0) return y;
+        float height = (picked ? 32 : 44) * s, rowX = x, rowY = y, gap = 7 * s;
+        float gridWidth = anvil ? w : Math.Min(w, (columns * 174 + (columns - 1) * 5) * s);
+        for (int i = 0; i < count; i++)
+        {
+            Dictionary<string, object> entry = entries[i] as Dictionary<string, object>;
+            string label = picked ? entries[i] as string : Ui.S(entry, anvil ? "stat" : "name");
+            string reason = Ui.S(entry, "reason");
+            float inset = (picked ? 27 : anvil ? 35 : 49) * s;
+            RectangleF r;
+            if (!picked)
+                r = Cell(i, columns, height, x, y, gridWidth, s);
+            else
+            {
+                float cellWidth = Math.Min(w, Math.Max(85 * s,
+                    Math.Min(160 * s, TextW(g, label, "Bold", 12 * s) + inset + 10 * s)));
+                if (rowX > x && rowX + cellWidth > x + w)
+                {
+                    rowX = x;
+                    rowY += height + gap;
+                }
+                r = new RectangleF(rowX, rowY, cellWidth, height);
+                rowX += cellWidth + gap;
+            }
+            int score = (int)Ui.N(entry, "score", -1);
+            string badge = picked ? "✓" : (i + 1).ToString();
+            bool highlighted = anvil && i == 0;
+            bool best = kind == AdviceKind.Recommended && i == 0 && score >= 0;
+            if (highlighted)
+                using (var background = new SolidBrush(Ui.Gold))
+                    g.FillRectangle(background, r);
+            if (best)
+                Ui.Stroke(g, RectangleF.Inflate(r, -.5f * s, -.5f * s), 3 * s, Ui.Gold, Math.Max(1f, .65f * s));
+            else
+                Rule(g, r.X, r.Bottom - s, r.Width, s);
+            float titleY = r.Y + (picked ? 7 : 5) * s;
+            Text1(g, badge, "Bold", (picked || anvil ? 12 : 10) * s, picked || best ? Ui.Gold : highlighted ? Ui.GoldText : Ui.Sub,
+                r.X + 6 * s, titleY + (picked || anvil ? 0 : 2) * s, 17 * s);
+            if (kind == AdviceKind.Recommended)
+                Text1(g, score < 0 ? "—" : score.ToString(), "Bold", 12 * s, best ? Ui.GoldLight : Ui.Sub,
+                    r.X + 21 * s, titleY, 28 * s);
+            Text1(g, label, "Bold", 12 * s, highlighted ? Ui.GoldText : Ui.Text, r.X + inset, titleY, r.Width - inset - 6 * s);
+            if (kind == AdviceKind.Recommended)
+                Text1(g, reason, "Medium", 10.5f * s, Ui.Sub, r.X + 21 * s, r.Y + 23 * s, r.Width - 27 * s);
+            else if (anvil)
+                Wrap(g, reason, "Medium", 10.5f * s, highlighted ? Ui.GoldText : Ui.Sub, r.X + inset, r.Y + 20 * s, r.Width - inset - 6 * s, 2);
+        }
+        return picked ? rowY + height : Cell(count - 1, columns, height, x, y, gridWidth, s).Bottom;
+    }
+
+    /// <summary>구매 상태, 아이콘, 비용을 아이템마다 한 칸에 표시합니다.</summary>
+    float DrawItems(Graphics g, Dictionary<string, object> it, ArrayList next, float x, float y, float w, float s)
+    {
+        int haveN = (int)Ui.N(it, "haveCount", 0);
+        double gold = Ui.N(it, "gold", 0), respawn = Ui.N(it, "respawnIn", 0);
+        string status = ((int)gold).ToString("N0") + "G" + (Ui.B(it, "dead") && respawn > 0 ? "  ·  부활 " + (int)respawn + "초" : "");
+        y = Heading(g, "아이템 " + haveN + "/6", status, x, y, w, s);
+        string buy = Ui.BuyText(it);
+        if (!string.IsNullOrEmpty(buy))
+            y = Highlight(g, buy, x, y, w, s, Ui.B(Ui.D(it, "buy"), "affordable") ? Ui.Green : Ui.Amber);
+        return DrawItemGrid(g, next, x, y, w, s);
+    }
+
+    float DrawItemGrid(Graphics g, ArrayList next, float x, float y, float w, float s)
+    {
+        int count = Math.Min(6, next.Count);
+        int columns = Math.Min(3, Math.Max(1, (int)((w + 5 * s) / (130 * s))));
+        const int rowHeight = 46;
+        int firstBuy = -1;
+        for (int i = 0; i < count; i++)
+        {
+            Dictionary<string, object> item = next[i] as Dictionary<string, object>;
+            bool have = Ui.B(item, "have");
+            if (!have && firstBuy < 0) firstBuy = i;
+            bool first = i == firstBuy;
+            RectangleF r = Cell(i, columns, rowHeight * s, x, y, w, s);
+            Rule(g, r.X, r.Bottom - s, r.Width, s);
+            Image icon = Ui.IconFor(Ui.S(item, "icon"));
+            Text1(g, (i + 1).ToString(), "Bold", 10 * s, first ? Ui.Gold : Ui.Sub, r.X + 2 * s, r.Y + 13 * s, 13 * s);
+            RectangleF picture = new RectangleF(r.X + 17 * s, r.Y + 8 * s, 23 * s, 23 * s);
+            if (icon != null) g.DrawImage(icon, picture);
+            else Ui.Fill(g, picture, 5 * s, Color.FromArgb(43, 56, 69), Color.FromArgb(31, 42, 53));
+            float labelX = picture.Right + 5 * s, labelWidth = r.Right - labelX - 5 * s;
+            Wrap(g, Ui.S(item, "name"), first ? "Bold" : "SemiBold", 10.8f * s, Ui.Text, labelX, r.Y + 4 * s, labelWidth, 2);
+            int remain = (int)Ui.N(item, "remain", (int)Ui.N(item, "gold", 0));
+            string detail = have ? "✓ 보유" : remain > 0 ? remain.ToString("N0") + "G" : "구매 예정";
+            Text1(g, detail, "Medium", 10 * s, have ? Ui.Green : first ? Ui.GoldLight : Ui.Sub, labelX, r.Bottom - 14 * s, labelWidth);
+        }
+        return Cell(count - 1, columns, rowHeight * s, x, y, w, s).Bottom;
+    }
+
+    /// <summary>저장된 추천 빌드도 경기 중과 같은 아이템 목록으로 표시합니다.</summary>
+    float DrawPlannedBuild(Graphics g, Dictionary<string, object> build, ArrayList preview, float x, float y, float w, float s)
     {
         ArrayList core = Ui.A(build, "core");
         if (core == null || core.Count == 0) return y;
-        y = Heading(g, "추천 빌드", inGame ? "게임 정보가 오면 아이콘·남은 골드가 떠요" : "AI가 짠 순서", x, y, w, s);
-        List<string[]> cc = new List<string[]>();
-        foreach (object o in core) cc.Add(new string[] { o.ToString(), "" });
-        y = ChipFlow(g, cc, x, y, w, s, true) + 8 * s;
+        y = Heading(g, "추천 빌드", "구매 순서", x, y, w, s);
+        y = (preview != null && preview.Count > 0 ? DrawItemGrid(g, preview, x, y, w, s) : ChipFlow(g, core, x, y, w, s)) + 8 * s;
         ArrayList sit = Ui.A(build, "situational");
         if (sit != null)
+        {
+            float leftWidth = 0;
+            foreach (object o in sit)
+                leftWidth = Math.Max(leftWidth, TextW(g, Ui.S(o as Dictionary<string, object>, "when"), "Medium", 11.5f * s));
+            leftWidth = Math.Min(w * .55f, leftWidth + 5 * s);
+            float arrowX = x + leftWidth + 8 * s, itemX = arrowX + 17 * s;
             foreach (object o in sit)
             {
                 Dictionary<string, object> d = o as Dictionary<string, object>;
                 if (d == null) continue;
-                RectangleF r = new RectangleF(x, y, w, 30 * s);
-                Ui.Fill(g, r, 8 * s, Color.FromArgb(30, Ui.Amber), Color.FromArgb(18, Ui.Amber));
-                Ui.Stroke(g, r, 8 * s, Color.FromArgb(110, Ui.Amber), 1f * s);
-                float lw = Math.Min(w * 0.55f, TextW(g, Ui.S(d, "when"), "Medium", 12.5f * s) + 6 * s);
-                Text1(g, Ui.S(d, "when"), "Medium", 12.5f * s, Ui.Sub, x + 10 * s, y + 6 * s, lw);
-                Text1(g, "→ " + Ui.S(d, "item"), "Bold", 13.5f * s, Ui.Amber, x + 16 * s + lw, y + 5 * s, w - lw - 26 * s);
-                y += 36 * s;
+                float conditionBottom = Wrap(g, Ui.S(d, "when"), "Medium", 11.5f * s, Ui.Sub, x, y, Math.Max(leftWidth, 1), 3);
+                Text1(g, "→", "SemiBold", 11.5f * s, Ui.Sub, arrowX, y, 17 * s);
+                float itemBottom = Wrap(g, Ui.S(d, "item"), "SemiBold", 11.5f * s, Ui.Text, itemX, y, x + w - itemX, 2);
+                y = Math.Max(conditionBottom, itemBottom) + 5 * s;
             }
+        }
         return y;
     }
 
-    float DrawCardRow(Graphics g, Dictionary<string, object> c, float x, float y, float w, float s, bool hasPlan)
+    float DrawCardRow(Graphics g, Dictionary<string, object> card, float x, float y, float w, float s, bool hasPlan)
     {
-        string grade = hasPlan ? (Ui.S(c, "grade") ?? "?") : "?";
-        bool pick = Ui.B(c, "isPick");
-        double score = Ui.N(c, "score", -1);
-        string reason = Ui.S(c, "reason"), style = Ui.S(c, "style"), sticker = Ui.S(c, "sticker"), reroll = Ui.S(c, "rerollHint");
-        ArrayList notes = Ui.A(c, "notes");
-        float pad = 12 * s;
-        int extra = (notes != null ? notes.Count : 0) + (sticker != null ? 1 : 0) + (reroll != null ? 1 : 0);
-        float h = pad + 52 * s + 8 * s + 6 * s + 8 * s + (string.IsNullOrEmpty(reason) ? 0 : 24 * s) + extra * 38 * s + pad - 8 * s;
-        RectangleF r = new RectangleF(x, y, w, h);
-        Color[] gc = Ui.GradeColors(grade);
-        Ui.Fill(g, r, 12 * s, Color.FromArgb(24, 34, 44), Color.FromArgb(12, 18, 24));
-        Ui.Stroke(g, r, 12 * s, pick ? Ui.Gold : Color.FromArgb(60, gc[0]), pick ? 2.6f * s : 1.4f * s);
-        RectangleF badge = new RectangleF(r.X + pad, r.Y + pad, 52 * s, 52 * s);
-        Ui.Fill(g, badge, 10 * s, gc[0], gc[1]);
-        using (Font bf = Ui.F("ExtraBold", (grade.Length > 1 ? 22 : 27) * s)) using (SolidBrush wb = new SolidBrush(Color.White))
-        using (StringFormat sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
-            g.DrawString(grade, bf, wb, new RectangleF(badge.X, badge.Y + 1 * s, badge.Width, badge.Height), sf);
-        float tx = badge.Right + 12 * s, tw = r.Right - pad - tx;
-        string slot = Ui.S(c, "slot");
-        float nameX = tx;
+        string grade = hasPlan ? Ui.S(card, "grade") ?? "?" : "?";
+        int score = (int)Ui.N(card, "score", -1);
+        bool pick = Ui.B(card, "isPick");
+        bool provisional = Ui.B(card, "isProvisionalPick");
+        Color accent = pick ? Ui.GoldText : Ui.GradeColors(grade)[0];
+        string reason = Ui.S(card, "reason");
+        var details = new List<string>();
+        ArrayList notes = Ui.A(card, "notes");
+        if (notes != null) foreach (object note in notes) details.Add(note.ToString());
+        string sticker = Ui.S(card, "sticker");
+        string reroll = Ui.S(card, "rerollHint");
+        if (!string.IsNullOrEmpty(sticker)) details.Add(sticker);
+        if (!string.IsNullOrEmpty(reroll)) details.Add(reroll);
+        float baseHeight = string.IsNullOrEmpty(reason) ? 31 * s : 50 * s;
+        RectangleF r = new RectangleF(x, y, w, baseHeight + details.Count * 18 * s);
         if (pick)
+            using (SolidBrush selected = new SolidBrush(Ui.Gold))
+                g.FillRectangle(selected, r);
+        if (provisional)
+            Ui.Stroke(g, RectangleF.Inflate(r, -.5f * s, -.5f * s), 3 * s, Ui.Gold, Math.Max(1f, .65f * s));
+        else
+            Rule(g, r.X, r.Bottom - s, r.Width, s);
+        string label = hasPlan && score >= 0 ? grade + " " + score : "—";
+        Text1(g, label, "Bold", 12 * s, accent, x, y + 6 * s, 48 * s);
+        string slot = Ui.S(card, "slot");
+        string style = Ui.S(card, "style");
+        string title = Ui.S(card, "name") ?? "";
+        if (provisional) title += " · 평가된 카드 중 1순위";
+        if (!string.IsNullOrEmpty(slot)) title += " · " + slot;
+        if (!string.IsNullOrEmpty(style)) title += " · " + style;
+        float labelX = x + 54 * s, labelW = r.Right - labelX - 7 * s;
+        Text1(g, title, "Bold", 12.5f * s, pick ? Ui.GoldText : Ui.Text, labelX, y + 6 * s, labelW);
+        Wrap(g, reason, "Medium", 11 * s, pick ? Ui.GoldText : Ui.Sub, labelX, y + 23 * s, labelW, 2);
+        float detailY = y + baseHeight - 2 * s;
+        foreach (string detail in details)
         {
-            using (Font rf = Ui.F("ExtraBold", 12 * s))
-            {
-                SizeF sz = g.MeasureString("1순위", rf);
-                RectangleF rb = new RectangleF(tx, r.Y + pad + 2 * s, sz.Width + 12 * s, sz.Height + 4 * s);
-                Ui.Fill(g, rb, rb.Height, Ui.GoldLight, Ui.Gold);
-                using (SolidBrush tb = new SolidBrush(Color.FromArgb(30, 26, 18))) g.DrawString("1순위", rf, tb, rb.X + 6 * s, rb.Y + 2 * s);
-                nameX = rb.Right + 8 * s;
-            }
+            Text1(g, detail, "Medium", 10.5f * s, pick ? Ui.GoldText : Ui.Amber, labelX, detailY, labelW);
+            detailY += 18 * s;
         }
-        Text1(g, Ui.S(c, "name"), "Bold", 19 * s, Ui.Text, nameX, r.Y + pad - 2 * s, r.Right - pad - nameX);
-        string meta = (score >= 0 && hasPlan ? ((int)score) + "점 · " + Ui.GradeWord(grade) : "점수 없음") + (slot != null ? "  ·  " + slot : "") + (!string.IsNullOrEmpty(style) ? "  ·  → " + style : "");
-        Text1(g, meta, "SemiBold", 13.5f * s, hasPlan ? gc[0] : Ui.Sub, tx, r.Y + pad + 29 * s, tw);
-        float by = r.Y + pad + 52 * s + 8 * s;
-        RectangleF bar = new RectangleF(r.X + pad, by, r.Width - pad * 2, 6 * s);
-        Ui.Fill(g, bar, bar.Height, Color.FromArgb(34, 44, 54), Color.FromArgb(28, 36, 44));
-        if (score > 0 && hasPlan)
-        {
-            RectangleF fill = new RectangleF(bar.X, bar.Y, Math.Max(bar.Height, bar.Width * (float)(score / 100.0)), bar.Height);
-            using (GraphicsPath fp = Ui.Round(fill, bar.Height)) using (LinearGradientBrush lb = new LinearGradientBrush(fill, gc[1], gc[0], 0f)) g.FillPath(lb, fp);
-        }
-        float yy = bar.Bottom + 8 * s;
-        if (!string.IsNullOrEmpty(reason)) { Text1(g, reason, "Medium", 14 * s, Color.FromArgb(220, 224, 230), r.X + pad, yy, r.Width - pad * 2); yy += 24 * s; }
-        if (notes != null) foreach (object n in notes) yy = Box(g, n.ToString(), r.X + pad, yy, r.Width - pad * 2, s, Ui.Green);
-        if (sticker != null) yy = Box(g, "HEARTSTEEL · " + sticker, r.X + pad, yy, r.Width - pad * 2, s, Ui.Pink);
-        if (reroll != null) yy = Box(g, reroll, r.X + pad, yy, r.Width - pad * 2, s, Ui.Amber);
         return r.Bottom;
     }
 }

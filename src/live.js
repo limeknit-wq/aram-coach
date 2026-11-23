@@ -122,6 +122,7 @@ export async function liveGame(memory) {
   return {
     inGame: true,
     gameMode: all.gameData?.gameMode,
+    gameVersion: all.gameData?.gameVersion,
     gameTime: `${Math.floor(all.gameData.gameTime / 60)}분 ${Math.floor(all.gameData.gameTime % 60)}초`,
     me: {
       ...me.v,

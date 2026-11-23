@@ -12,7 +12,7 @@
     "start:http": "node src/main.js --http",
     "build:augments": "node scripts/build-augments.mjs",
     "build:exe": "node scripts/build-exe.mjs",
-    "test": "node scripts/smoke-test.mjs"
+    "test": "node --test scripts/live-augments-test.mjs scripts/patch-data-test.mjs && node scripts/smoke-test.mjs"
   },
   "engines": {
     "node": ">=20"

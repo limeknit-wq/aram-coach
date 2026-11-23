@@ -9,6 +9,36 @@ using System.Runtime.InteropServices;
 
 public static class DesktopDup
 {
+    public static int[] CardRims(Bitmap frame)
+    {
+        const int columns = 256;
+        int[] rims = new int[columns];
+        double[] rows = { .25, .30, .35, .55, .59 };
+        int offset = Math.Max(2, (int)(frame.Height * .018));
+        int min = 255, max = 0;
+        for (int i = 1; i < columns - 1; i++)
+        {
+            int x = i * frame.Width / columns;
+            if (x < offset || x + offset >= frame.Width) continue;
+            foreach (double row in rows)
+            {
+                int y = (int)(frame.Height * row);
+                int middle = Brightness(frame.GetPixel(x, y));
+                min = Math.Min(min, middle);
+                max = Math.Max(max, middle);
+                int neighbor = Math.Max(Brightness(frame.GetPixel(x - offset, y)), Brightness(frame.GetPixel(x + offset, y)));
+                if (middle - neighbor >= 20) rims[i]++;
+            }
+        }
+        // 보호된 캡처, 검은 프레임 등 밝기 변화가 거의 없으면 판정에 쓰지 않습니다.
+        return max - min < 20 ? null : rims;
+    }
+
+    static int Brightness(Color color)
+    {
+        return (color.R * 3 + color.G * 6 + color.B) / 10;
+    }
+
     [DllImport("dxgi.dll")] static extern int CreateDXGIFactory1(ref Guid riid, out IntPtr factory);
     [DllImport("d3d11.dll")] static extern int D3D11CreateDevice(IntPtr adapter, int driverType, IntPtr software, uint flags,
         IntPtr featureLevels, uint numLevels, uint sdkVersion, out IntPtr device, out int level, out IntPtr context);

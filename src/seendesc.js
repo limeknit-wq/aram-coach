@@ -10,10 +10,10 @@ export async function seenFor(version) {
   return observations.version === version ? observations.rows || empty : empty;
 }
 
-export function recordCards(cards, lines, version) {
+export function readCardDescriptions(cards, lines) {
   const frame = new Map();
   for (const card of cards) {
-    if (card.recovered || card.x == null || card.y == null || (card.desc && !card.desc.includes("?"))) continue;
+    if (card.recovered || card.x == null || card.y == null) continue;
     const exact = lines.some(l => l.x === card.x && l.y === card.y && [card.name, card.nameEn].includes(l.s?.trim()));
     if (!exact) continue;
     const words = lines.filter(l => Math.abs(l.x - card.x) < 0.09 && l.y > card.y + 0.012 && l.y < card.y + 0.24)
@@ -21,6 +21,11 @@ export function recordCards(cards, lines, version) {
     const text = words.map(l => l.s?.trim()).filter(Boolean).join(" ");
     if (text.length >= 12 && text.length <= 600 && /[가-힣a-z]{2}/i.test(text)) frame.set(card.apiName, text);
   }
+  return frame;
+}
+
+export function recordCards(cards, lines, version) {
+  const frame = readCardDescriptions(cards.filter((card) => !card.desc || card.desc.includes("?")), lines);
   const stable = [...frame].filter(([k,v]) => recent.get(k) === v);
   recent = frame;
   if (!stable.length) return;

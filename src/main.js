@@ -9,6 +9,17 @@ import { maybeInstall, messageBox } from "./install.js";
 import { checkUpdate } from "./update.js";
 
 import { refreshData } from "./gamecache.js";
+import { refreshMayhemStats } from "./mayhemstats.js";
+
+async function updateMayhemStats() {
+  let delay = 24 * 60 * 60 * 1000;
+  try { await refreshMayhemStats(); }
+  catch (e) {
+    console.error("ARAM Mayhem 통계 갱신 보류:", e.message);
+    delay = 60 * 60 * 1000;
+  }
+  setTimeout(updateMayhemStats, delay).unref();
+}
 
 async function runApp(args) {
   if (await maybeInstall(args)) process.exit(0);
@@ -19,6 +30,7 @@ async function runApp(args) {
     await messageBox("아수라장 코치가 이미 실행 중이에요.\n작업 표시줄 오른쪽 트레이 아이콘을 확인하세요.");
     process.exit(0);
   }
+  updateMayhemStats();
   checkUpdate().catch(() => {});
 }
 

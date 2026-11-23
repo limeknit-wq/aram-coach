@@ -5,62 +5,107 @@ import http from "node:http";
 import { spawn } from "node:child_process";
 import { addPick, loadPicks, loadPlan, resetPicks, scoreOffer } from "./plan.js";
 import { currentGameKey, liveGame } from "./live.js";
-import { champSelect, gameWindowMode, loadingGame } from "./lcu.js";
+import { champSelect, gameClientVersion, gameWindowMode, loadingGame } from "./lcu.js";
 import { buyNow, dropLimitDupes, inventory, remainingCost } from "./itembuild.js";
 import { logOffer, startWatcher, stopWatcher, state as watch } from "./watcher.js";
 import { APP_VERSION, IS_EXE, ensureResources, resPath } from "./paths.js";
 import { getSettings, updateSettings } from "./settings.js";
-import { adviseItems, cancelAutoSetup, detectEngines, items as itemAdvice, onGameStart, prepareChampion, setup, setupRunning } from "./autosetup.js";
-import { findItem, version } from "./data.js";
+import { adviseItems, cancelAutoSetup, detectEngines, items as itemAdvice, onGameStart, prepareChampion, rateCurrentAugments, setup, setupRunning } from "./autosetup.js";
+import { aramItems, findItem, norm, version } from "./data.js";
 import { uninstall } from "./install.js";
 import { cardDetails, test, testAction, testState } from "./testmode.js";
 import { update } from "./update.js";
+import { publicPatch } from "./mayhemstats.js";
 
 // 증강 카드 반 너비 (화면 너비 비율). 카드 크기는 화면 높이를 따라가므로 16:9 에서 약 0.083 → 비율에 맞춰 환산, 약간 여유
 // 카드 반 너비(화면 너비 비율). 화면 비율을 잘못 읽어도 카드 밖 클릭을 받지 않도록 상한을 둠
 const cardHalfW = () => Math.min(0.11, 0.09 * (16 / 9) / (watch.aspect || 16 / 9));
 const PORT = Number(process.env.LOL_COORD_PORT || 47321);
 export const coord = { role: "시작 전", isApp: false, gameKey: null, inGame: false, pendingPick: null, lastPick: null, champion: null };
+export const offerContext = () => ({ event: watch.event, gameKey: coord.gameKey, gameVersion: coord.gameVersion, championId: coord.championId });
 
 const leader = { srv: null, timers: [], overlay: null, overlayStopped: false };
 
 const sendJson = (res, obj, code = 200) => { res.writeHead(code, { "content-type": "application/json; charset=utf-8" }); res.end(JSON.stringify(obj)); };
 const readBody = (req) => new Promise((r) => { let b = ""; req.on("data", (d) => (b += d)); req.on("end", () => { try { r(JSON.parse(b || "{}")); } catch { r({}); } }); });
 
+function openOffer(offer, maxAge = 3500) {
+  return Boolean(offer && !offer.closedAt && Date.now() - offer.lastSeenAt < maxAge);
+}
+
+export function clickableOffer(offer) {
+  return openOffer(offer, 2200) && !offer.unstable && !offer.absentSince &&
+    offer.panelEpoch === watch.captureEpoch && Date.now() - offer.panelSeenAt < 1800 &&
+    watch.lastLeagueFrameAt - offer.lastSeenAt < 1500;
+}
+
 async function overlayState() {
   const s = await getSettings();
   const o = watch.offer;
-  const onScreen = o && Date.now() - o.lastSeenAt < 3500;
+  const onScreen = openOffer(o);
   const lastPick = coord.lastPick && Date.now() - coord.lastPick.at < 6000 ? coord.lastPick : null;
   const common = { enabled: s.overlay, scale: s.overlayScale, offsetY: s.overlayOffsetY, lastPick, setupState: setup.state, setupEngine: setup.engine,
     fullscreen: coord.windowMode === 0 && !test.active, items: coord.itemsView && coord.inGame ? { ...coord.itemsView, show: coord.itemsView.dead || Date.now() < coord.affordUntil } : null };
-  // 카드를 들여다보는 동안(마우스를 올리면 카드가 커져) 글자를 잠깐 못 읽어도 클릭은 기록되도록 12초까지 받음
-  common.clickable = Boolean(o && Date.now() - o.lastSeenAt < 12000);
+  common.clickable = clickableOffer(o);
   if (!onScreen) return { show: false, ...common };
-  const scored = await scoreOffer(o, { event: watch.event, gameKey: coord.gameKey });
-  return { show: true, ...scored, event: watch.event?.name || null, ...common };
+  const scored = await scoreOffer(o, offerContext());
+  return { show: true, ...scored, event: watch.event?.name || null, offerId: o.at, offerRevision: o.changedAt || o.at, ...common };
 }
 
 /** 설정창에 보여줄 상태 묶음 */
 async function statusState() {
   const plan = await loadPlan();
-  const picks = await loadPicks(coord.gameKey);
-  const top = plan ? Object.values(plan.scores).sort((a, b) => b.score - a.score).slice(0, 5).map((x) => `${x.name} (${x.score})`) : [];
+  const matchPlan = plan && (!coord.gameKey || plan.gameKey === coord.gameKey) ? plan : null;
+  const picks = await loadPicks(coord.gameKey || matchPlan?.gameKey);
+  const matchState = coord.inGame ? "live" : (coord.gameKey || matchPlan?.gameKey || picks.length) ? "previous" :
+    matchPlan ? "preview" : "idle";
+  const ranked = matchPlan ? Object.values(matchPlan.scores).sort((a, b) => b.score - a.score) : [];
+  const pickedNames = new Set(picks.map((pick) => norm(pick.name)));
+  const recommendations = ranked.filter((entry) => !pickedNames.has(norm(entry.name))).slice(0, 5);
   return {
-    version: APP_VERSION, role: coord.role, inGame: coord.inGame, champion: coord.champion, gameKey: coord.gameKey,
+    version: APP_VERSION, role: coord.role, inGame: coord.inGame, matchState, champion: coord.champion, gameKey: coord.gameKey,
     watch: watch.status, event: watch.event?.name || null,
     setup: { ...setup },
-    plan: plan && (!coord.gameKey || plan.gameKey === coord.gameKey)
-      ? { source: plan.source, champion: plan.champion, strategy: plan.strategy, build: plan.build, top }
+    plan: matchPlan
+      ? { source: plan.source, champion: plan.champion, role: plan.role, strategy: plan.strategy, build: plan.build,
+        top: ranked.slice(0, 5).map((x) => `${x.name} (${x.score})`), recommendations, anvils: plan.anvils,
+        matchupCombos: plan.matchupCombos, plannedItems: plannedItems(plan.build) }
       : null,
+    matchup: coord.inGame ? coord.matchup || null : null,
     picks: picks.map((p) => p.name),
     items: coord.inGame ? coord.itemsView || null : null,
-    offer: watch.offer && Date.now() - watch.offer.lastSeenAt < 3500 ? (await scoreOffer(watch.offer, { event: watch.event, gameKey: coord.gameKey }))?.cards.map((c) => `${c.name} ${c.grade}${c.score ?? ""}${c.isPick ? " ★" : ""}`) : [],
+    offer: openOffer(watch.offer) ? (await scoreOffer(watch.offer, offerContext()))?.cards.map((c) => `${c.name} ${c.grade}${c.score ?? ""}${c.isPick ? " ★" : ""}`) : [],
     engines: await detectEnginesCached(),
     settings: await getSettings(),
     update,
     exePath: process.execPath,
   };
+}
+
+function itemIcon(patch, id) {
+  return id ? `https://ddragon.leagueoflegends.com/cdn/${patch}/img/item/${id}.png` : null;
+}
+
+const itemPreviews = new WeakMap();
+function plannedItems(build) {
+  if (!build?.core?.length) return [];
+  let entry = itemPreviews.get(build);
+  if (!entry) {
+    entry = { rows: build.core.map((name) => ({ name })), retryAt: 0 };
+    itemPreviews.set(build, entry);
+  }
+  if (Date.now() >= entry.retryAt) {
+    entry.retryAt = Infinity;
+    Promise.all([aramItems(), version()]).then(([list, patch]) => {
+      entry.rows = build.core.map((name) => {
+        const item = list.find((candidate) => norm(candidate.name) === norm(name));
+        return { name, id: item?.id, gold: item?.gold?.total, icon: itemIcon(patch, item?.id) };
+      });
+    }).catch(() => {
+      entry.retryAt = Date.now() + 30000;
+    });
+  }
+  return entry.rows;
 }
 
 let enginesCache = null;
@@ -73,7 +118,7 @@ function handle(req, res) {
   const u = new URL(req.url, "http://x");
   const p = u.pathname;
   if (p === "/info") return sendJson(res, { app: coord.isApp, version: APP_VERSION, pid: process.pid });
-  if (p === "/state") return sendJson(res, { offer: watch.offer, event: watch.event, status: watch.status, lastLeagueFrameAt: watch.lastLeagueFrameAt, history: watch.history, gameKey: coord.gameKey });
+  if (p === "/state") return sendJson(res, { offer: watch.offer, status: watch.status, lastLeagueFrameAt: watch.lastLeagueFrameAt, history: watch.history, ...offerContext() });
   if (p === "/overlay") return overlayState().then((s) => sendJson(res, s), () => sendJson(res, { show: false }));
   if (p === "/status") return statusState().then((s) => sendJson(res, s), (e) => sendJson(res, { error: String(e) }, 500));
   if (p === "/settings" && req.method === "POST") return readBody(req).then(async (b) => { const s = await updateSettings(b); await applyAutostart(s); sendJson(res, s); });
@@ -93,10 +138,13 @@ function handle(req, res) {
     // 오버레이가 감지한 카드 영역 클릭 → 선택 화면이 사라지면 그 카드를 고른 증강으로 확정
     const x = Number(u.searchParams.get("x"));
     const o = watch.offer;
+    if (!clickableOffer(o) || Number(u.searchParams.get("offer")) !== o.at ||
+      Number(u.searchParams.get("revision")) !== (o.changedAt || o.at))
+      return sendJson(res, { ok: true, pending: coord.pendingPick?.name || null });
     // 첫 클릭만 인정: 카드를 고르면 선택 화면이 사라지는 1~2초 동안 게임 화면을 클릭해도 덮어쓰지 않음.
     // 단, 앞 클릭 뒤에도 선택 화면이 1.5초 넘게 그대로 보였으면 앞 클릭은 고른 게 아니었으므로 새 클릭으로 바꿈
     const stillShown = coord.pendingPick && o && o.lastSeenAt - coord.pendingPick.at > 1500;
-    if (coord.pendingPick && o && coord.pendingPick.offer === o && !(o.rerolledAt > coord.pendingPick.at) && !stillShown) {
+    if (coord.pendingPick?.offer === o && coord.pendingPick.epoch === watch.captureEpoch && !(o.rerolledAt > coord.pendingPick.at) && !stillShown) {
       logOffer(`추가 클릭 무시 (이미 고름: ${coord.pendingPick.name}, x=${x})`);
       return sendJson(res, { ok: true, pending: coord.pendingPick.name });
     }
@@ -109,7 +157,7 @@ function handle(req, res) {
         return sendJson(res, { ok: true, pending: coord.pendingPick?.name || null });
       }
       const again = coord.pendingPick && coord.pendingPick.offer === o;
-      coord.pendingPick = { name: o.names[i], at: Date.now(), offer: o };
+      coord.pendingPick = { name: o.names[i], at: Date.now(), offer: o, epoch: watch.captureEpoch, gameKey: coord.gameKey };
       logOffer(`${again ? "다시 클릭(앞 클릭 뒤에도 선택 화면 그대로)" : "카드 클릭"}: ${o.names[i]} (x=${x})`);
     }
     return sendJson(res, { ok: true, pending: coord.pendingPick?.name || null });
@@ -146,7 +194,7 @@ function handle(req, res) {
 }
 
 // 클릭 후 선택 화면이 사라지면(새 프레임에 선택지가 안 보이면) 고른 증강으로 확정
-async function settlePick() {
+export async function settlePick() {
   const p = coord.pendingPick;
   if (!p) return;
   const o = watch.offer;
@@ -154,29 +202,95 @@ async function settlePick() {
   // 선택지가 통째로 바뀌었거나, 클릭한 뒤 새로고침이 있었으면 취소 (늦게 읽힌 카드가 추가된 것은 괜찮음)
   const rerolled = o && o.rerolledAt > p.at;
   // 선택 화면을 오래 들여다봐도 취소하지 않음 (예전엔 12초 뒤 취소돼 고른 증강이 빠졌음). 1분이 지나면 정리
-  if (!o || o !== p.offer || rerolled || age > 60000) { // 새로고침 등으로 선택지가 바뀜 → 취소
+  const interrupted = p.epoch !== watch.captureEpoch || p.gameKey !== coord.gameKey;
+  if (!o || o.closedAt || o !== p.offer || rerolled || interrupted || age > 60000) {
     coord.pendingPick = null;
-    logOffer(`클릭 취소 (${!o ? "선택지 없음" : o !== p.offer ? "선택지 바뀜" : rerolled ? "새로고침" : "시간 초과"}): ${p.name}`);
+    logOffer(`클릭 취소 (${!o || o.closedAt ? "선택지 닫힘" : o !== p.offer ? "선택지 바뀜" : rerolled ? "새로고침" : interrupted ? "캡처 또는 경기 전환" : "시간 초과"}): ${p.name}`);
     return;
   }
-  // 선택 화면이 2.5초 넘게 안 보이면(게임 화면은 계속 읽히는 중) 고른 것으로 확정
-  const goneFor = (watch.lastLeagueFrameAt || 0) - o.lastSeenAt;
-  if (goneFor > 2500 && Date.now() - o.lastSeenAt > 2500) {
+  // 정상 캡처에서 카드 테두리가 연속으로 사라지고, 마지막 OCR 변경이 해소된 경우에만 확정합니다.
+  if (!o.unstable && o.panelEpoch === p.epoch && o.absentSince > p.at && o.absentFrames >= 3 &&
+    watch.lastLeagueFrameAt - o.absentSince >= 750) {
+    o.closedAt = watch.lastLeagueFrameAt;
     coord.pendingPick = null;
     logOffer(`선택 확정: ${p.name}`);
-    await addPick(p.name, coord.gameKey, "오버레이 클릭 자동 기록");
-    coord.lastPick = { name: p.name, at: Date.now() };
+    await addPick(p.name, p.gameKey, "오버레이 클릭 자동 기록", { offerId: o.at });
+    if (coord.gameKey === p.gameKey) coord.lastPick = { name: p.name, at: Date.now() };
+  }
+}
+
+let offerJob = null;
+let readingOffer = false;
+export async function refreshOfferAdvice(rate = rateCurrentAugments) {
+  const offer = watch.offer;
+  const gameKey = coord.gameKey;
+  if (offerJob && (offerJob.offer !== offer || !coord.inGame || offer.closedAt))
+    offerJob.controller.abort();
+  if (!coord.isApp || !coord.inGame || !openOffer(offer) || readingOffer) return;
+  const isCurrent = () => coord.inGame && coord.gameKey === gameKey && watch.offer === offer && !offer.closedAt;
+  let scored, plan;
+  readingOffer = true;
+  try {
+    [scored, plan] = await Promise.all([scoreOffer(offer, offerContext()), loadPlan()]);
+  } catch { return; }
+  finally { readingOffer = false; }
+  if (!isCurrent() || !scored) return;
+
+  if (offer.analysis?.scope !== scored.analysisScope)
+    offer.analysis = { scope: scored.analysisScope, pending: false, scores: {} };
+  const analysis = offer.analysis;
+  if (offerJob) {
+    // 리롤되지 않은 카드가 남아 있으면 진행 중인 평가를 받아 다음 요청에서 재사용합니다.
+    if (offerJob.analysis !== analysis || !scored.cards.some((card) => offerJob.keys.has(card.evaluationKey)))
+      offerJob.controller.abort();
+    return;
+  }
+  const cards = scored.cards.filter((card) => !Object.hasOwn(analysis.scores, card.evaluationKey));
+  if (!cards.length) return;
+  const controller = new AbortController();
+  const job = { offer, analysis, keys: new Set(cards.map((card) => card.evaluationKey)), controller };
+  offerJob = job;
+  analysis.pending = true;
+  const started = Date.now();
+  let scores;
+  try {
+    scores = await rate({
+      champion: coord.champion, matchup: coord.matchup, picks: scored.picks, event: watch.event?.name,
+      strategy: plan?.gameKey === gameKey ? plan.strategy : null, cards, statistics: scored.statistics,
+    }, controller.signal);
+  } catch {}
+  finally {
+    if (isCurrent() && !controller.signal.aborted && offer.analysis === analysis) {
+      cards.forEach((card, i) => { analysis.scores[card.evaluationKey] = scores?.[i] ?? null; });
+      logOffer(`증강 세부 분석: ${scores?.filter(Boolean).length || 0}/${cards.length}개 · ${Date.now() - started}ms`);
+    }
+    analysis.pending = false;
+    if (offerJob === job) offerJob = null;
   }
 }
 
 /** 새 게임 시작: (프로그램 모드면) AI 자동 세팅. 점수는 AI만 정합니다 (AI 세팅 전엔 오버레이에 "AI 분석 중") */
+let patchCheckedAt = 0;
+function updateGamePatch(live, key) {
+  if (publicPatch(live?.gameVersion)) { coord.gameVersion = live.gameVersion; return; }
+  if (coord.gameVersion || test.active || Date.now() - patchCheckedAt < 30000) return;
+  patchCheckedAt = Date.now();
+  gameClientVersion().then((version) => {
+    if (coord.gameKey === key && !coord.gameVersion && publicPatch(version)) coord.gameVersion = version;
+  }).catch(() => {});
+}
+
 async function onNewGame(key) {
   watch.event = null; watch.offer = null; watch.history = [];
-  coord.lastPick = null; coord.itemsView = null; coord.affordUntil = 0;
-  Object.assign(itemAdvice, { next: [], now: "", why: "", at: 0, state: "대기" });
+  coord.pendingPick = null; coord.lastPick = null; coord.itemsView = null; coord.matchup = null; coord.affordUntil = 0;
+  coord.gameVersion = null; coord.championId = null; patchCheckedAt = 0;
+  Object.assign(itemAdvice, { next: [], now: "", why: "", at: 0, state: "대기", anvilAdvice: null, midAnvilAdvice: null });
   await resetPicks(key);
   const live = await liveGame(EMPTY_MEMORY).catch(() => null);
   coord.champion = live?.me?.champion || null;
+  coord.championId = live?.me?.championId || null;
+  updateGamePatch(live, key);
+  if (coord.champion) coord.matchup = matchTeams(live);
   const plan = await loadPlan();
   // 이번 판 AI 점수표가 이미 있으면 그대로 (프로그램을 게임 중에 다시 켠 경우). 적 반영 전 상태로 끊겼으면 이어서 세팅
   const done = plan && plan.gameKey === key && String(plan.source).startsWith("AI") && !String(plan.source).includes("적 반영 전");
@@ -184,6 +298,11 @@ async function onNewGame(key) {
 }
 
 const EMPTY_MEMORY = { myChampion: null, allies: [], enemies: [], myAugments: [], notes: [] };
+
+function matchTeams(live) {
+  const names = (players) => players.map((player) => player?.champion).filter(Boolean);
+  return { allies: names([live.me, ...(live.allies || [])]), enemies: names(live.enemies || []) };
+}
 
 // 픽창: 내 챔피언이 3초 동안 그대로면 그 챔피언 기본 점수표를 미리 만듭니다 (다시 굴리기·벤치 교체 대비)
 const pick = { id: null, since: 0 };
@@ -211,7 +330,7 @@ async function pollGameOnce() {
 
 // ---------- 템 추천: 3초마다 내 상태 확인 → 죽으면 AI에게 다시 묻고, 다음 템 골드가 모이면 잠깐 알림 ----------
 coord.affordUntil = 0;
-let wasDead = false, lastAdviceAt = 0, lastPickKey = "", lastAffordName = null, itemTicking = false;
+let wasDead = false, lastAdviceAt = 0, lastPickKey = "", lastAffordName = null, lastAnvilKey = null, itemTicking = false;
 async function itemTick() {
   if (itemTicking || !coord.inGame) return;
   itemTicking = true;
@@ -219,6 +338,9 @@ async function itemTick() {
     coord.windowMode = await gameWindowMode();
     const live = await liveGame(EMPTY_MEMORY).catch(() => null);
     if (!live?.inGame) return;
+    coord.championId = live.me.championId || coord.championId;
+    updateGamePatch(live, coord.gameKey);
+    if (!coord.matchup?.enemies.length) coord.matchup = matchTeams(live);
     const plan = await loadPlan();
     const picks = (await loadPicks(coord.gameKey)).map((p) => p.name);
     const dead = Boolean(live.me.dead);
@@ -226,6 +348,14 @@ async function itemTick() {
     const slotItems = live.me.items.filter((i) => i.slot == null || i.slot < 6);
     const doneItems = slotItems.filter((i) => i.completed);
     const full = doneItems.length >= 6;
+    const matchPlan = plan?.gameKey === coord.gameKey ? plan : null;
+    const anvilKey = full ? JSON.stringify([coord.gameKey, doneItems.map((i) => i.id).sort(), picks]) : null;
+    if (coord.isApp && anvilKey && anvilKey !== lastAnvilKey && !itemAdvice.busy) {
+      lastAnvilKey = anvilKey;
+      adviseItems(live, { plan: matchPlan, picks, anvilKey });
+    }
+    const finalAnvils = itemAdvice.anvilAdvice?.key === anvilKey ? itemAdvice.anvilAdvice.ranked : null;
+    const midAnvils = itemAdvice.midAnvilAdvice?.gameKey === coord.gameKey ? itemAdvice.midAnvilAdvice.ranked : null;
     // 다시 물어볼 때: 죽었을 때(45초 간격), 처음 세팅이 끝났을 때, 새 증강을 골랐을 때(15초 간격, 퀘스트 증강 대응)
     const pickKey = `${coord.gameKey}:${picks.length}`;
     const newPick = picks.length > 0 && pickKey !== lastPickKey;
@@ -234,14 +364,14 @@ async function itemTick() {
       (newPick && Date.now() - lastAdviceAt > 15000));
     if (needAdvice) lastPickKey = pickKey;
     wasDead = dead;
-    if (needAdvice) { lastAdviceAt = Date.now(); adviseItems(live, { plan: plan && plan.gameKey === coord.gameKey ? plan : null, picks }); }
+    if (needAdvice) { lastAdviceAt = Date.now(); adviseItems(live, { plan: matchPlan, picks, gameKey: coord.gameKey }); }
     // 보여줄 목록: AI 추천(최근 것) → 없으면 이번 판 계획 빌드
     const useAI = itemAdvice.at && Date.now() - itemAdvice.at < 10 * 60000;
-    const planned = useAI ? (itemAdvice.build || itemAdvice.next) : (plan?.gameKey === coord.gameKey ? plan.build?.core || [] : []);
+    const planned = useAI ? (itemAdvice.build || itemAdvice.next) : (matchPlan?.build?.core || []);
     // 하나만 살 수 있는 계열(방관템·신발 등)은 이미 가진 것/앞 순서 것만 남김 (예: 도미닉을 샀으면 필멸자·세릴다 제외)
     const names = await dropLimitDupes(planned || [], findItem, doneItems);
     const v = await version();
-    const icon = (id) => (id ? `https://ddragon.leagueoflegends.com/cdn/${v}/img/item/${id}.png` : null);
+    const icon = (id) => itemIcon(v, id);
     const gold = Math.floor(live.me.currentGold || 0);
     // 가진 하위 아이템은 빼고 남은 골드를 계산 (앞 순서 아이템이 쓴 재료는 뒤 아이템에서 다시 쓰지 않음)
     // 6칸 완성 빌드: 이미 산 완성 아이템(✓) + 앞으로 살 아이템(사는 순서, 남은 칸 수만큼)
@@ -267,6 +397,7 @@ async function itemTick() {
     if (buy?.affordable && lastAffordName !== buy.name) { lastAffordName = buy.name; coord.affordUntil = Date.now() + 8000; }
     coord.itemsView = {
       build: [...have, ...todo], next: full ? [] : todo, full, haveCount: doneItems.length, buy, gold, dead, respawnIn: live.me.respawnIn || null,
+      anvils: finalAnvils?.length ? finalAnvils : midAnvils || matchPlan?.anvils || [],
       why: full ? "6칸 완성 빌드를 다 샀어요" : useAI ? itemAdvice.why : (plan?.strategy ? "이번 판 계획 빌드" : ""),
       source: useAI ? `AI · ${Math.round((Date.now() - itemAdvice.at) / 1000)}초 전` : "이번 판 계획", busy: itemAdvice.busy,
     };
@@ -300,7 +431,8 @@ function becomeLeader() {
       await ensureResources();
       startWatcher();
       startOverlay();
-      leader.timers = [setInterval(settlePick, 300), setInterval(pollGame, 1500), setInterval(itemTick, 3000)];
+      leader.timers = [setInterval(settlePick, 300), setInterval(refreshOfferAdvice, 300),
+        setInterval(pollGame, 1500), setInterval(itemTick, 3000)];
       leader.timers.forEach((t) => t.unref());
       pollGame();
       resolve(true);
@@ -327,6 +459,8 @@ async function syncFromLeader() {
     const s = await r.json();
     Object.assign(watch, { offer: s.offer, event: s.event, status: `${s.status} (공유)`, lastLeagueFrameAt: s.lastLeagueFrameAt, history: s.history || [] });
     coord.gameKey = s.gameKey;
+    coord.gameVersion = s.gameVersion;
+    coord.championId = s.championId;
     return true;
   } catch { return false; }
 }
