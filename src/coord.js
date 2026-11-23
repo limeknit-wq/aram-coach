@@ -332,6 +332,23 @@ async function pollGameOnce() {
 // ---------- 템 추천: 3초마다 내 상태 확인 → 죽으면 AI에게 다시 묻고, 다음 템 골드가 모이면 잠깐 알림 ----------
 coord.affordUntil = 0;
 let wasDead = false, lastAdviceAt = 0, lastPickKey = "", lastAffordName = null, lastAnvilKey = null, itemTicking = false;
+// 아군·적이 완성한 아이템 기록 (새 완성템이 생기면 빌드를 다시 물어봄)
+let teamItems = { gameKey: null, seen: new Map(), changes: [] };
+const TEAM_ADVICE_GAP = 60000; // 팀 아이템 변화로 다시 묻는 최소 간격
+
+/** 다른 9명의 완성 아이템을 이전과 비교해 새로 완성한 것만 changes 에 쌓습니다. 첫 확인은 기준만 잡음. */
+function trackTeamItems(live, gameKey) {
+  if (teamItems.gameKey !== gameKey) teamItems = { gameKey, seen: new Map(), changes: [], ready: false };
+  const players = [...live.allies.map((p) => ["아군", p]), ...live.enemies.map((p) => ["적", p])];
+  for (const [side, p] of players) {
+    const key = `${side}:${p.champion}`;
+    const now = new Set(p.items.filter((i) => i.completed).map((i) => i.name));
+    const before = teamItems.seen.get(key);
+    if (teamItems.ready && before) for (const n of now) if (!before.has(n)) teamItems.changes.push(`${side} ${p.champion}: ${n}`);
+    teamItems.seen.set(key, now);
+  }
+  teamItems.ready = true;
+}
 async function itemTick() {
   if (itemTicking || !coord.inGame) return;
   itemTicking = true;
@@ -357,15 +374,22 @@ async function itemTick() {
     }
     const finalAnvils = itemAdvice.anvilAdvice?.key === anvilKey ? itemAdvice.anvilAdvice.ranked : null;
     const midAnvils = itemAdvice.midAnvilAdvice?.gameKey === coord.gameKey ? itemAdvice.midAnvilAdvice.ranked : null;
-    // 다시 물어볼 때: 죽었을 때(45초 간격), 처음 세팅이 끝났을 때, 새 증강을 골랐을 때(15초 간격, 퀘스트 증강 대응)
+    // 다시 물어볼 때: 죽었을 때(45초 간격), 처음 세팅이 끝났을 때, 새 증강을 골랐을 때(15초 간격, 퀘스트 증강 대응),
+    // 아군·적이 새 아이템을 완성했을 때(60초 간격, 그 사이 변화는 모아서 한 번에)
+    trackTeamItems(live, coord.gameKey);
     const pickKey = `${coord.gameKey}:${picks.length}`;
     const newPick = picks.length > 0 && pickKey !== lastPickKey;
-    const needAdvice = coord.isApp && !full && (
+    const teamChanged = teamItems.changes.length > 0 && Date.now() - lastAdviceAt > TEAM_ADVICE_GAP;
+    const needAdvice = coord.isApp && !full && !itemAdvice.busy && (
       (Date.now() - lastAdviceAt > 45000 && ((dead && !wasDead) || (!itemAdvice.at && setup.state === "완료"))) ||
-      (newPick && Date.now() - lastAdviceAt > 15000));
+      (newPick && Date.now() - lastAdviceAt > 15000) || teamChanged);
     if (needAdvice) lastPickKey = pickKey;
     wasDead = dead;
-    if (needAdvice) { lastAdviceAt = Date.now(); adviseItems(live, { plan: matchPlan, picks, gameKey: coord.gameKey }); }
+    if (needAdvice) {
+      lastAdviceAt = Date.now();
+      const changes = teamItems.changes.splice(0);
+      adviseItems(live, { plan: matchPlan, picks, gameKey: coord.gameKey, changes });
+    }
     // 보여줄 목록: AI 추천(최근 것) → 없으면 이번 판 계획 빌드
     const useAI = itemAdvice.at && Date.now() - itemAdvice.at < 10 * 60000;
     const planned = useAI ? (itemAdvice.build || itemAdvice.next) : (matchPlan?.build?.core || []);

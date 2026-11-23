@@ -364,21 +364,27 @@ async function pickText(picks) {
   }).join(" / ");
 }
 
-export async function adviseItems(live, { plan, picks = [], gameKey, anvilKey } = {}) {
+export async function adviseItems(live, { plan, picks = [], gameKey, anvilKey, changes = [] } = {}) {
   if (items.busy || !live?.inGame) return items;
   const engine = await pickEngine();
   if (!engine) return items;
   items.busy = true; items.state = "진행 중";
   try {
     const me = live.me;
-    const enemyText = live.enemies.map((e) => `${e.champion}(${e.kda}, 템:${e.items.map((i) => i.name).filter((n) => n !== "포로 간식").join("/") || "없음"})`).join(", ");
+    const teamText = (list) => list.map((e) => `${e.champion}(${e.kda}, 템:${e.items.map((i) => i.name).filter((n) => n !== "포로 간식").join("/") || "없음"})`).join(", ");
+    const enemyText = teamText(live.enemies);
+    const totals = (a) => a?.itemTotals ? `방어력 ${a.itemTotals.armor}, 마법 저항력 ${a.itemTotals.mr}, 추가 체력 ${a.itemTotals.hp}, 공격력 ${a.itemTotals.ad}, 주문력 ${a.itemTotals.ap}` : "모름";
     const context = `리그 오브 레전드 '무작위 총력전: 아수라장' 아이템 코치야. 도구 쓰지 말고 JSON만 출력해.
 내 챔피언: ${await myChampText(me)} | 레벨 ${me.level}, KDA ${me.kda}, 보유 골드 ${me.currentGold}
 내 아이템: ${me.items.filter((i) => i.slot == null || i.slot < 6).map((i) => i.name + (i.completed ? "(완성)" : "")).filter((n) => !n.startsWith("포로 간식")).join(", ") || "없음"}
 고른 증강 (효과): ${await pickText(picks)}
 이번 판 계획 빌드: ${plan?.build ? [...(plan.build.core || []), ...(plan.build.situational || []).map((s) => `${s.when}→${s.item}`)].join(", ") : "없음"}
-아군: ${live.allies.map((a) => `${a.champion}(${a.kda})`).join(", ")}
+아군: ${teamText(live.allies)}
 적: ${enemyText}
+적 아이템 합계: ${totals(live.enemyAnalysis)} | 적 탱커: ${(live.enemyAnalysis?.tanks || []).join(", ") || "없음"}
+우리 팀 아이템 합계: ${totals(live.allyAnalysis)} | 우리 탱커: ${(live.allyAnalysis?.tanks || []).join(", ") || "없음"}
+${changes.length ? `방금 새로 완성한 아이템: ${changes.join(", ")}
+` : ""}
 ${setup.note ? `사용자 요청 (우선 반영): ${setup.note}
 ` : ""}적 피해 성향: ${live.enemyAnalysis?.leaningDamage}, 성장한 적: ${(live.enemyAnalysis?.fed || []).join(", ") || "없음"}`;
     if (anvilKey) {
@@ -390,9 +396,11 @@ ${setup.note ? `사용자 요청 (우선 반영): ${setup.note}
       return items;
     }
     const prompt = `${context}
-지금 상황에 맞는 최종 6칸 완성 빌드(신발 포함)를 알려줘. 이미 가진 완성 아이템 중 계속 쓸 것은 앞에 그대로 넣고, 남은 칸은 사야 할 순서대로 채워 정확히 6개 (칼바람 상점의 정확한 한글 이름).
+지금 상황에 맞는 최종 6칸 완성 빌드(신발 포함)를 알려줘.
+적과 우리 팀이 실제로 산 아이템을 보고 정해: 적이 방어력·마법 저항력을 쌓으면 관통, 체력을 쌓으면 최대 체력 비례 피해, 회복이 크면 치유 감소(우리 팀에 이미 치유 감소가 충분하면 중복하지 말 것), 적 주 딜러의 피해 유형과 핵심 아이템에 맞춰 방어템, 우리 팀에 앞라인이 없으면 생존 비중을 높여.
+why 에는 바꾼 이유를 적 또는 아군 아이템을 들어 써 (예: "말파이트 가시 갑옷 → 관통 먼저"). 이미 가진 완성 아이템 중 계속 쓸 것은 앞에 그대로 넣고, 남은 칸은 사야 할 순서대로 채워 정확히 6개 (칼바람 상점의 정확한 한글 이름).
 ${ANVIL_RULE}
-{"build":["아이템1","아이템2","아이템3","아이템4","아이템5","아이템6"],"why":"30자 이내 이유","anvils":[{"stat":"능력치","reason":"짧은 이유"}]}`;
+{"build":["아이템1","아이템2","아이템3","아이템4","아이템5","아이템6"],"why":"40자 이내 이유","anvils":[{"stat":"능력치","reason":"짧은 이유"}]}`;
     const sh = await shop();
     const r = await askAI(engine, prompt + "\n" + ITEM_RULE + " 같은 아이템을 두 번 넣지 마. 고른 증강에 퀘스트(조건: 특정 아이템 보유)가 있으면 그 조건 아이템을 최우선으로 추천하고, 증강 보상으로만 받는 아이템은 상점에 없으니 추천하지 마.\n칼바람 상점 (완성 아이템):\n" + sh.text);
     const owned = me.items.filter((i) => i.completed);

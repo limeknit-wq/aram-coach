@@ -1641,6 +1641,10 @@ public class LiveView : Panel
         string buy = Ui.BuyText(it);
         if (!string.IsNullOrEmpty(buy))
             y = Highlight(g, buy, x, y, w, s, Ui.B(Ui.D(it, "buy"), "affordable") ? Ui.Green : Ui.Amber);
+        // 빌드를 바꾼 이유 (예: 상대가 산 아이템) + 언제 받은 추천인지
+        string why = Ui.S(it, "why"), source = Ui.S(it, "source");
+        if (!string.IsNullOrEmpty(why))
+            y = Wrap(g, why + (string.IsNullOrEmpty(source) ? "" : "  · " + source), "Medium", 11.5f * s, Ui.Sub, x, y, w, 2) + 4 * s;
         return DrawItemGrid(g, next, x, y, w, s);
     }
 
