@@ -12,6 +12,7 @@ import { dropLimitDupes, limitRuleText } from "./itembuild.js";
 import { APP_DIR } from "./paths.js";
 import { MAX_MATCHUP_COMBOS, normalizeAnvils, savePlan } from "./plan.js";
 import { getSettings } from "./settings.js";
+import { logOffer } from "./watcher.js"; // 세팅·아이템 추천 시간과 결과를 offers.log 에 남겨 실제 판 검증에 씀
 
 const run = promisify(execFile);
 const PLANS_DIR = join(APP_DIR, "plans");
@@ -317,6 +318,7 @@ export function prepareChampion(sel) {
     await mkdir(PLANS_DIR, { recursive: true });
     await writeFile(join(PLANS_DIR, `${id}.json`), JSON.stringify(base));
     setup.timings.base = base.seconds;
+    logOffer(`[세팅] 픽창 기본 점수표: ${sel.me.champion} ${base.seconds}초`);
     if (setup.step.startsWith("기본 점수표")) Object.assign(setup, { state: "준비됨", step: `기본 점수표 준비 완료 (${sel.me.champion}, ${base.seconds}초)` });
     return base;
   })();
@@ -359,16 +361,19 @@ export async function onGameStart(gameKey, live, { force = false, note } = {}) {
           b: adj.b || base.compact.b, anvils: normalizeAnvils(adj.anvils).length ? adj.anvils : base.compact.anvils };
         await savePlan(await toPlanInput(me, compact, scoreById, { ...(base.compact.r || {}), ...(adj.r || {}) }), gameKey, { source: `AI(${engine.name})` });
         setup.timings.adjust = Math.round((Date.now() - t0) / 1000);
+        logOffer(`[세팅] 적 보정 완료: ${me?.champion || "?"} ${setup.timings.adjust}초 (점수 바뀐 증강 ${Object.keys(adj.u || {}).length}개)`);
         Object.assign(setup, { state: "완료", step: "", finishedAt: Date.now(), message: `${engine.name} 세팅 완료 · 적 보정 ${setup.timings.adjust}초 (기본 점수표는 픽창에서 준비됨)` });
       } else {
         Object.assign(setup, { state: "진행 중", step: "전체 세팅 중 (픽창 준비분 없음)" });
         const compact = await askAI(engine, await basePrompt(me, allies, enemies, setup.note));
         await savePlan(await toPlanInput(me, compact, toScores(compact), compact.r || {}), gameKey, { source: `AI(${engine.name})` });
         setup.timings.full = Math.round((Date.now() - t0) / 1000);
+        logOffer(`[세팅] 전체 세팅 완료 (픽창 준비분 없음): ${me?.champion || "?"} ${setup.timings.full}초`);
         Object.assign(setup, { state: "완료", step: "", finishedAt: Date.now(), message: `${engine.name} 세팅 완료 · ${setup.timings.full}초` });
       }
     } catch (e) {
       Object.assign(setup, { state: "실패", step: "", finishedAt: Date.now(), message: `세팅 실패: ${String(e.message || e).slice(0, 200)}` });
+      logOffer(`[세팅] ${setup.message}`);
     }
     return setup;
   })();
@@ -397,6 +402,7 @@ export async function adviseItems(live, { plan, picks = [], gameKey, anvilKey, c
   const engine = await pickEngine();
   if (!engine) return items;
   items.busy = true; items.state = "진행 중";
+  const t0 = Date.now();
   try {
     const me = live.me;
     const teamText = (list) => list.map((e) => `${e.champion}(${e.kda}, 템:${e.items.map((i) => i.name).filter((n) => n !== "포로 간식").join("/") || "없음"})`).join(", ");
@@ -436,8 +442,10 @@ ${ANVIL_RULE}
     const ranked = normalizeAnvils(r.anvils);
     if (ranked.length) items.midAnvilAdvice = { gameKey, ranked };
     Object.assign(items, { build, next: build, why: r.why || "", at: Date.now(), engine: engine.name, state: "완료" });
+    logOffer(`[아이템] 추천 ${Math.round((Date.now() - t0) / 1000)}초${changes.length ? ` (계기: ${changes.join(", ")})` : ""}: ${build.join(", ")} | ${r.why || ""}`);
   } catch (e) {
     items.state = "실패";
+    logOffer(`[아이템] 추천 실패: ${String(e.message || e).slice(0, 150)}`);
   } finally { items.busy = false; }
   return items;
 }

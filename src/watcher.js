@@ -53,9 +53,9 @@ const grams = (s) => { const g = new Set(); for (let i = 0; i < s.length - 1; i+
 /** 카드 칸(cx) 아래 설명 줄들을 모아 증강 효과 설명과 2글자 조각이 가장 많이 겹치는 증강을 찾습니다. */
 function matchByDescription(lines, cx, ty, found, named) {
   const col = (lines || []).filter((e) => typeof e !== "string" && e.y != null && e.y > ty + 0.012 && e.y < ty + 0.25 && Math.abs(e.x - cx) < 0.1);
-  const text = descNorm(col.map((e) => e.s).join(""));
+  const text = descNorm(col.sort((a, b) => a.y - b.y).map((e) => e.s).join(""));
   if (text.length < 8) return null;
-  const have = grams(text);
+  const have = grams(text.slice(0, 60));
   const seen = new Set();
   let best = null, bestScore = 0, second = 0;
   for (const { a } of named) {
@@ -65,11 +65,13 @@ function matchByDescription(lines, cx, ty, found, named) {
     if (g.size < 6) continue;
     let hit = 0;
     for (const x of g) if (have.has(x)) hit++;
-    const score = hit / g.size;
+    // 양쪽 기준(다이스 계수): 짧은 설명(예: "치명타 확률이 50% 증가합니다")이 카드 글자의 일부와만 겹쳐도
+    // 만점이 되던 문제 → 카드 글자와 증강 설명이 서로 비슷한 길이·내용일 때만 높게 나옴
+    const score = (2 * hit) / (g.size + have.size);
     if (score > bestScore) { second = bestScore; bestScore = score; best = a; }
     else if (score > second) second = score;
   }
-  return best && bestScore >= 0.5 && bestScore - second >= 0.15 ? best : null;
+  return best && bestScore >= 0.45 && bestScore - second >= 0.12 ? best : null;
 }
 
 /**
@@ -77,11 +79,39 @@ function matchByDescription(lines, cx, ty, found, named) {
  * 읽힌 카드의 반대편·가운데 자리에 빈 칸이 있으면 같은 높이의 글자를 조금 더 너그럽게 맞춰 봅니다.
  * (예: 이름 일부가 효과 빛에 가려 2~3글자 틀린 경우, 이름이 두 줄로 나뉜 경우)
  */
+/**
+ * 카드가 빠졌을 수 있는 가로 위치들. 카드는 가운데 기준 좌우 대칭, 같은 간격으로 놓입니다.
+ *  - 3장: 가운데(0.5)에 한 장 + 양옆
+ *  - 4장: 가운데는 두 카드 사이 빈 곳. 안쪽 두 장이 가운데 가까이, 바깥 두 장이 멀리
+ * 4장일 때 가운데를 후보로 보면 양쪽 카드 설명이 섞여 읽혀 없는 증강이 '5번째'로 생겼음.
+ * 위치는 화면 높이 기준으로 바꿔 비교합니다(카드 크기는 화면 높이를 따라가므로 와이드 화면에서도 같은 기준).
+ */
+export function missingSlots(xs, aspect = 16 / 9) {
+  const off = xs.map((x) => Math.abs(x - 0.5) * aspect); // 가운데에서 떨어진 정도 (화면 높이 단위)
+  // 16:9 측정: 3장 양옆 ≈0.34, 4장 안쪽 ≈0.18, 4장 바깥 ≈0.52
+  const isInner = (o) => o > 0.1 && o < 0.25;
+  const inner = xs.filter((x, i) => isInner(off[i]));
+  const outer4 = off.find((o) => o > 0.42); // 3장 배치에는 이렇게 바깥 카드가 없음
+  // 4장 배치는 확실할 때만: 바깥 카드가 있거나, 가운데 양쪽에 안쪽 카드가 하나씩.
+  // (가운데 카드 이름 앞에 잡글자가 붙어 읽히면 위치가 0.4쯤으로 치우쳐 안쪽 카드처럼 보일 수 있음)
+  const is4 = outer4 != null || (inner.some((x) => x < 0.5) && inner.some((x) => x > 0.5));
+  let slots;
+  if (is4) {
+    const o = off.find(isInner);
+    const s = o != null ? o * 2 : (outer4 * 2) / 3; // 카드 간격 (높이 단위)
+    slots = [-1.5, -0.5, 0.5, 1.5].map((k) => 0.5 + (k * s) / aspect);
+  } else {
+    // 3장 배치: 반대편 자리 + 가운데. 가운데 근처에 이미 읽힌 카드가 있으면 가운데는 보지 않음
+    slots = [...xs.map((x) => 1 - x), ...(inner.length ? [] : [0.5])];
+  }
+  const near = (x) => xs.some((v) => Math.abs(v - x) < 0.08);
+  return slots.filter((x, i, a) => x > 0.02 && x < 0.98 && !near(x) && a.findIndex((v) => Math.abs(v - x) < 0.05) === i);
+}
+
 function recoverMissing(lines, found, named) {
   if (!found.every((f) => f.x != null && f.y != null)) return;
   const ty = found.reduce((s, f) => s + f.y, 0) / found.length;
-  const near = (x) => found.some((f) => Math.abs(f.x - x) < 0.08);
-  const cands = [...found.map((f) => 1 - f.x), 0.5].filter((x, i, a) => !near(x) && a.findIndex((v) => Math.abs(v - x) < 0.05) === i);
+  const cands = missingSlots(found.map((f) => f.x), state.aspect || 16 / 9);
   found.missing = [];
   for (const cx of cands) {
     // 두 줄 이름은 첫 줄이 조금 위에 있으므로 위쪽은 넉넉히(0.05) 봅니다
@@ -157,6 +187,11 @@ export async function matchAugments(lines) {
   }
   found = sameRow(found);
   if (found.length >= 2) recoverMissing(lines, found, named);
+  // 선택지는 최대 4장. 더 많이 읽히면 보완 인식(추측)한 것부터 버림
+  while (found.length > 4) {
+    const i = found.findLastIndex((f) => f.recovered);
+    found.splice(i >= 0 ? i : found.length - 1, 1);
+  }
   // 화면 왼쪽→오른쪽 순서로 정렬하고 카드 위치(왼쪽/가운데/오른쪽)를 붙입니다
   if (found.every((f) => f.x != null)) {
     found.sort((a, b) => a.x - b.x);
@@ -376,6 +411,9 @@ async function onLine(raw) {
     descriptions, stickers, at: msg.t, lastSeenAt: msg.t, image: msg.source === "file" ? null : image };
   // 다시 펼친 경우: 같은 카드의 AI 평가는 이어서 씀 (평가 키에 카드 이름이 들어 있어 바뀐 카드만 새로 평가됨)
   if (reopened && cur.analysis) state.offer.analysis = { ...cur.analysis, scores: { ...cur.analysis.scores }, pending: false };
+  // 다시 펼쳤는데 카드가 하나도 안 겹침 → 접은 게 아니라 고른 뒤 다음 선택지가 뜬 것. 앞 선택은 클릭을 못 잡아 기록되지 않았음
+  if (reopened && !state.offer.names.some((n) => cur.names.includes(n)))
+    logOffer(`기록 누락 의심: 앞 선택지(${cur.names.join(" / ")})에서 고른 증강을 클릭으로 못 잡음`);
   observePanel(state.offer, found, msg);
   logOffer(`${reopened ? "다시 펼친 선택지 새로 읽음" : "새 선택지"}: ${state.offer.names.join(" / ")}`);
   missLog();

@@ -89,7 +89,9 @@ test("한 프레임 오독은 무시하고 같은 칸이 다시 읽힐 때 리�
   const rerolled = [names[0], "유리 대포", names[2]];
   await frame(rerolled);
   assert.deepEqual(offer.names, names);
-  assert.equal(clickableOffer(offer), false);
+  // 한 프레임 오독 중에도 선택 화면은 보이므로 클릭을 받음 (예전엔 막아서 새로고침 직후 고른 증강이 빠졌음).
+  // 그 뒤 실제 새로고침이 확인되면 아래에서 앞 클릭은 취소됨
+  assert.equal(clickableOffer(offer), true);
   await frame(names);
   assert.equal(offer.changedAt, undefined);
   await frame(rerolled);
@@ -100,6 +102,20 @@ test("한 프레임 오독은 무시하고 같은 칸이 다시 읽힐 때 리�
   await settlePick();
   assert.equal(coord.pendingPick, null);
   assert.deepEqual(await loadPicks(coord.gameKey), []);
+});
+
+test("인식이 흔들리는 중에 선택 화면이 닫혀도 클릭한 증강은 확정한다", async (t) => {
+  // 실제 사례(21:48): 클릭 뒤 마지막 프레임이 오독이라 unstable 이 남은 채 화면이 닫혀, 1분 뒤 '시간 초과'로 버려졌음
+  const { frame, click } = replay(t, "unstable-close-fixture");
+  await frame(names);
+  const offer = await frame(names);
+  click(names[2]);
+  await frame([names[0], "유리 대포", names[2]]); // 한 프레임 오독 → unstable
+  assert.equal(offer.unstable, true);
+  for (let i = 0; i < 2; i++) { await frame([], clearRims); await settlePick(); }
+  assert.deepEqual(await loadPicks(coord.gameKey), []); // 닫힌 지 얼마 안 됐으면 아직 기다림
+  for (let i = 0; i < 4; i++) { await frame([], clearRims); await settlePick(); }
+  assert.deepEqual((await loadPicks(coord.gameKey)).map((p) => p.name), [names[2]]);
 });
 
 test("게임 창 전환 중 화면이 사라져도 증강을 저장하지 않는다", async (t) => {

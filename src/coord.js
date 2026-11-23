@@ -33,10 +33,14 @@ function openOffer(offer, maxAge = 3500) {
   return Boolean(offer && !offer.closedAt && !offer.collapsedAt && Date.now() - offer.lastSeenAt < maxAge);
 }
 
+/**
+ * 지금 선택 화면이 보이는 중이라 카드 클릭을 받을 수 있는지.
+ * 예전엔 새로고침 직후처럼 인식이 잠깐 흔들릴 때(unstable)도 막아서, 그때 고른 증강이 기록되지 않았음.
+ * 흔들리는 중에 누른 클릭도 받아 두고, 확정은 선택 화면이 실제로 사라질 때 합니다(settlePick).
+ */
 export function clickableOffer(offer) {
-  return openOffer(offer, 2200) && !offer.unstable && !offer.absentSince &&
-    offer.panelEpoch === watch.captureEpoch && Date.now() - offer.panelSeenAt < 1800 &&
-    watch.lastLeagueFrameAt - offer.lastSeenAt < 1500;
+  return openOffer(offer, 2200) && !offer.absentSince &&
+    offer.panelEpoch === watch.captureEpoch && watch.lastLeagueFrameAt - offer.lastSeenAt < 1500;
 }
 
 async function overlayState() {
@@ -139,9 +143,14 @@ function handle(req, res) {
     // 오버레이가 감지한 카드 영역 클릭 → 선택 화면이 사라지면 그 카드를 고른 증강으로 확정
     const x = Number(u.searchParams.get("x"));
     const o = watch.offer;
-    if (!clickableOffer(o) || Number(u.searchParams.get("offer")) !== o.at ||
-      Number(u.searchParams.get("revision")) !== (o.changedAt || o.at))
+    // 같은 선택지면 받음. 새로고침 직후 오버레이가 아직 옛 번호(revision)를 갖고 있어도 지금 그 자리의 카드로 기록
+    // (예전엔 번호가 다르면 말없이 버려서, 새로고침 직후 고른 증강이 빠졌음)
+    const why = !o ? "선택지 없음" : !clickableOffer(o) ? (o.absentSince ? "선택 화면 닫히는 중" : "선택 화면이 안 보임")
+      : Number(u.searchParams.get("offer")) !== o.at ? "다른 선택지" : null;
+    if (why) {
+      logOffer(`클릭 무시 (${why}, x=${x})`);
       return sendJson(res, { ok: true, pending: coord.pendingPick?.name || null });
+    }
     // 첫 클릭만 인정: 카드를 고르면 선택 화면이 사라지는 1~2초 동안 게임 화면을 클릭해도 덮어쓰지 않음.
     // 단, 앞 클릭 뒤에도 선택 화면이 1.5초 넘게 그대로 보였으면 앞 클릭은 고른 게 아니었으므로 새 클릭으로 바꿈
     const stillShown = coord.pendingPick && o && o.lastSeenAt - coord.pendingPick.at > 1500;
@@ -219,9 +228,12 @@ export async function settlePick() {
     logOffer(`클릭 취소 (${!o || o.closedAt ? "선택지 닫힘" : o !== p.offer ? "선택지 바뀜" : rerolled ? "새로고침" : interrupted ? "캡처 또는 경기 전환" : "시간 초과"}): ${p.name}`);
     return;
   }
-  // 정상 캡처에서 카드 테두리가 연속으로 사라지고, 마지막 OCR 변경이 해소된 경우에만 확정합니다.
-  if (!o.unstable && o.panelEpoch === p.epoch && o.absentSince > p.at && o.absentFrames >= 3 &&
-    watch.lastLeagueFrameAt - o.absentSince >= 750) {
+  // 정상 캡처에서 카드 테두리가 연속으로 사라지면 확정합니다.
+  // 마지막 OCR 변경이 아직 확인 중(unstable)이면 조금 더(1.5초) 기다림. 예전엔 이 표시가 선택 화면이 닫힌 뒤에도
+  // 풀리지 않아 클릭한 증강이 1분 뒤 '시간 초과'로 버려졌음.
+  const absentFor = watch.lastLeagueFrameAt - o.absentSince;
+  if (o.panelEpoch === p.epoch && o.absentSince > p.at && o.absentFrames >= 3 &&
+    absentFor >= (o.unstable ? 1500 : 750)) {
     o.closedAt = watch.lastLeagueFrameAt;
     coord.pendingPick = null;
     logOffer(`선택 확정: ${p.name}`);
@@ -394,8 +406,11 @@ async function itemTick() {
       (Date.now() - lastAdviceAt > 45000 && ((dead && !wasDead) || (!itemAdvice.at && setup.state === "완료"))) ||
       (newPick && Date.now() - lastAdviceAt > 15000) || teamChanged);
     if (needAdvice) lastPickKey = pickKey;
+    const wasDeadBefore = wasDead;
     wasDead = dead;
     if (needAdvice) {
+      const because = dead && !wasDeadBefore ? "죽음" : newPick ? "증강 선택" : teamChanged ? "팀 아이템 변화" : "세팅 완료";
+      logOffer(`[아이템] 추천 요청 (${because})`);
       lastAdviceAt = Date.now();
       const changes = teamItems.changes.splice(0);
       adviseItems(live, { plan: matchPlan, picks, gameKey: coord.gameKey, changes });
