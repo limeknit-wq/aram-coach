@@ -154,13 +154,14 @@ export async function scoreOffer(offer, { event, gameKey, gameVersion, championI
     const live = analysis?.scores?.[evaluationKey];
     let score = live?.score ?? base?.score ?? null;
     const notes = [];
+    // 이미 고른 증강과의 조합 규칙 (점수표를 만들 때 AI가 정한 "A를 고르면 B ±N")
+    const synergy = (plan?.synergies || [])
+      .filter((s) => s.boost === a?.apiName && pickedIds.has(s.ifPicked))
+      .map((s) => ({ with: list.find((x) => x.apiName === s.ifPicked)?.name || "고른 증강", bonus: s.bonus }));
+    for (const s of synergy) notes.push(`'${s.with}' ${s.bonus > 0 ? "시너지 +" : "겹침 "}${s.bonus}`);
     if (score != null && !live) {
-      for (const s of plan?.synergies || []) {
-        if (s.boost === a?.apiName && pickedIds.has(s.ifPicked)) {
-          score += s.bonus;
-          notes.push(`'${list.find((x) => x.apiName === s.ifPicked)?.name || "고른 증강"}' ${s.bonus > 0 ? "시너지 +" : "겹침 "}${s.bonus}`);
-        }
-      }
+      // 실시간 평가 전: 규칙대로 점수에 더함. 실시간 평가 뒤에는 AI가 이 규칙을 보고 이미 반영했으므로 표시만
+      for (const s of synergy) score += s.bonus;
       const sticker = offer.stickers?.[i];
       if (sticker) { score += 8; notes.push("HEARTSTEEL 스티커 +8"); }
     }
@@ -168,7 +169,7 @@ export async function scoreOffer(offer, { event, gameKey, gameVersion, championI
     return {
       name, apiName: a?.apiName, rarity: a?.rarity, icon: a?.icon || null, x: offer.xs?.[i] ?? null, slot: offer.slots?.[i] ?? null,
       score, grade: score == null ? "?" : gradeOf(score), reason: live?.reason || base?.reason || description,
-      description, style: base?.style, notes, sticker: offer.stickers?.[i] || null, unrated: score == null,
+      description, style: base?.style, notes, synergy, sticker: offer.stickers?.[i] || null, unrated: score == null,
       statistics: statistics?.cards[i] || null, evaluationKey,
     };
   });

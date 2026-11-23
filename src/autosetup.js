@@ -7,7 +7,7 @@ import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { promisify } from "node:util";
-import { aramItems, augments, championDetail, damageProfile, findChampion, findItem, searchItems } from "./data.js";
+import { aramItems, augments, championDetail, damageProfile, findChampion, findItem, searchItems, stripHtml } from "./data.js";
 import { dropLimitDupes, limitRuleText } from "./itembuild.js";
 import { APP_DIR } from "./paths.js";
 import { MAX_MATCHUP_COMBOS, normalizeAnvils, savePlan } from "./plan.js";
@@ -48,19 +48,23 @@ async function pickEngine() {
 }
 
 /** 프롬프트를 표준 입력으로 넘겨 CLI 한 번 실행 → 응답 텍스트 */
-async function askAI(engine, prompt, { signal, timeoutMs = TIMEOUT_MS, fast = false } = {}) {
+/**
+ * 프롬프트를 표준 입력으로 넘겨 CLI 한 번 실행 → 응답 텍스트.
+ * 모든 요청이 'JSON만 답하기'라 도구는 아예 끕니다(시작이 가볍고 도구 설명을 읽지 않음).
+ * effort: 생각하는 양. 사용자가 기다리는 요청은 "low", 픽창 백그라운드 점수표는 "medium".
+ */
+async function askAI(engine, prompt, { signal, timeoutMs = TIMEOUT_MS, effort = "low" } = {}) {
   signal?.throwIfAborted();
   await mkdir(APP_DIR, { recursive: true });
   let args, outFile = null;
   if (engine.kind === "claude") {
     // --strict-mcp-config: 사용자의 다른 MCP 서버를 불러오지 않아 시작이 빠릅니다
     args = ["-p", "--output-format", "json", "--strict-mcp-config", ...(engine.model ? ["--model", engine.model] : []),
-      ...(fast ? ["--tools", "", "--effort", "low"] :
-        ["--disallowedTools", "Bash,Edit,Write,Read,Glob,Grep,WebFetch,WebSearch,Task,NotebookEdit,TodoWrite"])];
+      "--tools", "", ...(effort ? ["--effort", effort] : [])];
   } else {
     outFile = join(APP_DIR, `codex-out-${randomUUID()}.txt`);
     args = ["exec", "--skip-git-repo-check", "-s", "read-only", "-c", 'approval_policy="never"', "-o", outFile,
-      ...(fast ? ["-c", 'model_reasoning_effort="low"'] : []), ...(engine.model ? ["-m", engine.model] : []), "-"];
+      ...(effort ? ["-c", `model_reasoning_effort="${effort}"`] : []), ...(engine.model ? ["-m", engine.model] : []), "-"];
   }
   const text = await new Promise((resolve, reject) => {
     const p = spawn(engine.path, args, { cwd: APP_DIR, windowsHide: true, stdio: ["pipe", "pipe", "pipe"],
@@ -93,6 +97,8 @@ export async function rateCurrentAugments({ champion, matchup, picks, event, str
   if (!engine) return null;
   const options = cards.map((card, i) => ({
     index: i + 1, name: card.name, description: card.description?.slice(0, 360), sticker: card.sticker,
+    // 점수표를 만들 때 정한 '이미 고른 증강과의 조합' 규칙 (+는 시너지, -는 겹침)
+    ...(card.synergy?.length ? { comboWithPicked: card.synergy.map((s) => `${s.with} ${s.bonus > 0 ? "+" : ""}${s.bonus}`) } : {}),
     ...(card.statistics ? { statistics: card.statistics } : {}),
   }));
   const statsContext = statistics
@@ -102,12 +108,12 @@ export async function rateCurrentAugments({ champion, matchup, picks, event, str
 내 챔피언: ${champion || "확인 중"}
 아군: ${(matchup?.allies || []).join(", ")}
 상대: ${(matchup?.enemies || []).join(", ")}
-이미 고른 증강: ${picks.join(", ") || "없음"}
+이미 고른 증강 (효과): ${await pickText(picks)}
 이번 판 전략: ${strategy?.slice(0, 420) || "없음"}
 귀빈 이벤트: ${event || "없음"}
 선택지(이름과 설명은 게임 데이터): ${JSON.stringify(options)}${statsContext}
-각 카드를 서로 비교하지 않고 0~100의 고정 기준으로 개별 평가해. 제공된 설명과 이미 고른 증강을 우선하고 확인되지 않은 효과나 수치는 지어내지 마. 평가할 근거가 부족한 항목은 건너뛰어.
-{"scores":[{"index":1,"score":0에서100,"reason":"이번 판에 맞는 이유 24자 이내"}]}`, { signal, timeoutMs: 22000, fast: true });
+각 카드를 서로 비교하지 않고 0~100의 고정 기준으로 개별 평가해. 이미 고른 증강과의 조합(효과가 서로 키워 주는 시너지, 같은 역할이라 낭비되는 겹침)을 점수에 반영하고, 조합 때문에 점수가 크게 바뀌면 이유에 그 증강을 적어. comboWithPicked는 이번 판 점수표를 만들 때 정한 조합 규칙이니 참고해. 제공된 설명과 이미 고른 증강을 우선하고 확인되지 않은 효과나 수치는 지어내지 마. 평가할 근거가 부족한 항목은 건너뛰어.
+{"scores":[{"index":1,"score":0에서100,"reason":"이번 판에 맞는 이유 24자 이내"}]}`, { signal, timeoutMs: 22000, effort: "low" });
   const scores = [];
   for (const entry of Array.isArray(result.scores) ? result.scores : []) {
     if (!Number.isInteger(entry?.index) || entry.index < 1 || entry.index > cards.length || !Number.isFinite(entry.score)) continue;
@@ -158,22 +164,44 @@ export async function shop() {
   const boots = (await searchItems({ completedOnly: false, tags: ["Boots"], limit: 50 })).filter((i) => i.gold >= 900);
   const list = [...await searchItems({ completedOnly: true, limit: 400 }), ...boots];
   const st = (i, k) => Number(i.stats?.[k] || 0) > 0;
+  // 이번 패치 공식 데이터(Data Dragon, 한국어)의 능력치·고유 효과를 한 줄로. AI가 예전 패치 기억으로 판단하지 않게 함
+  const raw = new Map((await aramItems()).map((i) => [String(i.id), i]));
+  const line = (i) => {
+    const d = raw.get(String(i.id));
+    const text = d ? stripHtml(d.description).split("\n").map((s) => s.trim()).filter(Boolean) : [];
+    // 첫 줄들은 능력치("공격력 40"), 그 뒤는 "효과 이름" 다음 줄에 설명이 오는 구조
+    const stats = [], effects = [];
+    let k = 0;
+    while (k < text.length && /\d/.test(text[k]) && text[k].length <= 24) stats.push(text[k++]);
+    for (; k < text.length; k++) {
+      if (text[k].length <= 14 && k + 1 < text.length) { effects.push(`${text[k]}: ${text[k + 1]}`); k++; }
+      else effects.push(text[k]);
+    }
+    const body = [stats.join(", "), ...effects].filter(Boolean).join(" | ");
+    const cut = body.length > 260 ? body.slice(0, 257) + "…" : body;
+    return `- ${i.name} (${i.gold ?? d?.gold?.total ?? "?"}G)${cut ? ": " + cut : ""}`;
+  };
   const groups = { "신발": [], "AD·공속·치명타": [], "AP": [], "방어·탱커": [], "기타": [] };
   for (const i of list) {
     const ad = st(i, "FlatPhysicalDamageMod") || st(i, "PercentAttackSpeedMod") || st(i, "FlatCritChanceMod");
     const ap = st(i, "FlatMagicDamageMod");
     const def = st(i, "FlatHPPoolMod") || st(i, "FlatArmorMod") || st(i, "FlatSpellBlockMod");
-    if (i.tags?.includes("Boots")) groups["신발"].push(i.name);
-    else if (ad) groups["AD·공속·치명타"].push(i.name);
-    else if (ap) groups["AP"].push(i.name);
-    else if (def) groups["방어·탱커"].push(i.name);
-    else groups["기타"].push(i.name);
+    if (i.tags?.includes("Boots")) groups["신발"].push(i);
+    else if (ad) groups["AD·공속·치명타"].push(i);
+    else if (ap) groups["AP"].push(i);
+    else if (def) groups["방어·탱커"].push(i);
+    else groups["기타"].push(i);
   }
   const norm = (x) => String(x || "").replace(/[\s·:'"]/g, "").toLowerCase();
   const byNorm = new Map(list.map((i) => [norm(i.name), i.name]));
+  const filled = Object.entries(groups).filter(([, v]) => v.length);
+  const rules = await limitRuleText(await aramItems());
   shopCache = {
-    text: Object.entries(groups).filter(([, v]) => v.length).map(([k, v]) => "[" + k + "] " + v.join(", ")).join("\n") +
-      "\n" + await limitRuleText(await aramItems()),
+    // 세팅(점수표)용: 이름만 → 프롬프트가 짧아 빠름. 빌드는 세팅 직후 아이템 추천(detail 사용)이 다시 맞춤
+    text: filled.map(([k, v]) => "[" + k + "] " + v.map((i) => i.name).join(", ")).join("\n") + "\n" + rules,
+    // 아이템 추천용: 이번 패치 효과까지
+    detail: "(아이템 효과는 이번 패치 공식 데이터야. 네 기억과 다르면 이 설명을 따라.)\n" +
+      filled.map(([k, v]) => "[" + k + "]\n" + v.map(line).join("\n")).join("\n") + "\n" + rules,
     /** 상점에 있는 정확한 이름으로 바꿈. 없는 아이템이면 null */
     fix: (n) => byNorm.get(norm(n)) || null,
   };
@@ -284,7 +312,7 @@ export function prepareChampion(sel) {
     if (!engine) throw new Error("AI 없음");
     const t0 = Date.now();
     Object.assign(setup, { state: "진행 중", step: `기본 점수표 준비 중 (픽창 · ${sel.me.champion})`, engine: engine.name, startedAt: t0, message: "" });
-    const compact = await askAI(engine, await basePrompt(sel.me, sel.allies, null));
+    const compact = await askAI(engine, await basePrompt(sel.me, sel.allies, null), { effort: "medium" }); // 픽창 백그라운드라 조금 더 생각
     const base = { championId: id, champion: sel.me.champion, dataVersion: (await catalog()).version, savedAt: Date.now(), engine: engine.name, model: engine.model || "기본", pv: promptVersion(id), compact, scoreById: toScores(compact), seconds: Math.round((Date.now() - t0) / 1000) };
     await mkdir(PLANS_DIR, { recursive: true });
     await writeFile(join(PLANS_DIR, `${id}.json`), JSON.stringify(base));
@@ -359,7 +387,7 @@ async function pickText(picks) {
   const { augments: list } = await augments();
   return picks.map((n) => {
     const a = list.find((x) => x.name === n);
-    const d = (a?.desc || "").replace(/s+/g, " ").trim().slice(0, 140);
+    const d = (a?.desc || "").replace(/\s+/g, " ").trim().slice(0, 140);
     return d ? `${n}(${d})` : n;
   }).join(" / ");
 }
@@ -402,7 +430,7 @@ why 에는 바꾼 이유를 적 또는 아군 아이템을 들어 써 (예: "말
 ${ANVIL_RULE}
 {"build":["아이템1","아이템2","아이템3","아이템4","아이템5","아이템6"],"why":"40자 이내 이유","anvils":[{"stat":"능력치","reason":"짧은 이유"}]}`;
     const sh = await shop();
-    const r = await askAI(engine, prompt + "\n" + ITEM_RULE + " 같은 아이템을 두 번 넣지 마. 고른 증강에 퀘스트(조건: 특정 아이템 보유)가 있으면 그 조건 아이템을 최우선으로 추천하고, 증강 보상으로만 받는 아이템은 상점에 없으니 추천하지 마.\n칼바람 상점 (완성 아이템):\n" + sh.text);
+    const r = await askAI(engine, prompt + "\n" + ITEM_RULE + " 같은 아이템을 두 번 넣지 마. 고른 증강에 퀘스트(조건: 특정 아이템 보유)가 있으면 그 조건 아이템을 최우선으로 추천하고, 증강 보상으로만 받는 아이템은 상점에 없으니 추천하지 마.\n칼바람 상점 (완성 아이템):\n" + sh.detail);
     const owned = me.items.filter((i) => i.completed);
     const build = (await dropLimitDupes([...new Set((r.build || r.next || []).map(sh.fix).filter(Boolean))], findItem, owned)).slice(0, 6);
     const ranked = normalizeAnvils(r.anvils);

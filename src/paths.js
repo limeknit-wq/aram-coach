@@ -8,7 +8,7 @@ import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const APP_VERSION = "0.4.13";
+export const APP_VERSION = "0.4.14";
 
 // exe 안에 넣는 파일 목록 (빌드 스크립트도 이 목록을 씁니다)
 export const ASSETS = [

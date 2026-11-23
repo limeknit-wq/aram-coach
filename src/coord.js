@@ -10,7 +10,7 @@ import { buyNow, dropLimitDupes, inventory, remainingCost } from "./itembuild.js
 import { logOffer, startWatcher, stopWatcher, state as watch } from "./watcher.js";
 import { APP_VERSION, IS_EXE, ensureResources, resPath } from "./paths.js";
 import { getSettings, updateSettings } from "./settings.js";
-import { adviseItems, cancelAutoSetup, detectEngines, items as itemAdvice, onGameStart, prepareChampion, rateCurrentAugments, setup, setupRunning } from "./autosetup.js";
+import { adviseItems, cancelAutoSetup, detectEngines, items as itemAdvice, onGameStart, prepareChampion, rateCurrentAugments, setup, setupRunning, shop } from "./autosetup.js";
 import { aramItems, findItem, norm, version } from "./data.js";
 import { uninstall } from "./install.js";
 import { cardDetails, test, testAction, testState } from "./testmode.js";
@@ -470,6 +470,8 @@ function becomeLeader() {
         setInterval(pollGame, 1500), setInterval(itemTick, 3000)];
       leader.timers.forEach((t) => t.unref());
       pollGame();
+      // 이번 패치 아이템 데이터(효과 설명 포함)를 미리 받아 둠 → 첫 AI 세팅이 기다리지 않음
+      if (coord.isApp) shop().catch(() => {});
       resolve(true);
     });
   });
