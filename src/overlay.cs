@@ -1459,21 +1459,17 @@ public class LiveView : Panel
         bool fixedLayout = inGame || previous || preview;
         float ip = SectionPad * s, cx = x + ip, cw = w - 2 * ip, c;
 
-        // 1) 지금 증강 선택 (게임 중: 선택지 4장 자리를 늘 비워 둠)
-        if (inGame)
+        // 1) 지금 증강 선택: 게임에서 증강 창이 열려 있을 때만 맨 위에 표시 (창을 접으면 사라짐)
+        ArrayList cards = inGame && Ui.B(ov, "show") ? Ui.A(ov, "cards") : null;
+        if (cards != null && cards.Count > 0)
         {
-            ArrayList cards = Ui.B(ov, "show") ? Ui.A(ov, "cards") : null;
-            bool offer = cards != null && cards.Count > 0;
-            c = BeginSection(g, "offer", "지금 증강 선택", offer ? Ui.StatisticsLabel(ov) : null, 2 * SectionPad + 24 + 22 + 190, x, y, w, s);
-            if (offer)
-            {
-                bool hasPlan = Ui.B(ov, "hasPlan");
-                string analysis = Ui.S(ov, "analysisState");
-                if (analysis == "pending") c = Highlight(g, Ui.N(ov, "ratedCount", 0) > 0 ? "1차 추천 · 세부 분석 중" : "현재 선택지 분석 중", cx, c, cw, s, Ui.GoldLight);
-                else if (!hasPlan) c = Highlight(g, Ui.S(ov, "setupState") == "진행 중" ? "AI가 증강을 분석 중이에요" : "점수표를 만들려면 ‘다시 세팅’을 누르세요", cx, c, cw, s, Ui.Amber);
-                c = DrawOfferCards(g, cards, cx, c, cw, s, hasPlan);
-            }
-            else c = Placeholder(g, "증강 선택지가 뜨면 카드별 점수가 여기에 떠요", cx, c, cw, s);
+            c = BeginSection(g, "offer", "지금 증강 선택", Ui.StatisticsLabel(ov), 2 * SectionPad + 24 + 190, x, y, w, s);
+            bool hasPlan = Ui.B(ov, "hasPlan");
+            string analysis = Ui.S(ov, "analysisState");
+            if (analysis == "pending") c = Highlight(g, Ui.N(ov, "ratedCount", 0) > 0 ? "1차 추천 · 세부 분석 중" : "현재 선택지 분석 중", cx, c, cw, s, Ui.GoldLight);
+            else if (!hasPlan) c = Highlight(g, Ui.S(ov, "setupState") == "진행 중" ? "AI가 증강을 분석 중이에요" : "점수표를 만들려면 ‘다시 세팅’을 누르세요", cx, c, cw, s, Ui.Amber);
+            c = DrawOfferCards(g, cards, cx, c, cw, s, hasPlan);
+            c = Wrap(g, "카드를 잘못 읽었으면 게임에서 증강 창을 접었다가 다시 펼치세요", "Medium", 10.5f * s, Ui.Sub, cx, c + 2 * s, cw, 2);
             y = EndSection("offer", c, s);
         }
 
@@ -2040,9 +2036,10 @@ public class TestGameForm : Form
         using (StringFormat sf = new StringFormat { Trimming = StringTrimming.EllipsisCharacter, FormatFlags = StringFormatFlags.NoWrap })
             g.DrawString(toast ?? line, f, b, new RectangleF(W * 0.012f, H * 0.882f, W * 0.976f, H * 0.03f), sf);
 
-        string[] labels = { "새 증강 선택지", "죽기 / 부활", "골드 +1000", "도미닉 경의 인사 사기", "필멸자의 운명 사기", "아이템 비우기", "테스트 끝내기" };
+        string[] labels = { "새 증강 선택지", "증강 창 접기/펴기", "죽기 / 부활", "골드 +1000", "도미닉 경의 인사 사기", "필멸자의 운명 사기", "아이템 비우기", "테스트 끝내기" };
         Action[] acts = {
             delegate { Act("offer", null, "새 선택지를 띄웠어요"); },
+            delegate { Act("toggle", null, "증강 창 접기/펴기 → 접으면 보조 창에서 사라지고, 펴면 offers.log에 '다시 펼친 선택지 새로 읽음'이 떠야 정상"); },
             delegate { Act("dead", null, null); },
             delegate { Act("gold", "1000", null); },
             delegate { Act("buy", "3036", "도미닉 경의 인사 구매 → 템 추천에서 필멸자·세릴다가 빠져야 정상"); },

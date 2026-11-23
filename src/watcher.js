@@ -312,7 +312,9 @@ async function onLine(raw) {
       return;
     }
   }
-  if (cur && !cur.closedAt && msg.t - cur.lastSeenAt < 8000 && cur.xs?.every((v) => v != null) && found.every((f) => f.x != null)) {
+  // 사용자가 증강 창을 접었다가 다시 펼침 → 이전에 읽은 카드와 합치지 않고 처음부터 새로 읽음
+  const reopened = Boolean(cur && !cur.closedAt && cur.collapsedAt && msg.t > cur.collapsedAt);
+  if (!reopened && cur && !cur.closedAt && msg.t - cur.lastSeenAt < 8000 && cur.xs?.every((v) => v != null) && found.every((f) => f.x != null)) {
     const names = [...cur.names], xs = [...cur.xs], stickers = [...(cur.stickers || cur.names.map(() => null))];
     let same = 0;
     const changed = [], added = [];
@@ -346,7 +348,7 @@ async function onLine(raw) {
     }
   }
   const key = found.map((a) => a.name).join("|");
-  if (cur && !cur.closedAt && cur.key === key) {
+  if (!reopened && cur && !cur.closedAt && cur.key === key) {
     nextOffer = null;
     pendingChanges.delete(cur);
     cur.unstable = false;
@@ -372,8 +374,10 @@ async function onLine(raw) {
   if (msg.source !== "file") await copyFile(join(OUT, "latest.jpg"), image).catch(() => {});
   state.offer = { key, names: found.map((a) => a.name), slots: found.map((a) => a.slot || null), xs: found.map((a) => a.x ?? null),
     descriptions, stickers, at: msg.t, lastSeenAt: msg.t, image: msg.source === "file" ? null : image };
+  // 다시 펼친 경우: 같은 카드의 AI 평가는 이어서 씀 (평가 키에 카드 이름이 들어 있어 바뀐 카드만 새로 평가됨)
+  if (reopened && cur.analysis) state.offer.analysis = { ...cur.analysis, scores: { ...cur.analysis.scores }, pending: false };
   observePanel(state.offer, found, msg);
-  logOffer(`새 선택지: ${state.offer.names.join(" / ")}`);
+  logOffer(`${reopened ? "다시 펼친 선택지 새로 읽음" : "새 선택지"}: ${state.offer.names.join(" / ")}`);
   missLog();
   state.history.unshift(state.offer);
   state.history = state.history.slice(0, 8);

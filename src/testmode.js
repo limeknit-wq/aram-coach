@@ -63,6 +63,8 @@ export async function testAction(what, arg) {
       break;
     }
     case "hide": test.showCards = false; break; // 카드를 고르면 선택 화면이 닫힘
+    // 증강 창 접기/펴기 (카드를 고르지 않고 숨김 → 다시 펼치면 처음부터 새로 읽어야 정상)
+    case "toggle": if (test.cards?.length) test.showCards = !test.showCards; break;
     case "dead":
       test.dead = !test.dead; test.deadAt = Date.now();
       break;

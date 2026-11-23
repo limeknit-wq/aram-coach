@@ -30,7 +30,7 @@ const sendJson = (res, obj, code = 200) => { res.writeHead(code, { "content-type
 const readBody = (req) => new Promise((r) => { let b = ""; req.on("data", (d) => (b += d)); req.on("end", () => { try { r(JSON.parse(b || "{}")); } catch { r({}); } }); });
 
 function openOffer(offer, maxAge = 3500) {
-  return Boolean(offer && !offer.closedAt && Date.now() - offer.lastSeenAt < maxAge);
+  return Boolean(offer && !offer.closedAt && !offer.collapsedAt && Date.now() - offer.lastSeenAt < maxAge);
 }
 
 export function clickableOffer(offer) {
@@ -197,7 +197,17 @@ function handle(req, res) {
 // 클릭 후 선택 화면이 사라지면(새 프레임에 선택지가 안 보이면) 고른 증강으로 확정
 export async function settlePick() {
   const p = coord.pendingPick;
-  if (!p) return;
+  if (!p) {
+    // 카드를 누르지 않았는데 선택 화면이 1.2초 넘게 사라짐 → 사용자가 증강 창을 접은 것.
+    // 다시 펼치면 화면 감시가 처음부터 다시 읽음 (OCR이 잘못 읽은 카드를 바로잡는 방법)
+    const o = watch.offer;
+    if (o && !o.closedAt && !o.collapsedAt && o.absentSince && o.absentFrames >= 3 &&
+      watch.lastLeagueFrameAt - o.absentSince >= 1200) {
+      o.collapsedAt = watch.lastLeagueFrameAt;
+      logOffer(`증강 창 접힘 (카드 클릭 없음): ${o.names.join(" / ")} → 다시 펼치면 새로 읽음`);
+    }
+    return;
+  }
   const o = watch.offer;
   const age = Date.now() - p.at;
   // 선택지가 통째로 바뀌었거나, 클릭한 뒤 새로고침이 있었으면 취소 (늦게 읽힌 카드가 추가된 것은 괜찮음)
